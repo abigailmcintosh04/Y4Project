@@ -24,4 +24,10 @@ with h5py.File(output, 'w') as h5file:
         ('pz', 'f8'),
         ('e', 'f8')
     ])
-
+    dset = h5file.create_dataset(
+        'particles', 
+        shape=(0,),
+        maxshape=(None,),
+        dtype=dtypes,
+        chunks=True 
+    )

@@ -9,21 +9,25 @@ output = 'collisions.h5'
 
 pythia = pythia8mc.Pythia()
 
+# Physics stuff - pp collision at 13TeV.
 pythia.readString('Beams:idA = 2212')
 pythia.readString('Beams:idB = 2212')
 pythia.readString('Beams:eCM = 13000.')
-# pythia.readString('HardQCD:all = on')
+# pythia.readString('HardQCD:all = on')     # No non-charm events.
 pythia.readString("PartonLevel:ISR = on")
 pythia.readString("PartonLevel:FSR = on")
 pythia.readString("HadronLevel:Hadronize = on")
 pythia.readString("HardQCD:gg2ccbar = on")
 pythia.readString("HardQCD:qqbar2ccbar = on")
 
+# Getting Pythia to stop printing so much stuff.
 pythia.readString("Next:numberShowInfo = 0")
 pythia.readString("Print:quiet = on")
 pythia.readString("Next:numberShowEvent = 0")
+
 pythia.init()
 
+# Allowed PDG IDs for events (charm hadrons + quarks).
 hadron_ids = [411, 421, 431, 4122, -411, -421, -431, -4122]
 quark_ids = [4, -4]
 
@@ -45,9 +49,11 @@ with h5py.File(output, 'w') as h5file:
 
     event_id = 0
     total_rows = 0
+    # Buffer for chunking.
     buffer = []
 
     while event_id < no_events:
+        # Skips if event generation fails.
         if not pythia.next():
             continue
 
@@ -63,13 +69,16 @@ with h5py.File(output, 'w') as h5file:
         charm_rows = []
         for c in quarks:
             for h in hadrons:
+                # Finds mother charm quark of charm hadron.
                 if c.index() in h.motherList():
                     charm_rows.append((h.id(), h.e(), c.id(), c.e()))
 
+        # Adds event to buffer.
         if charm_rows:
             buffer.extend(charm_rows)
             event_id += 1
 
+        # Appends to HDF5 file when chunk size reached.
         if event_id % chunk_size == 0 and buffer:
             arr = np.array(buffer, dtype=dtype)
             dset.resize(total_rows + len(arr), axis=0)
@@ -77,6 +86,7 @@ with h5py.File(output, 'w') as h5file:
             total_rows += len(arr)
             buffer = []
 
+    # Final check for any events left in buffer.
     if buffer:
         arr = np.array(buffer, dtype=dtype)
         dset.resize(total_rows + len(arr), axis=0)

@@ -1,10 +1,17 @@
 import pythia8mc
 import h5py
 import numpy as np
+import argparse
 
+# Arguments for number of events and chunk size in command.
+parser = argparse.ArgumentParser()
+parser.add_argument('no_events', type=int)
+parser.add_argument('chunk_size', type=int)
+args = parser.parse_args()
 
-no_events = 100000
-chunk_size = 10000
+no_events = args.no_events
+chunk_size = args.chunk_size
+
 output = 'collisions.h5'
 
 pythia = pythia8mc.Pythia()

@@ -3,6 +3,7 @@ import h5py
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
 
 input = 'collisions.h5'
@@ -46,4 +47,15 @@ print(f"Validation MAE: {val_mae:.4f}")
 
 y_pred_scaled = model.predict(x_val)
 y_pred = y_scaler.inverse_transform(y_pred_scaled)
+y_true = y_scaler.inverse_transform(y_val)
+
+plt.figure(figsize=(8,8))
+plt.scatter(y_true, y_pred, s=5, alpha=0.5)
+plt.plot([y_true.min(), y_true.max()],
+         [y_true.min(), y_true.max()])
+plt.xlabel('True hadron energy (GeV)')
+plt.ylabel('Predicted hadron energy (GeV)')
+plt.title('Predicted vs True Hadron Energies')
+plt.grid(True)
+plt.savefig('loss_curve.png', dpi=300, bbox_inches='tight')
 

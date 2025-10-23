@@ -27,14 +27,17 @@ x_train, x_val, y_train, y_val = train_test_split(x_scaled, y_scaled, test_size=
 
 model = tf.keras.Sequential([
     tf.keras.layers.Input(shape=(1,)),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(128, activation='relu'),
     tf.keras.layers.Dense(64, activation='relu'),
-    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(32, activation='relu'),
     tf.keras.layers.Dense(1),
 ])
 
-model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+optimiser = tf.keras.optimizers.Adam(learning_rate=1e-4)
+model.compile(optimizer=optimiser, loss='mse', metrics=['mae'])
 
-model.fit(
+history = model.fit(
     x_train, y_train,
     validation_data=(x_val, y_val),
     epochs=30,
@@ -52,10 +55,28 @@ y_true = y_scaler.inverse_transform(y_val)
 plt.figure(figsize=(8,8))
 plt.scatter(y_true, y_pred, s=5, alpha=0.5)
 plt.plot([y_true.min(), y_true.max()],
-         [y_true.min(), y_true.max()])
+         [y_true.min(), y_true.max()], 'r--', lw=2)
 plt.xlabel('True hadron energy (GeV)')
 plt.ylabel('Predicted hadron energy (GeV)')
 plt.title('Predicted vs True Hadron Energies')
 plt.grid(True)
+plt.savefig('pred_energy.png', dpi=300, bbox_inches='tight')
+
+plt.figure(figsize=(8,5))
+plt.plot(history.history['loss'], label='Training loss')
+plt.plot(history.history['val_loss'], label='Validation loss')
+plt.xlabel('Epoch')
+plt.ylabel('MSE Loss')
+plt.title('Training vs Validation Loss')
+plt.legend()
 plt.savefig('loss_curve.png', dpi=300, bbox_inches='tight')
+
+residuals = y_true - y_pred
+plt.figure(figsize=(8,5))
+plt.hist(residuals, bins=100, range=(-20, 20))
+plt.xlabel('Residual (true - predicted)')
+plt.ylabel('Count')
+plt.title('Prediction Residuals')
+plt.savefig('residuals.png', dpi=300, bbox_inches='tight')
+
 

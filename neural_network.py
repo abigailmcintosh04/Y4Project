@@ -4,12 +4,25 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import os
+from datetime import datetime
+import json
+import argparse
 
+# Arguments for number of events and chunk size in command.
+parser = argparse.ArgumentParser()
+parser.add_argument('input', type=str)
+args = parser.parse_args()
+input = args.input
 
-input = 'collisions.h5'
+# input = 'collisions.h5'
 
 with h5py.File(input, "r") as h5file:
     data = h5file["particles"][:]
+
+run_time = datetime.now().strftime("%Y%m%d-%H%M%S")
+run_dir = os.path.join("runs", run_time)
+os.makedirs(run_dir, exist_ok=True)
 
 e_quark = data['e_quark']
 e_hadron = data['e_hadron']
@@ -52,31 +65,12 @@ y_pred_scaled = model.predict(x_val)
 y_pred = y_scaler.inverse_transform(y_pred_scaled)
 y_true = y_scaler.inverse_transform(y_val)
 
-plt.figure(figsize=(8,8))
-plt.scatter(y_true, y_pred, s=5, alpha=0.5)
-plt.plot([y_true.min(), y_true.max()],
-         [y_true.min(), y_true.max()], 'r--', lw=2)
-plt.xlabel('True hadron energy (GeV)')
-plt.ylabel('Predicted hadron energy (GeV)')
-plt.title('Predicted vs True Hadron Energies')
-plt.grid(True)
-plt.savefig('pred_energy.png', dpi=300, bbox_inches='tight')
+with open(os.path.join(run_dir, "history.json"), "w") as f:
+    json.dump(history.history, f)
 
-plt.figure(figsize=(8,5))
-plt.plot(history.history['loss'], label='Training loss')
-plt.plot(history.history['val_loss'], label='Validation loss')
-plt.xlabel('Epoch')
-plt.ylabel('MSE Loss')
-plt.title('Training vs Validation Loss')
-plt.legend()
-plt.savefig('loss_curve.png', dpi=300, bbox_inches='tight')
+np.savez(os.path.join(run_dir, "validation_results.npz"),
+         y_true=y_true, y_pred=y_pred, x_val=x_val)
 
-residuals = y_true - y_pred
-plt.figure(figsize=(8,5))
-plt.hist(residuals, bins=100, range=(-20, 20))
-plt.xlabel('Residual (true - predicted)')
-plt.ylabel('Count')
-plt.title('Prediction Residuals')
-plt.savefig('residuals.png', dpi=300, bbox_inches='tight')
+
 
 

@@ -21,7 +21,7 @@ with h5py.File(input, "r") as h5file:
     data = h5file["particles"][:]
 
 run_time = datetime.now().strftime("%Y%m%d-%H%M%S")
-run_dir = os.path.join("runs", run_time)
+run_dir = os.path.join("runs_energies", run_time)
 os.makedirs(run_dir, exist_ok=True)
 
 e_quark = data['e_quark']

@@ -15,10 +15,10 @@ loss = args.loss
 residuals = args.residuals
 energies = args.energies
 
-with open(os.path.join('runs_energy', input, 'history.json'), 'r') as f:
+with open(os.path.join('runs_energies', input, 'history.json'), 'r') as f:
     history = json.load(f)
 
-val_data = np.load(os.path.join('runs', input, 'validation_results.npz'))
+val_data = np.load(os.path.join('runs_energies', input, 'validation_results.npz'))
 y_true = val_data['y_true']
 y_pred = val_data['y_pred']
 
@@ -31,17 +31,17 @@ if energies:
     plt.ylabel('Predicted hadron energy (GeV)')
     plt.title('Predicted vs True Hadron Energies')
     plt.grid(True)
-    plt.savefig('pred_energy.png', dpi=300, bbox_inches='tight')
+    plt.savefig('pred_energy_1.png', dpi=300, bbox_inches='tight')
 
 if loss:
     plt.figure(figsize=(8,5))
-    plt.plot(history.history['loss'], label='Training loss')
-    plt.plot(history.history['val_loss'], label='Validation loss')
+    plt.plot(history['loss'], label='Training loss')
+    plt.plot(history['val_loss'], label='Validation loss')
     plt.xlabel('Epoch')
     plt.ylabel('MSE Loss')
     plt.title('Training vs Validation Loss')
     plt.legend()
-    plt.savefig('loss_curve.png', dpi=300, bbox_inches='tight')
+    plt.savefig('loss_curve_1.png', dpi=300, bbox_inches='tight')
 
 if residuals:
     calc_residuals = y_true - y_pred
@@ -50,5 +50,5 @@ if residuals:
     plt.xlabel('Residual (true - predicted)')
     plt.ylabel('Count')
     plt.title('Prediction Residuals')
-    plt.savefig('residuals.png', dpi=300, bbox_inches='tight')
+    plt.savefig('residuals_1.png', dpi=300, bbox_inches='tight')
 

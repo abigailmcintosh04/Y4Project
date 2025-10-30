@@ -13,7 +13,7 @@ args = parser.parse_args()
 no_events = args.no_events
 chunk_size = args.chunk_size
 
-output = 'collisions_cone.h5'
+output = 'collisions.h5'
 
 def deltaR(eta1, phi1, eta2, phi2):
     dphi = abs(phi1 - phi2)

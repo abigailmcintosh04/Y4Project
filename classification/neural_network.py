@@ -3,14 +3,27 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
+from sklearn.model_selection import train_test_split
+import os
+from datetime import datetime
+import json
+import argparse
 
+# Arguments for number of events and chunk size in command.
+parser = argparse.ArgumentParser()
+parser.add_argument('input_file', type=str)
+args = parser.parse_args()
+input_file = args.input_file
 
-input_file = 'collisions_cone.h5'
+# input_file = 'collisions_cone.h5'
 
 with h5py.File(input_file, 'r') as f:
     data = f['events'][:]
+
+run_time = datetime.now().strftime("%Y%m%d-%H%M%S")
+run_dir = os.path.join("runs", run_time)
+os.makedirs(run_dir, exist_ok=True)
 
 X = np.vstack([data['e_sum'], data['pt_sum']]).T.astype(np.float32)
 y_raw = data['pdg_id_hadron']
@@ -56,40 +69,33 @@ history = model.fit(
 val_loss, val_acc = model.evaluate(X_val, y_val, verbose=0)
 print(f"Validation Accuracy: {val_acc:.4f}")
 
-plt.figure(figsize=(8,5))
-plt.plot(history.history['loss'], label='Training Loss')
-plt.plot(history.history['val_loss'], label='Validation Loss')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.title('Training vs Validation Loss')
-plt.legend()
-plt.grid(True)
-plt.savefig('loss_curve_class.png', dpi=300, bbox_inches='tight')
-plt.close()
+y_pred = np.argmax(model.predict(X_val, verbose=0), axis=1)
 
-plt.figure(figsize=(8,5))
-plt.plot(history.history['accuracy'], label='Training Accuracy')
-plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.title('Training vs Validation Accuracy')
-plt.legend()
-plt.grid(True)
-plt.savefig('accuracy_curve_class.png', dpi=300, bbox_inches='tight')
-plt.close()
-
-y_pred = np.argmax(model.predict(X_val), axis=1)
 cm = confusion_matrix(y_val, y_pred)
 
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_labels)
-fig, ax = plt.subplots(figsize=(8,8))
-disp.plot(ax=ax, cmap='Blues', colorbar=False, xticks_rotation='vertical')
-plt.title('Charm Hadron Classification — Confusion Matrix')
-plt.savefig('confusion_matrix.png', dpi=300, bbox_inches='tight')
-plt.close()
+with open(os.path.join(run_dir, "history.json"), "w") as f:
+    json.dump(history.history, f)
 
-report = classification_report(y_val, y_pred, target_names=[str(c) for c in class_labels])
-with open('classification_report.txt', 'w') as f:
-    f.write(report)
+np.savez(os.path.join(run_dir, "validation_results.npz"),
+         y_true=y_val,
+         y_pred=y_pred,
+         X_val=X_val,
+         class_labels=class_labels)
+
+np.save(os.path.join(run_dir, "confusion_matrix.npy"), cm)
+
+model.save(os.path.join(run_dir, "model.keras"))
+np.save(os.path.join(run_dir, "class_labels.npy"), class_labels)
+
+metadata = {
+    "val_loss": float(val_loss),
+    "val_accuracy": float(val_acc),
+    "n_classes": int(n_classes),
+    "class_labels": [int(c) for c in class_labels],
+    "timestamp": run_time,
+    "input_file": input
+}
+with open(os.path.join(run_dir, "metadata.json"), "w") as f:
+    json.dump(metadata, f, indent=4)
 
 print("Training complete.")

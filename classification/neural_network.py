@@ -92,7 +92,7 @@ metadata = {
     "n_classes": int(n_classes),
     "class_labels": [int(c) for c in class_labels],
     "timestamp": run_time,
-    "input_file": input
+    "input_file": input_file
 }
 with open(os.path.join(run_dir, "metadata.json"), "w") as f:
     json.dump(metadata, f, indent=4)

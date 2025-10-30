@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import ConfusionMatrixDisplay
 
+# Argument for input file.
 parser = argparse.ArgumentParser()
 parser.add_argument('input_file', type=str)
 args = parser.parse_args()

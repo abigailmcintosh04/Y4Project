@@ -43,8 +43,8 @@ pythia.readString("Next:numberShowInfo = 0")
 
 pythia.init()
 
-hadron_ids = [411, 421, 431, 4122, -411, -421, -431, -4122]  # D±, D0, Ds±, Λc, etc.
-quark_ids = [4, -4]
+hadron_ids = [411, 421, 431, 4122, -411, -421, -431, -4122]  # Charm hadrons.
+quark_ids = [4, -4] # Charm quarks.
 
 dtype = np.dtype([
     ('pdg_id_hadron', 'i4'),
@@ -70,16 +70,14 @@ with h5py.File(output, 'w') as h5file:
         if not pythia.next():
             continue
 
-        # Identify all relevant particles
         hadrons = [p for p in pythia.event if p.id() in hadron_ids]
         final_states = [p for p in pythia.event if p.isFinal()]
 
-        # Loop over charm hadrons
         for h in hadrons:
             h_eta = h.eta()
             h_phi = h.phi()
 
-            # Particles in ΔR ≤ 0.4 cone (excluding the hadron itself)
+            # Particles in deltaR <= 0.4 cone.
             cone_particles = [
                 p for p in final_states
                 if p.id() != h.id()
@@ -89,15 +87,13 @@ with h5py.File(output, 'w') as h5file:
             if not cone_particles:
                 continue
 
-            # Aggregate observables
             e_sum = sum(p.e() for p in cone_particles)
             pt_sum = sum(p.pT() for p in cone_particles)
 
-            # Save event data
             buffer.append((h.id(), e_sum, pt_sum))
             charm_events += 1
 
-            # Write to file periodically
+            # Write to file periodically.
             if charm_events % chunk_size == 0:
                 arr = np.array(buffer, dtype=dtype)
                 dset.resize(total_rows + len(arr), axis=0)
@@ -108,7 +104,7 @@ with h5py.File(output, 'w') as h5file:
             if charm_events >= no_events:
                 break
 
-    # Final flush
+    # Final flush of buffer.
     if buffer:
         arr = np.array(buffer, dtype=dtype)
         dset.resize(total_rows + len(arr), axis=0)

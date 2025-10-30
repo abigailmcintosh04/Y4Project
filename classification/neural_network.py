@@ -1,9 +1,8 @@
 import tensorflow as tf
 import h5py
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
+from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 import os
 from datetime import datetime

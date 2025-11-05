@@ -98,7 +98,7 @@ with h5py.File(output, 'w') as h5file:
             e_sum = sum(p.e() for p in cone_particles)
             pt_sum = sum(p.pT() for p in cone_particles)
 
-            buffer.append((h.id(), e_sum, pt_sum))
+            buffer.append((abs(h.id()), e_sum, pt_sum))
             charm_events += 1
 
             # Write to file periodically.

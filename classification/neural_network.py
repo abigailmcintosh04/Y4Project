@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
+from sklearn.utils.class_weight import compute_class_weight
 import os
 from datetime import datetime
 import json
@@ -36,6 +37,10 @@ X_train, X_val, y_train, y_val = train_test_split(
     X, y, test_size=0.2, stratify=y, random_state=42
 )
 
+# Compute class weights.
+weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_train), y=y_train)
+dict_weights = dict(enumerate(weights))
+
 # Standardise.
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
@@ -60,7 +65,8 @@ history = model.fit(
     validation_data=(X_val, y_val),
     epochs=40,
     batch_size=512,
-    verbose=1
+    verbose=1,
+    class_weight=dict_weights
 )
 
 val_loss, val_acc = model.evaluate(X_val, y_val, verbose=0)

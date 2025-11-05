@@ -71,17 +71,25 @@ with h5py.File(output, 'w') as h5file:
             continue
 
         hadrons = [p for p in pythia.event if p.id() in hadron_ids]
+        quarks = [p for p in pythia.event if p.id() in quark_ids]
         final_states = [p for p in pythia.event if p.isFinal()]
 
         for h in hadrons:
-            h_eta = h.eta()
-            h_phi = h.phi()
+            mother_indices = h.motherList()
+            quark_mothers = [pythia.event[i] for i in mother_indices if pythia.event[i].id() in quark_ids]
 
-            # Particles in deltaR <= 0.4 cone.
+            if not quark_mothers:
+                continue
+
+            c_quark = quark_mothers[0]
+            c_eta = c_quark.eta()
+            c_phi = c_quark.phi()
+
+            # Particles in deltaR <= 0.4 cone from the c quark.
             cone_particles = [
                 p for p in final_states
-                if p.id() != h.id()
-                and deltaR(h_eta, h_phi, p.eta(), p.phi()) <= 0.4
+                if p.id() not in hadron_ids and p.id() not in quark_ids
+                and deltaR(c_eta, c_phi, p.eta(), p.phi()) <= 0.4
             ]
 
             if not cone_particles:

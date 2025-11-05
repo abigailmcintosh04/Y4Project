@@ -15,8 +15,6 @@ parser.add_argument('input_file', type=str)
 args = parser.parse_args()
 input_file = args.input_file
 
-# input_file = 'collisions_cone.h5'
-
 with h5py.File(input_file, 'r') as f:
     data = f['events'][:]
 

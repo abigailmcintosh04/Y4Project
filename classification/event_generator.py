@@ -50,6 +50,7 @@ dtype = np.dtype([
     ('pdg_id_hadron', 'i4'),
     ('e_sum', 'f8'),
     ('pt_sum', 'f8'),
+    ('d0_mean', 'f8'),
 ])
 
 
@@ -97,8 +98,9 @@ with h5py.File(output, 'w') as h5file:
 
             e_sum = sum(p.e() for p in cone_particles)
             pt_sum = sum(p.pT() for p in cone_particles)
+            d0_mean = np.mean([np.sqrt(p.xDec()**2 + p.yDec()**2) for p in cone_particles])
 
-            buffer.append((abs(h.id()), e_sum, pt_sum))
+            buffer.append((abs(h.id()), e_sum, pt_sum, d0_mean))
             charm_events += 1
 
             # Write to file periodically.

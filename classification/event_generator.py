@@ -53,6 +53,7 @@ dtype = np.dtype([
     ('pt_sum', 'f8'),
     ('d0_mean', 'f8'),
     ('jet_mass', 'f8'),
+    ('lxy', 'f8'),
 ])
 
 
@@ -127,6 +128,8 @@ with h5py.File(output, 'w') as h5file:
             py_jet = 0.0
             pz_jet = 0.0
 
+            lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
+
             constituent_count = 0
 
             for c in constituents:
@@ -152,7 +155,7 @@ with h5py.File(output, 'w') as h5file:
                 jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
                 jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
 
-                buffer.append((abs(h.id()), e_jet, pt_jet, d0_mean, jet_mass))
+                buffer.append((abs(h.id()), e_jet, pt_jet, d0_mean, jet_mass, lxy))
                 charm_events += 1
 
                 # Write to file periodically.

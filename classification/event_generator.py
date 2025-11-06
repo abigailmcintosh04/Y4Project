@@ -45,7 +45,6 @@ pythia.init()
 
 hadron_id_set = {411, 421, 431, 4122, -411, -421, -431, -4122}  # Charm hadrons.
 quark_id_set = {4, -4} # Charm quarks.
-DR_CUT_SQUARED = 0.4 ** 2
 
 dtype = np.dtype([
     ('pdg_id_hadron', 'i4'),
@@ -54,6 +53,7 @@ dtype = np.dtype([
     ('d0_mean', 'f8'),
     ('jet_mass', 'f8'),
     ('lxy', 'f8'),
+    ('q_jet', 'i4'),
 ])
 
 
@@ -127,6 +127,7 @@ with h5py.File(output, 'w') as h5file:
             px_jet = 0.0
             py_jet = 0.0
             pz_jet = 0.0
+            q_jet = 0
 
             lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
 
@@ -145,6 +146,7 @@ with h5py.File(output, 'w') as h5file:
                 px_jet += p.px()
                 py_jet += p.py()
                 pz_jet += p.pz()
+                q_jet += p.chargeType()
                 
                 constituent_count += 1
             
@@ -155,7 +157,7 @@ with h5py.File(output, 'w') as h5file:
                 jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
                 jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
 
-                buffer.append((abs(h.id()), e_jet, pt_jet, d0_mean, jet_mass, lxy))
+                buffer.append((abs(h.id()), e_jet, pt_jet, d0_mean, jet_mass, lxy, q_jet))
                 charm_events += 1
 
                 # Write to file periodically.

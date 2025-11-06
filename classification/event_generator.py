@@ -120,10 +120,13 @@ with h5py.File(output, 'w') as h5file:
             if not constituents:
                 continue
 
-            e_sum = 0.0
-            pt_sum = 0.0
-            d0_sum = 0.0
-            jet_mass = 0.0
+            e_jet = 0.0
+            pt_jet = 0.0
+            d0_jet = 0.0
+            px_jet = 0.0
+            py_jet = 0.0
+            pz_jet = 0.0
+
             constituent_count = 0
 
             for c in constituents:
@@ -133,15 +136,23 @@ with h5py.File(output, 'w') as h5file:
                 if p_id in hadron_id_set or p_id in quark_id_set:
                     continue
 
-                e_sum += p.e()
-                pt_sum += p.pT()
-                d0_sum += math.sqrt(p.xDec()**2 + p.yDec()**2)
-                jet_mass += p.m()
+                e_jet += p.e()
+                pt_jet += p.pT()
+                d0_jet += math.sqrt(p.xDec()**2 + p.yDec()**2)
+                px_jet += p.px()
+                py_jet += p.py()
+                pz_jet += p.pz()
+                
                 constituent_count += 1
             
             if constituent_count > 0:
-                d0_mean = d0_sum / constituent_count
-                buffer.append((abs(h.id()), e_sum, pt_sum, d0_mean, jet_mass))
+                d0_mean = d0_jet / constituent_count
+
+                # Calculate invariant mass of jet.
+                jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
+                jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
+
+                buffer.append((abs(h.id()), e_jet, pt_jet, d0_mean, jet_mass))
                 charm_events += 1
 
                 # Write to file periodically.

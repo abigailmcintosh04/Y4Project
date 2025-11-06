@@ -5,29 +5,6 @@ import math
 import argparse
 import fastjet
 
-def find_final_daughters(particle, event):
-    """
-    Recursively finds all final-state daughters of a given particle.
-    """
-    daughters = []
-    
-    # Get the index range of immediate daughters.
-    d1_idx = particle.daughter1()
-    d2_idx = particle.daughter2()
-
-    # If no daughters, check if this particle is final.
-    if d1_idx == 0:
-        if particle.isFinal():
-            daughters.append(particle)
-        return daughters
-    
-    # Loop over all immediate daughters.
-    for i in range(d1_idx, d2_idx + 1):
-        daughter = event[i]
-        # Recursively call this function for each daughter.
-        daughters.extend(find_final_daughters(daughter, event))
-    
-    return daughters
 
 # Arguments for number of events and chunk size in command.
 parser = argparse.ArgumentParser()
@@ -75,7 +52,7 @@ dtype = np.dtype([
     ('e_sum', 'f8'),
     ('pt_sum', 'f8'),
     ('d0_mean', 'f8'),
-    ('m_reco', 'f8',)
+    ('jet_mass', 'f8'),
 ])
 
 
@@ -139,27 +116,6 @@ with h5py.File(output, 'w') as h5file:
             if best_jet is None:
                 continue
 
-            E_sum_reco = 0.0
-            Px_sum_reco = 0.0
-            Py_sum_reco = 0.0
-            Pz_sum_reco = 0.0
-            h_index = h.index()
-
-            daughter_list = find_final_daughters(h, pythia.event)
-
-            if daughter_list:
-                for p_daughter in daughter_list:
-                    E_sum_reco += p_daughter.e()
-                    Px_sum_reco += p_daughter.px()
-                    Py_sum_reco += p_daughter.py()
-                    Pz_sum_reco += p_daughter.pz()
-
-                m2_reco = E_sum_reco**2 - (Px_sum_reco**2 + Py_sum_reco**2 + Pz_sum_reco**2)
-                m_reco = float(np.sqrt(m2_reco)) if m2_reco >= 0 else 0.0
-
-            else:
-                m_reco = 0.0
-
             constituents = best_jet.constituents()
             if not constituents:
                 continue
@@ -167,6 +123,7 @@ with h5py.File(output, 'w') as h5file:
             e_sum = 0.0
             pt_sum = 0.0
             d0_sum = 0.0
+            jet_mass = 0.0
             constituent_count = 0
 
             for c in constituents:
@@ -179,11 +136,12 @@ with h5py.File(output, 'w') as h5file:
                 e_sum += p.e()
                 pt_sum += p.pT()
                 d0_sum += math.sqrt(p.xDec()**2 + p.yDec()**2)
+                jet_mass += p.m()
                 constituent_count += 1
             
             if constituent_count > 0:
                 d0_mean = d0_sum / constituent_count
-                buffer.append((abs(h.id()), e_sum, pt_sum, d0_mean, m_reco))
+                buffer.append((abs(h.id()), e_sum, pt_sum, d0_mean, jet_mass))
                 charm_events += 1
 
                 # Write to file periodically.

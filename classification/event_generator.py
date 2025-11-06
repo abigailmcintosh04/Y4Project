@@ -15,12 +15,6 @@ chunk_size = args.chunk_size
 
 output = 'collisions.h5'
 
-def deltaR(eta1, phi1, eta2, phi2):
-    dphi = abs(phi1 - phi2)
-    if dphi > math.pi:
-        dphi = 2 * math.pi - dphi
-    return math.sqrt((eta1 - eta2)**2 + dphi**2)
-
 pythia = pythia8mc.Pythia()
 
 # Physics stuff - pp collision at 13TeV.

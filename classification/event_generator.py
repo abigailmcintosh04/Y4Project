@@ -5,6 +5,30 @@ import math
 import argparse
 import fastjet
 
+def find_final_daughters(particle, event):
+    """
+    Recursively finds all final-state daughters of a given particle.
+    """
+    daughters = []
+    
+    # Get the index range of immediate daughters.
+    d1_idx = particle.daughter1()
+    d2_idx = particle.daughter2()
+
+    # If no daughters, check if this particle is final.
+    if d1_idx == 0:
+        if particle.isFinal():
+            daughters.append(particle)
+        return daughters
+    
+    # Loop over all immediate daughters.
+    for i in range(d1_idx, d2_idx + 1):
+        daughter = event[i]
+        # Recursively call this function for each daughter.
+        daughters.extend(find_final_daughters(daughter, event))
+    
+    return daughters
+
 # Arguments for number of events and chunk size in command.
 parser = argparse.ArgumentParser()
 parser.add_argument('no_events', type=int)
@@ -51,6 +75,7 @@ dtype = np.dtype([
     ('e_sum', 'f8'),
     ('pt_sum', 'f8'),
     ('d0_mean', 'f8'),
+    ('m_reco', 'f8',)
 ])
 
 
@@ -71,19 +96,24 @@ with h5py.File(output, 'w') as h5file:
         if not pythia.next():
             continue
 
-        final_state_pseudojets = []
+        final_particles = []
         hadrons = []
-
+        
+        # Loop over the event to get hadrons and final particles.
         for p in pythia.event:
             if p.isFinal():
-                pj = fastjet.PseudoJet(p.px(), p.py(), p.pz(), p.e())
-                pj.set_user_index(p.index())
-                final_state_pseudojets.append(pj)
-
+                final_particles.append(p)
             if p.id() in hadron_id_set:
                 hadrons.append(p)
         
-        # Cluster jets
+        # Build PseudoJets from the final_particles list.
+        final_state_pseudojets = []
+        for p in final_particles:
+            pj = fastjet.PseudoJet(p.px(), p.py(), p.pz(), p.e())
+            pj.set_user_index(p.index())
+            final_state_pseudojets.append(pj)
+        
+        # Cluster jets.
         cluster_sequence = fastjet.ClusterSequence(final_state_pseudojets, jet_def)
         jets = cluster_sequence.inclusive_jets(ptmin=0.0)
 
@@ -109,6 +139,27 @@ with h5py.File(output, 'w') as h5file:
             if best_jet is None:
                 continue
 
+            E_sum_reco = 0.0
+            Px_sum_reco = 0.0
+            Py_sum_reco = 0.0
+            Pz_sum_reco = 0.0
+            h_index = h.index()
+
+            daughter_list = find_final_daughters(h, pythia.event)
+
+            if daughter_list:
+                for p_daughter in daughter_list:
+                    E_sum_reco += p_daughter.e()
+                    Px_sum_reco += p_daughter.px()
+                    Py_sum_reco += p_daughter.py()
+                    Pz_sum_reco += p_daughter.pz()
+
+                m2_reco = E_sum_reco**2 - (Px_sum_reco**2 + Py_sum_reco**2 + Pz_sum_reco**2)
+                m_reco = float(np.sqrt(m2_reco)) if m2_reco >= 0 else 0.0
+
+            else:
+                m_reco = 0.0
+
             constituents = best_jet.constituents()
             if not constituents:
                 continue
@@ -132,7 +183,7 @@ with h5py.File(output, 'w') as h5file:
             
             if constituent_count > 0:
                 d0_mean = d0_sum / constituent_count
-                buffer.append((abs(h.id()), e_sum, pt_sum, d0_mean))
+                buffer.append((abs(h.id()), e_sum, pt_sum, d0_mean, m_reco))
                 charm_events += 1
 
                 # Write to file periodically.

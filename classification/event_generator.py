@@ -43,8 +43,9 @@ pythia.readString("Next:numberShowInfo = 0")
 
 pythia.init()
 
-hadron_ids = [411, 421, 431, 4122, -411, -421, -431, -4122]  # Charm hadrons.
-quark_ids = [4, -4] # Charm quarks.
+hadron_id_set = {411, 421, 431, 4122, -411, -421, -431, -4122}  # Charm hadrons.
+quark_id_set = {4, -4} # Charm quarks.
+DR_CUT_SQUARED = 0.4 ** 2
 
 dtype = np.dtype([
     ('pdg_id_hadron', 'i4'),
@@ -71,48 +72,75 @@ with h5py.File(output, 'w') as h5file:
         if not pythia.next():
             continue
 
-        hadrons = [p for p in pythia.event if p.id() in hadron_ids]
-        quarks = [p for p in pythia.event if p.id() in quark_ids]
-        final_states = [p for p in pythia.event if p.isFinal()]
+        # --- Optimization 1: Single pass over the event record ---
+        hadrons = []
+        final_states = []
+        for p in pythia.event:
+            if p.id() in hadron_id_set:
+                hadrons.append(p)
+            if p.isFinal():
+                final_states.append(p)
+        
+        # No need to build a separate 'quarks' list for the whole event
 
         for h in hadrons:
             mother_indices = h.motherList()
-            quark_mothers = [pythia.event[i] for i in mother_indices if pythia.event[i].id() in quark_ids]
-
-            if not quark_mothers:
+            if not mother_indices:
                 continue
 
-            c_quark = quark_mothers[0]
+            # Find the c-quark mother
+            c_quark = None
+            for i in mother_indices:
+                if pythia.event[i].id() in quark_id_set:
+                    c_quark = pythia.event[i]
+                    break # Found the first quark mother, stop looking
+            
+            if c_quark is None:
+                continue
+
             c_eta = c_quark.eta()
             c_phi = c_quark.phi()
 
-            # Particles in deltaR <= 0.4 cone from the c quark.
-            cone_particles = [
-                p for p in final_states
-                if p.id() not in hadron_ids and p.id() not in quark_ids
-                and deltaR(c_eta, c_phi, p.eta(), p.phi()) <= 0.4
-            ]
+            # --- Optimization 2: Single-pass cone calculation ---
+            e_sum = 0.0
+            pt_sum = 0.0
+            d0_sum = 0.0
+            cone_count = 0
 
-            if not cone_particles:
-                continue
+            for p in final_states:
+                p_id = p.id() # Get ID once
+                if p_id in hadron_id_set or p_id in quark_id_set:
+                    continue
 
-            e_sum = sum(p.e() for p in cone_particles)
-            pt_sum = sum(p.pT() for p in cone_particles)
-            d0_mean = np.mean([np.sqrt(p.xDec()**2 + p.yDec()**2) for p in cone_particles])
+                # --- Optimization 3: Avoid sqrt in deltaR check ---
+                deta = c_eta - p.eta()
+                dphi = abs(c_phi - p.phi())
+                if dphi > math.pi:
+                    dphi = 2 * math.pi - dphi
+                
+                dr_sq = deta**2 + dphi**2
 
-            buffer.append((abs(h.id()), e_sum, pt_sum, d0_mean))
-            charm_events += 1
+                if dr_sq <= DR_CUT_SQUARED:
+                    e_sum += p.e()
+                    pt_sum += p.pT()
+                    d0_sum += math.sqrt(p.xDec()**2 + p.yDec()**2) # sqrt only for d0
+                    cone_count += 1
 
-            # Write to file periodically.
-            if charm_events % chunk_size == 0:
-                arr = np.array(buffer, dtype=dtype)
-                dset.resize(total_rows + len(arr), axis=0)
-                dset[total_rows:total_rows + len(arr)] = arr
-                total_rows += len(arr)
-                buffer = []
+            if cone_count > 0:
+                d0_mean = d0_sum / cone_count
+                buffer.append((abs(h.id()), e_sum, pt_sum, d0_mean))
+                charm_events += 1
 
-            if charm_events >= no_events:
-                break
+                # Write to file periodically.
+                if charm_events % chunk_size == 0:
+                    arr = np.array(buffer, dtype=dtype)
+                    dset.resize(total_rows + len(arr), axis=0)
+                    dset[total_rows:total_rows + len(arr)] = arr
+                    total_rows += len(arr)
+                    buffer = []
+
+                if charm_events >= no_events:
+                    break
 
     # Final flush of buffer.
     if buffer:

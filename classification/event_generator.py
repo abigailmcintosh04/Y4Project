@@ -3,6 +3,7 @@ import h5py
 import numpy as np
 import math
 import argparse
+import fastjet
 
 # Arguments for number of events and chunk size in command.
 parser = argparse.ArgumentParser()
@@ -15,6 +16,10 @@ chunk_size = args.chunk_size
 
 output = 'collisions.h5'
 
+# Jet definition.
+jet_def = fastjet.JetDefinition(fastjet.antikt_algorithm, 0.4)
+
+# Initialize Pythia.
 pythia = pythia8mc.Pythia()
 
 # Physics stuff - pp collision at 13TeV.
@@ -66,62 +71,67 @@ with h5py.File(output, 'w') as h5file:
         if not pythia.next():
             continue
 
-        # --- Optimization 1: Single pass over the event record ---
+        final_state_pseudojets = []
         hadrons = []
-        final_states = []
+
         for p in pythia.event:
+            if p.isFinal():
+                pj = fastjet.PseudoJet(p.px(), p.py(), p.pz(), p.e())
+                pj.set_user_index(p.index())
+                final_state_pseudojets.append(pj)
+
             if p.id() in hadron_id_set:
                 hadrons.append(p)
-            if p.isFinal():
-                final_states.append(p)
         
-        # No need to build a separate 'quarks' list for the whole event
+        # Cluster jets
+        cluster_sequence = fastjet.ClusterSequence(final_state_pseudojets, jet_def)
+        jets = cluster_sequence.inclusive_jets(ptmin=0.0)
 
         for h in hadrons:
             mother_indices = h.motherList()
-            if not mother_indices:
+            quark_mothers = [pythia.event[i] for i in mother_indices if pythia.event[i].id() in quark_id_set]
+
+            if not quark_mothers:
                 continue
 
-            # Find the c-quark mother
-            c_quark = None
-            for i in mother_indices:
-                if pythia.event[i].id() in quark_id_set:
-                    c_quark = pythia.event[i]
-                    break # Found the first quark mother, stop looking
+            c_quark = quark_mothers[0]
+            c_quark_pj = fastjet.PseudoJet(c_quark.px(), c_quark.py(), c_quark.pz(), c_quark.e())
+
+            best_jet = None
+            min_dr = 0.4
             
-            if c_quark is None:
+            for jet in jets:
+                dr = jet.delta_R(c_quark_pj)
+                if dr < min_dr:
+                    min_dr = dr
+                    best_jet = jet
+            
+            if best_jet is None:
                 continue
 
-            c_eta = c_quark.eta()
-            c_phi = c_quark.phi()
+            constituents = best_jet.constituents()
+            if not constituents:
+                continue
 
-            # --- Optimization 2: Single-pass cone calculation ---
             e_sum = 0.0
             pt_sum = 0.0
             d0_sum = 0.0
-            cone_count = 0
+            constituent_count = 0
 
-            for p in final_states:
-                p_id = p.id() # Get ID once
+            for c in constituents:
+                p = pythia.event[c.user_index()]
+                p_id = p.id()
+
                 if p_id in hadron_id_set or p_id in quark_id_set:
                     continue
 
-                # --- Optimization 3: Avoid sqrt in deltaR check ---
-                deta = c_eta - p.eta()
-                dphi = abs(c_phi - p.phi())
-                if dphi > math.pi:
-                    dphi = 2 * math.pi - dphi
-                
-                dr_sq = deta**2 + dphi**2
-
-                if dr_sq <= DR_CUT_SQUARED:
-                    e_sum += p.e()
-                    pt_sum += p.pT()
-                    d0_sum += math.sqrt(p.xDec()**2 + p.yDec()**2) # sqrt only for d0
-                    cone_count += 1
-
-            if cone_count > 0:
-                d0_mean = d0_sum / cone_count
+                e_sum += p.e()
+                pt_sum += p.pT()
+                d0_sum += math.sqrt(p.xDec()**2 + p.yDec()**2)
+                constituent_count += 1
+            
+            if constituent_count > 0:
+                d0_mean = d0_sum / constituent_count
                 buffer.append((abs(h.id()), e_sum, pt_sum, d0_mean))
                 charm_events += 1
 

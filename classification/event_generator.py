@@ -57,6 +57,7 @@ dtype = np.dtype([
     ('e_sum', 'f8'),
     ('pt_sum', 'f8'),
     ('d0_mean', 'f8'),
+    ('z0_mean', 'f8'),
     ('jet_mass', 'f8'),
     ('lxy', 'f8'),
     ('q_jet', 'i4'),

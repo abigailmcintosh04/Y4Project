@@ -15,15 +15,14 @@ def deltaR(eta1, phi1, eta2, phi2):
 
 # Command-line arguments for number of events and chunk size.
 parser = argparse.ArgumentParser()
+parser.add_argument('output_file', type=str, default='collisions.h5')
 parser.add_argument('no_events', type=int)
 parser.add_argument('chunk_size', type=int)
 args = parser.parse_args()
 
+output_file = args.output_file
 no_events = args.no_events
 chunk_size = args.chunk_size
-
-# Output HDF5 file name.
-output = 'collisions.h5'
 
 # Jet definition.
 jet_def = fastjet.JetDefinition(fastjet.antikt_algorithm, 0.4)
@@ -71,7 +70,7 @@ dtype = np.dtype([
 
 
 # Open HDF5 file for writing.
-with h5py.File(output, 'w') as h5file:
+with h5py.File(output_file, 'w') as h5file:
     dset = h5file.create_dataset(
         'events',
         shape=(0,),

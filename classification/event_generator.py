@@ -5,6 +5,12 @@ import math
 import argparse
 import fastjet
 
+def deltaR(eta1, phi1, eta2, phi2):
+    dphi = abs(phi1 - phi2)
+    if dphi > math.pi:
+        dphi = 2*math.pi - dphi
+    deta = eta1-eta2
+    return math.sqrt(deta**2 + dphi**2)
 
 # Arguments for number of events and chunk size in command.
 parser = argparse.ArgumentParser()
@@ -103,13 +109,15 @@ with h5py.File(output, 'w') as h5file:
                 continue
 
             c_quark = quark_mothers[0]
-            c_quark_pj = fastjet.PseudoJet(c_quark.px(), c_quark.py(), c_quark.pz(), c_quark.e())
 
             best_jet = None
             min_dr = 0.4
+
+            c_eta = c_quark.eta()
+            c_phi = c_quark.phi()
             
             for jet in jets:
-                dr = jet.delta_R(c_quark_pj)
+                dr = deltaR(jet.eta(), jet.phi(), c_eta, c_phi)
                 if dr < min_dr:
                     min_dr = dr
                     best_jet = jet
@@ -146,7 +154,7 @@ with h5py.File(output, 'w') as h5file:
                 px_jet += p.px()
                 py_jet += p.py()
                 pz_jet += p.pz()
-                q_jet += p.chargeType()
+                q_jet += p.charge()
                 
                 constituent_count += 1
             

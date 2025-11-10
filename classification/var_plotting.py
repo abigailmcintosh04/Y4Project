@@ -36,12 +36,13 @@ plt.hist(events[parameter][mask_3], bins=np.linspace(x_min, x_max, 100), label='
 plt.hist(events[parameter][mask_4], bins=np.linspace(x_min, x_max, 100), label='Lambdac+ (4122)', color='red', density=True, histtype='step', log=log_scale)
 plt.xlabel(parameter)
 plt.ylabel('Normalized Counts')
-plt.title(f'Distribution of {parameter} for Different Charm Hadrons')
 plt.legend()
 plt.grid(True)
 if log_scale:
+    plt.title(f'Distribution of {parameter} for Different Charm Hadrons (log scale)')
     plt.savefig(os.path.join('plots', f'{parameter}_distribution_log_{run_time}.png'), dpi=300, bbox_inches='tight')
 else:
+    plt.title(f'Distribution of {parameter} for Different Charm Hadrons')
     plt.savefig(os.path.join('plots', f'{parameter}_distribution_{run_time}.png'), dpi=300, bbox_inches='tight')
 
 plt.close()

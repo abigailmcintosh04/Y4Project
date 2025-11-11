@@ -26,6 +26,27 @@ def deltaR_vec(eta0, phi0, etas, phis):
     dphi[mask] = 2.0 * np.pi - dphi[mask]
     return np.sqrt((etas - eta0)**2 + dphi**2)
 
+# PDG IDs for charm hadrons and quarks.
+hadron_id_set = {411, 421, 431, 4122, -411, -421, -431, -4122}  # Charm hadrons.
+quark_id_set = {4, -4} # Charm quarks.
+
+def get_c_quark_mother(particle, event):
+    """
+    Recursively traverses up the mother list of a particle to find the
+    first ancestor that is a charm quark from the hard process.
+    """
+    mother_indices = particle.motherList()
+    if not mother_indices:
+        return None
+    for mother_idx in mother_indices:
+        mother = event[mother_idx]
+        if mother.id() in quark_id_set and mother.status() == -22:
+            return mother
+        ancestor = get_c_quark_mother(mother, event)
+        if ancestor:
+            return ancestor
+    return None
+
 # Command-line arguments for number of events and chunk size.
 parser = argparse.ArgumentParser()
 parser.add_argument('output_file', type=str, default='collisions.h5')
@@ -101,10 +122,6 @@ pythia.readString("Next:numberShowInfo = 0")
 # Initialize Pythia.
 pythia.init()
 
-# PDG IDs for charm hadrons and quarks.
-hadron_id_set = {411, 421, 431, 4122, -411, -421, -431, -4122}  # Charm hadrons.
-quark_id_set = {4, -4} # Charm quarks.
-
 # Data structure for the output HDF5 file.
 dtype = np.dtype([
     ('pdg_id_hadron', 'i4'),
@@ -161,13 +178,9 @@ with h5py.File(output_file, 'w') as h5file:
             if charm_events >= no_events:
                 break
 
-            mother_indices = h.motherList()
-            quark_mothers = [pythia.event[i] for i in mother_indices if pythia.event[i].id() in quark_id_set]
-
-            if not quark_mothers:
+            c_quark = get_c_quark_mother(h, pythia.event)
+            if not c_quark:
                 continue
-
-            c_quark = quark_mothers[0]
 
             # --- Vectorized Jet Matching ---
             # Find the jet closest to the charm quark efficiently.
@@ -222,15 +235,17 @@ with h5py.File(output_file, 'w') as h5file:
                 
                 constituent_count += 1
             
+            d0_mean = d0_jet / constituent_count if constituent_count > 0 else 0.0
+            z0_mean = z0_jet / constituent_count if constituent_count > 0 else 0.0
+
+            jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
+            jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
+
+            buffer.append((abs(h.id()), e_jet, pt_jet, d0_mean, z0_mean, jet_mass, lxy, q_jet))
+            charm_events += 1
+
             if constituent_count > 0:
-                d0_mean = d0_jet / constituent_count
-                z0_mean = z0_jet / constituent_count
-
-                jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
-                jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
-
-                buffer.append((abs(h.id()), e_jet, pt_jet, d0_mean, z0_mean, jet_mass, lxy, q_jet))
-                charm_events += 1
+                pass # This block is now only for potential future logic, the main actions are outside.
 
         # --- Optimized Buffer Flushing ---
         # Flush buffer when it's full or at the very end.

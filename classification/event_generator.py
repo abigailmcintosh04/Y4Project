@@ -14,6 +14,15 @@ def deltaR(eta1, phi1, eta2, phi2):
     deta = eta1-eta2
     return math.sqrt(deta**2 + dphi**2)
 
+# Vectorized deltaR between single (eta0,phi0) and arrays
+def deltaR_vec(eta0, phi0, etas, phis):
+    """Compute deltaR between (eta0,phi0) and arrays of etas, phis (NumPy arrays)."""
+    dphi = np.abs(phis - phi0)
+    # wrap
+    mask = dphi > np.pi
+    dphi[mask] = 2.0 * np.pi - dphi[mask]
+    return np.sqrt((etas - eta0)**2 + dphi**2)
+
 # Command-line arguments for number of events and chunk size.
 parser = argparse.ArgumentParser()
 parser.add_argument('output_file', type=str, default='collisions.h5')
@@ -74,43 +83,36 @@ start_time = time.time()
 
 # Open HDF5 file for writing.
 with h5py.File(output_file, 'w') as h5file:
+    # Pre-allocate the dataset to its full expected size to avoid slow resizing.
     dset = h5file.create_dataset(
         'events',
-        shape=(0,),
-        maxshape=(None,),
+        shape=(no_events,),
+        maxshape=(no_events,),
         dtype=dtype,
         chunks=True
     )
 
-    total_rows = 0
+    write_ptr = 0 # Use a pointer to track our position in the dataset.
     buffer = []
     charm_events = 0
-    total_rows = 0 # Keep track of the total number of rows written to the dataset.
-    buffer = [] # A buffer to hold generated event data before writing to disk.
-    charm_events = 0 # Counter for the number of charm hadron events generated.
 
     # Main event generation loop. Continues until the desired number of charm events is reached.
     while charm_events < no_events:
         if not pythia.next():
-            # If Pythia fails to generate an event, skip to the next iteration.
             continue
 
-        final_particles = []
         hadrons = []
+        final_state_pseudojets = []
         
-        # Loop over the event to get hadrons and final particles.
+        # --- Combined Particle Loop ---
+        # Create PseudoJets and find hadrons in a single pass.
         for p in pythia.event:
             if p.isFinal():
-                final_particles.append(p)
+                pj = fastjet.PseudoJet(p.px(), p.py(), p.pz(), p.e())
+                pj.set_user_index(p.index())
+                final_state_pseudojets.append(pj)
             if p.id() in hadron_id_set:
                 hadrons.append(p)
-        
-        # Build PseudoJets for jet clustering.
-        final_state_pseudojets = []
-        for p in final_particles:
-            pj = fastjet.PseudoJet(p.px(), p.py(), p.pz(), p.e())
-            pj.set_user_index(p.index())
-            final_state_pseudojets.append(pj)
         
         # Cluster jets.
         cluster_sequence = fastjet.ClusterSequence(final_state_pseudojets, jet_def)
@@ -118,47 +120,40 @@ with h5py.File(output_file, 'w') as h5file:
 
         # Process each charm hadron in the event.
         for h in hadrons:
+            if charm_events >= no_events:
+                break
+
             mother_indices = h.motherList()
             quark_mothers = [pythia.event[i] for i in mother_indices if pythia.event[i].id() in quark_id_set]
 
-            # Skip if the hadron's mother is not a charm quark.
             if not quark_mothers:
                 continue
 
             c_quark = quark_mothers[0]
 
-            # Find the jet closest to the charm quark.
+            # --- Vectorized Jet Matching ---
+            # Find the jet closest to the charm quark efficiently.
             best_jet = None
-            min_dr = 0.4 # Max deltaR for a jet to be matched to the quark.
+            if jets:
+                jet_etas = np.array([j.eta() for j in jets])
+                jet_phis = np.array([j.phi() for j in jets])
+                jet_dRs = deltaR_vec(c_quark.eta(), c_quark.phi(), jet_etas, jet_phis)
+                best_idx = np.argmin(jet_dRs)
+                if jet_dRs[best_idx] < 0.4:
+                    best_jet = jets[best_idx]
 
-            c_eta = c_quark.eta()
-            c_phi = c_quark.phi()
-            
-            for jet in jets:
-                dr = deltaR(jet.eta(), jet.phi(), c_eta, c_phi)
-                if dr < min_dr:
-                    min_dr = dr
-                    best_jet = jet
-            
-            # Skip if no jet is matched.
-            if best_jet is None:
+            if not best_jet:
                 continue
 
             constituents = best_jet.constituents()
             if not constituents:
                 continue
 
-            e_jet = 0.0
-            pt_jet = 0.0
-            d0_jet = 0.0
-            z0_jet = 0.0
-            px_jet = 0.0
-            py_jet = 0.0
-            pz_jet = 0.0
-            q_jet = 0
+            # (Calculations for jet properties remain the same as they were already fast)
+            e_jet, pt_jet, d0_jet, z0_jet = 0.0, 0.0, 0.0, 0.0
+            px_jet, py_jet, pz_jet, q_jet = 0.0, 0.0, 0.0, 0.0
             # Transverse decay length of the charm hadron.
             lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
-
             constituent_count = 0
 
             # Loop over jet constituents to calculate jet properties.
@@ -166,11 +161,9 @@ with h5py.File(output_file, 'w') as h5file:
                 p = pythia.event[c.user_index()]
                 p_id = p.id()
 
-                # Exclude charm particles from jet property sums.
                 if p_id in hadron_id_set or p_id in quark_id_set:
                     continue
 
-                # Sum properties of jet constituents.
                 e_jet += p.e()
                 pt_jet += p.pT()
                 px_jet += p.px()
@@ -183,7 +176,6 @@ with h5py.File(output_file, 'w') as h5file:
                 pt = math.sqrt(px**2 + py**2)
 
                 if pt > 1e-9:
-                    # Calculate transverse (d0) and longitudinal (z0) impact parameters.
                     d0 = (xv * py - yv * px) / pt
                     d0_jet += d0
 
@@ -193,36 +185,38 @@ with h5py.File(output_file, 'w') as h5file:
                 constituent_count += 1
             
             if constituent_count > 0:
-                # Calculate mean impact parameters.
                 d0_mean = d0_jet / constituent_count
                 z0_mean = z0_jet / constituent_count
 
-                # Calculate jet's invariant mass from its 4-momentum.
                 jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
                 jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
 
-                # Append features to buffer (use absolute PDG ID).
                 buffer.append((abs(h.id()), e_jet, pt_jet, d0_mean, z0_mean, jet_mass, lxy, q_jet))
                 charm_events += 1
 
-                # Write buffer to file when chunk size is reached.
-                if charm_events % chunk_size == 0:
-                    arr = np.array(buffer, dtype=dtype)
-                    dset.resize(total_rows + len(arr), axis=0)
-                    dset[total_rows:total_rows + len(arr)] = arr
-                    total_rows += len(arr)
-                    buffer = []
-
-                # Exit if desired number of events is reached.
-                if charm_events >= no_events:
-                    break
+        # --- Optimized Buffer Flushing ---
+        # Flush buffer when it's full or at the very end.
+        if len(buffer) >= chunk_size or (charm_events >= no_events and buffer):
+            n_to_write = len(buffer)
+            # Ensure we don't write past the pre-allocated space.
+            if write_ptr + n_to_write > dset.shape[0]:
+                n_to_write = dset.shape[0] - write_ptr
+            
+            arr = np.array(buffer[:n_to_write], dtype=dtype)
+            dset[write_ptr : write_ptr + n_to_write] = arr
+            write_ptr += n_to_write
+            buffer = buffer[n_to_write:] # Keep any remainder.
 
     # Write any remaining events from the buffer to the file.
     if buffer:
+        n_to_write = min(len(buffer), dset.shape[0] - write_ptr)
         arr = np.array(buffer, dtype=dtype)
-        dset.resize(total_rows + len(arr), axis=0)
-        dset[total_rows:total_rows + len(arr)] = arr
-        total_rows += len(arr)
+        dset[write_ptr : write_ptr + n_to_write] = arr
+        write_ptr += n_to_write
+
+    # If we generated fewer events than expected, shrink the dataset to the actual size.
+    if write_ptr < dset.shape[0]:
+        dset.resize((write_ptr,))
 
 end_time = time.time()
 duration = end_time - start_time

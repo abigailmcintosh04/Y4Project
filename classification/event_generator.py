@@ -3,6 +3,7 @@ import h5py
 import numpy as np
 import math
 import argparse
+import time
 import fastjet
 
 # Calculate distance in eta-phi space.
@@ -67,6 +68,8 @@ dtype = np.dtype([
     ('lxy', 'f8'),
     ('q_jet', 'i4'),
 ])
+
+start_time = time.time()
 
 
 # Open HDF5 file for writing.
@@ -221,4 +224,8 @@ with h5py.File(output_file, 'w') as h5file:
         dset[total_rows:total_rows + len(arr)] = arr
         total_rows += len(arr)
 
+end_time = time.time()
+duration = end_time - start_time
+
 print('Events saved.')
+print(f"Event generation took {duration:.2f} seconds.")

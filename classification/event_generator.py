@@ -33,6 +33,7 @@ parser.add_argument('no_events', type=int)
 parser.add_argument('chunk_size', type=int)
 parser.add_argument('--shards', type=int, default=1, help='Total number of parallel shards to run.')
 parser.add_argument('--shard-index', type=int, default=0, help='The index of this specific shard (0-based).')
+parser.add_argument('--cleanup', action='store_true', default=True, help='Delete temporary shard files after merging.')
 args = parser.parse_args()
 
 no_events_total = args.no_events
@@ -268,4 +269,41 @@ if args.shards > 1 and args.shard_index == 0:
     
     total_duration = time.time() - start_time
     print("All shards have completed successfully.")
-    print(f"Overall time for all {args.shards} shards: {total_duration:.2f} seconds.")
+    print(f"Overall generation time for all {args.shards} shards: {total_duration:.2f} seconds.")
+
+    # --- Final Merging Step ---
+    print("\nMerging shard files into a single output file...")
+    shard_files = []
+    total_rows = 0
+    base, ext = os.path.splitext(args.output_file)
+    for i in range(args.shards):
+        shard_file = f"{base}_shard_{i}{ext}"
+        if os.path.exists(shard_file):
+            shard_files.append(shard_file)
+            with h5py.File(shard_file, 'r') as f:
+                total_rows += f['events'].shape[0]
+
+    # Create the final, merged HDF5 file.
+    with h5py.File(args.output_file, 'w') as final_h5:
+        # Create the dataset with the correct total size.
+        final_dset = final_h5.create_dataset('events', shape=(total_rows,), dtype=dtype, chunks=True)
+        
+        write_ptr = 0
+        for shard_file in shard_files:
+            with h5py.File(shard_file, 'r') as f:
+                data = f['events'][:]
+                n_rows = data.shape[0]
+                final_dset[write_ptr : write_ptr + n_rows] = data
+                write_ptr += n_rows
+    
+    print(f"Successfully merged {len(shard_files)} shard files into '{args.output_file}' with {total_rows} total events.")
+
+    # --- Optional Cleanup Step ---
+    if args.cleanup:
+        print("Cleaning up temporary shard files...")
+        for shard_file in shard_files:
+            try:
+                os.remove(shard_file)
+            except OSError as e:
+                print(f"Error removing file {shard_file}: {e}")
+        print("Cleanup complete.")

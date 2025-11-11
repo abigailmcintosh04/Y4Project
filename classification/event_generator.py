@@ -266,4 +266,6 @@ if args.shards > 1 and args.shard_index == 0:
     for p in processes:
         p.wait() # This will pause until the process 'p' has terminated.
     
+    total_duration = time.time() - start_time
     print("All shards have completed successfully.")
+    print(f"Overall time for all {args.shards} shards: {total_duration:.2f} seconds.")

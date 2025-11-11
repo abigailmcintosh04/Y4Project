@@ -4,6 +4,9 @@ import numpy as np
 import math
 import argparse
 import time
+import sys
+import subprocess
+import os
 import fastjet
 
 # Calculate distance in eta-phi space.
@@ -28,11 +31,46 @@ parser = argparse.ArgumentParser()
 parser.add_argument('output_file', type=str, default='collisions.h5')
 parser.add_argument('no_events', type=int)
 parser.add_argument('chunk_size', type=int)
+parser.add_argument('--shards', type=int, default=1, help='Total number of parallel shards to run.')
+parser.add_argument('--shard-index', type=int, default=0, help='The index of this specific shard (0-based).')
 args = parser.parse_args()
 
-output_file = args.output_file
-no_events = args.no_events
+no_events_total = args.no_events
 chunk_size = args.chunk_size
+
+# --- Parallelization Logic ---
+# If this is the master process (shard 0) and there are multiple shards,
+# launch all the other worker processes in the background.
+if args.shards > 1 and args.shard_index == 0:
+    print(f"Master process launching {args.shards - 1} worker shards...")
+    processes = []
+    for i in range(1, args.shards):
+        command = [
+            sys.executable,  # The path to the current python interpreter
+            __file__,        # The path to this script
+            args.output_file,
+            str(no_events_total),
+            str(chunk_size),
+            '--shards', str(args.shards),
+            '--shard-index', str(i)
+        ]
+        # Launch the worker process. It will run in parallel.
+        p = subprocess.Popen(command)
+        processes.append(p)
+    
+    print("All worker shards launched. Master process (shard 0) will now begin its work.")
+
+# Calculate how many events this specific shard is responsible for.
+no_events = math.ceil(no_events_total / args.shards)
+
+# --- Parallelization Logic for Output File ---
+# Create a unique output filename for this shard.
+if args.shards > 1:
+    base, ext = os.path.splitext(args.output_file)
+    output_file = f"{base}_shard_{args.shard_index}{ext}"
+else:
+    output_file = args.output_file
+
 
 # Jet definition.
 jet_def = fastjet.JetDefinition(fastjet.antikt_algorithm, 0.4)
@@ -79,7 +117,6 @@ dtype = np.dtype([
 ])
 
 start_time = time.time()
-
 
 # Open HDF5 file for writing.
 with h5py.File(output_file, 'w') as h5file:
@@ -221,5 +258,12 @@ with h5py.File(output_file, 'w') as h5file:
 end_time = time.time()
 duration = end_time - start_time
 
-print('Events saved.')
-print(f"Event generation took {duration:.2f} seconds.")
+print(f"Shard {args.shard_index}/{args.shards}: Event generation took {duration:.2f} seconds for {charm_events} events.")
+
+# If this was the master process, wait for all worker processes to finish.
+if args.shards > 1 and args.shard_index == 0:
+    print("Master process finished its work. Waiting for worker shards to complete...")
+    for p in processes:
+        p.wait() # This will pause until the process 'p' has terminated.
+    
+    print("All shards have completed successfully.")

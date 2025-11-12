@@ -140,8 +140,6 @@ pythia.init()
 # Data structure for the output HDF5 file.
 dtype = np.dtype([
     ('pdg_id_hadron', 'i4'),
-    ('e_sum', 'f8'),
-    ('pt_sum', 'f8'),
     ('d0_mean', 'f8'),
     ('z0_mean', 'f8'),
     ('jet_mass', 'f8'),
@@ -217,7 +215,7 @@ with h5py.File(output_file, 'w') as h5file:
                 continue
 
             # (Calculations for jet properties remain the same as they were already fast)
-            e_jet, pt_jet, d0_jet, z0_jet = 0.0, 0.0, 0.0, 0.0
+            e_jet, d0_jet, z0_jet = 0.0, 0.0, 0.0
             px_jet, py_jet, pz_jet, q_jet = 0.0, 0.0, 0.0, 0.0
             deltaR_sum = 0.0
             # Transverse decay length of the charm hadron.
@@ -234,7 +232,6 @@ with h5py.File(output_file, 'w') as h5file:
 
                 deltaR_sum += deltaR(best_jet.eta(), best_jet.phi(), p.eta(), p.phi())
                 e_jet += p.e()
-                pt_jet += p.pT()
                 px_jet += p.px()
                 py_jet += p.py()
                 pz_jet += p.pz()
@@ -260,7 +257,7 @@ with h5py.File(output_file, 'w') as h5file:
             jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
             jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
 
-            buffer.append((abs(h.id()), e_jet, pt_jet, d0_mean, z0_mean, jet_mass, lxy, q_jet, deltaR_mean))
+            buffer.append((abs(h.id()), d0_mean, z0_mean, jet_mass, lxy, q_jet, deltaR_mean))
             charm_events += 1
 
             if constituent_count > 0:

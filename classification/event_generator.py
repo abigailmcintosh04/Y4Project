@@ -30,20 +30,31 @@ def deltaR_vec(eta0, phi0, etas, phis):
 hadron_id_set = {411, 421, 431, 4122, -411, -421, -431, -4122}  # Charm hadrons.
 quark_id_set = {4, -4} # Charm quarks.
 
-def get_c_quark_mother(particle, event):
+def get_c_quark_mother(particle, event, visited=None):
     """
     Recursively traverses up the mother list of a particle to find the
     first ancestor that is a charm quark from the hard process.
+    A 'visited' set is used to prevent infinite loops in complex histories.
     """
+    if visited is None:
+        visited = set()
+
+    # If we have already seen this particle in this search path, stop.
+    if particle.index() in visited:
+        return None
+    visited.add(particle.index())
+
     mother_indices = particle.motherList()
     if not mother_indices:
         return None
+
     for mother_idx in mother_indices:
         mother = event[mother_idx]
-        if mother.id() in quark_id_set and mother.status() == -22:
+        if mother.id() in quark_id_set and mother.status() == -22: # Base case: Found the target quark.
             return mother
-        ancestor = get_c_quark_mother(mother, event)
-        if ancestor:
+        # Recursive step: Search this mother's ancestry.
+        ancestor = get_c_quark_mother(mother, event, visited)
+        if ancestor: # If found, pass the result up the call stack.
             return ancestor
     return None
 

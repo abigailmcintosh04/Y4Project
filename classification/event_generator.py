@@ -130,6 +130,10 @@ pythia.readString("Print:quiet = on")
 pythia.readString("Next:numberShowEvent = 0")
 pythia.readString("Next:numberShowInfo = 0")
 
+# Use a random seed for the random number generator.
+pythia.readString("Random:setSeed = on")
+pythia.readString("Random:seed = 0") # 0 means use current time
+
 # Initialize Pythia.
 pythia.init()
 

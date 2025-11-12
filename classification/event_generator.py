@@ -147,6 +147,7 @@ dtype = np.dtype([
     ('jet_mass', 'f8'),
     ('lxy', 'f8'),
     ('q_jet', 'i4'),
+    ('deltaR_mean', 'f8'),
 ])
 
 start_time = time.time()

@@ -28,7 +28,8 @@ var_dict = {
     'z0_mean': 'Mean Longitudinal Impact Parameter z0 (mm)',
     'jet_mass': 'Jet Mass (GeV)',
     'lxy': 'Transverse Decay Length L_xy(mm)',
-    'q_jet': 'Jet Charge (e)'
+    'q_jet': 'Jet Charge (e)',
+    'deltaR_mean': 'Mean ΔR of Jet Constituents',
 }
 
 with h5py.File(input_file, 'r') as h5file:

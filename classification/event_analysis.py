@@ -134,38 +134,3 @@ if pythia.next():
             print(f'4-Momentum: ({p.px():.2f}, {p.py():.2f}, {p.pz():.2f}, {p.e():.2f}) GeV')
             print(f'pT: {p.pT():.2f} GeV, Mass: {p.m():.2f} GeV')
             print(f'Eta: {p.eta():.2f}, Phi: {p.phi():.2f}')
-
-
-
-
-
-# # Generate one single event.
-# if pythia.next():
-#     print("--- Single Event Analysis ---")
-#     # Loop through every particle in the event record.
-#     for i, p in enumerate(pythia.event):
-        # print(f"\n----- Particle Index: {i} -----")
-        # print(f"  Name: {p.name()} (ID: {p.id()})")
-        # print(f"  Status: {p.status()} {'(Final State)' if p.isFinal() else ''}")
-        
-        # # Kinematics
-        # print("  Kinematics:")
-        # print(f"    4-Momentum (px, py, pz, E): ({p.px():.2f}, {p.py():.2f}, {p.pz():.2f}, {p.e():.2f}) GeV")
-        # print(f"    pT: {p.pT():.2f} GeV, Mass: {p.m():.2f} GeV")
-        # print(f"    Rapidity (y): {p.y():.2f}, Pseudorapidity (eta): {p.eta():.2f}, Phi: {p.phi():.2f}")
-
-        # # Charge and Color
-        # print("  Charge & Color:")
-        # print(f"    Charge: {p.chargeType()}/3 e, Is Charged: {p.isCharged()}")
-        # print(f"    Color: {p.col()}, Anti-Color: {p.acol()}")
-
-        # # Vertex and Lifetime
-        # print("  Vertex & Lifetime:")
-        # print(f"    Production Vertex (x, y, z, t): ({p.xProd():.2f}, {p.yProd():.2f}, {p.zProd():.2f}, {p.tProd():.2f}) mm")
-        # print(f"    Decay Vertex (x, y, z, t): ({p.xDec():.2f}, {p.yDec():.2f}, {p.zDec():.2f}, {p.tDec():.2f}) mm")
-        # print(f"    Proper Lifetime (tau): {p.tau():.4f} mm/c")
-
-        # # Family Tree
-        # print("  Family Tree (indices):")
-        # print(f"    Mothers: {p.motherList()}")
-        # print(f"    Daughters: {p.daughterList()}")

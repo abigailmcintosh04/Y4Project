@@ -21,6 +21,16 @@ x_min = args.x_min
 x_max = args.x_max
 log_scale = args.log_scale
 
+var_dict = {
+    'e_sum': 'Sum of Particle Energies (GeV)',
+    'pt_sum': 'Sum of Particle Transverse Momenta (GeV)',
+    'd0_mean': 'Mean Transverse Impact Parameter d0 (mm)',
+    'z0_mean': 'Mean Longitudinal Impact Parameter z0 (mm)',
+    'jet_mass': 'Jet Mass (GeV)',
+    'lxy': 'Transverse Decay Length L_xy(mm)',
+    'q_jet': 'Jet Charge (e)'
+}
+
 with h5py.File(input_file, 'r') as h5file:
     events = h5file['events'][:]
 
@@ -34,7 +44,7 @@ plt.hist(events[parameter][mask_1], bins=np.linspace(x_min, x_max, 100), label='
 plt.hist(events[parameter][mask_2], bins=np.linspace(x_min, x_max, 100), label='D0 (421)', color='orange', density=True, histtype='step', log=log_scale)
 plt.hist(events[parameter][mask_3], bins=np.linspace(x_min, x_max, 100), label='Ds+ (431)', color='green', density=True, histtype='step', log=log_scale)
 plt.hist(events[parameter][mask_4], bins=np.linspace(x_min, x_max, 100), label='Lambdac+ (4122)', color='red', density=True, histtype='step', log=log_scale)
-plt.xlabel(parameter)
+plt.xlabel(var_dict[parameter])
 plt.ylabel('Normalized Counts')
 plt.legend()
 plt.grid(True)

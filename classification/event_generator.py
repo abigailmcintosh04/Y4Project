@@ -218,6 +218,7 @@ with h5py.File(output_file, 'w') as h5file:
             # (Calculations for jet properties remain the same as they were already fast)
             e_jet, pt_jet, d0_jet, z0_jet = 0.0, 0.0, 0.0, 0.0
             px_jet, py_jet, pz_jet, q_jet = 0.0, 0.0, 0.0, 0.0
+            deltaR_sum = 0.0
             # Transverse decay length of the charm hadron.
             lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
             constituent_count = 0
@@ -230,6 +231,7 @@ with h5py.File(output_file, 'w') as h5file:
                 if p_id in hadron_id_set or p_id in quark_id_set:
                     continue
 
+                deltaR_sum += deltaR(best_jet.eta(), best_jet.phi(), p.eta(), p.phi())
                 e_jet += p.e()
                 pt_jet += p.pT()
                 px_jet += p.px()
@@ -252,11 +254,12 @@ with h5py.File(output_file, 'w') as h5file:
             
             d0_mean = d0_jet / constituent_count if constituent_count > 0 else 0.0
             z0_mean = z0_jet / constituent_count if constituent_count > 0 else 0.0
+            deltaR_mean = deltaR_sum / constituent_count if constituent_count > 0 else 0.0
 
             jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
             jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
 
-            buffer.append((abs(h.id()), e_jet, pt_jet, d0_mean, z0_mean, jet_mass, lxy, q_jet))
+            buffer.append((abs(h.id()), e_jet, pt_jet, d0_mean, z0_mean, jet_mass, lxy, q_jet, deltaR_mean))
             charm_events += 1
 
             if constituent_count > 0:

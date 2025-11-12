@@ -50,7 +50,7 @@ def get_c_quark_mother(particle, event, visited=None):
 
     for mother_idx in mother_indices:
         mother = event[mother_idx]
-        if mother.id() in quark_id_set and mother.status() == -22: # Base case: Found the target quark.
+        if mother.id() in quark_id_set: # Base case: Found the target quark.
             return mother
         # Recursive step: Search this mother's ancestry.
         ancestor = get_c_quark_mother(mother, event, visited)

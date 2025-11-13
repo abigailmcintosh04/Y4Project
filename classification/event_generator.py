@@ -93,10 +93,11 @@ def configure_pythia():
     return pythia
 
 
-def single_event(event, jet_def):
+def process_event(event, jet_def, d0_cutoff=0.05, z0_cutoff=0.1):
     '''
     Process a single Pythia event to find charm hadrons and their associated jets.
-    Returns a list of records for each charm hadron found in the event.'''
+    Returns a list of records for each charm hadron found in the event.
+    '''
     event_records = []
     try:
         hadrons = []
@@ -142,6 +143,8 @@ def single_event(event, jet_def):
             px_jet, py_jet, pz_jet, e_jet = 0.0, 0.0, 0.0, 0.0
             deltaR_sum = 0.0
             px_hadron, py_hadron, pz_hadron, e_hadron = 0.0, 0.0, 0.0, 0.0
+            q_hadron = 0.0
+            n_hadron_constituents = 0
             # Transverse decay length of the charm hadron.
             lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
             constituent_count = 0
@@ -175,19 +178,21 @@ def single_event(event, jet_def):
                     z0 = zv - (xv * px + yv * py) * (pz / (pt**2))
                     z0_jet += z0
                 
-                d0_cutoff = 0.05
-                z0_cutoff = 0.1
                 if abs(d0) > d0_cutoff or abs(z0) > z0_cutoff:
                     px_hadron += p.px()
                     py_hadron += p.py()
                     pz_hadron += p.pz()
                     e_hadron += p.e()
+                    q_hadron += p.charge()
+                    n_hadron_constituents += 1
                 
                 constituent_count += 1
             
             # Calculate invariant mass of constituents likely to be from hadron.
             hadron_mass_squared = e_hadron**2 - (px_hadron**2 + py_hadron**2 + pz_hadron**2)
             hadron_mass = math.sqrt(hadron_mass_squared) if hadron_mass_squared > 0 else 0.0
+            # Calculate pT of the reconstructed hadron.
+            pt_hadron = math.sqrt(px_hadron**2 + py_hadron**2)
 
             # Calculate mean values, avoiding division by zero.
             d0_mean = d0_jet / constituent_count if constituent_count > 0 else 0.0
@@ -198,7 +203,8 @@ def single_event(event, jet_def):
             jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
             jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
 
-            event_records.append((abs(h.id()), d0_mean, z0_mean, jet_mass, lxy, q_jet, deltaR_mean, hadron_mass))
+            event_records.append((abs(h.id()), d0_mean, z0_mean, jet_mass, lxy, q_jet, deltaR_mean, hadron_mass,
+                                  q_hadron, n_hadron_constituents, pt_hadron))
     except Exception as e:
         print(f'Error processing event: {e}')
     return event_records
@@ -226,7 +232,7 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype):
             if not pythia.next():
                 continue
 
-            new_records = single_event(pythia.event, jet_def)
+            new_records = process_event(pythia.event, jet_def)
             if new_records:
                 buffer.extend(new_records)
                 charm_events += len(new_records)
@@ -360,6 +366,9 @@ if __name__ == '__main__':
         ('q_jet', 'i4'),
         ('deltaR_mean', 'f8'),
         ('hadron_mass', 'f8'),
+        ('q_hadron', 'f8'),
+        ('n_hadron_constituents', 'i4'),
+        ('pt_hadron', 'f8'),
     ])
 
     # Configure Pythia and run the event generation for this specific shard.

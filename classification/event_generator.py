@@ -13,7 +13,7 @@ import fastjet
 def deltaR(eta1, phi1, eta2, phi2):
     '''Compute deltaR between two (eta,phi) points.'''
     dphi = abs(phi1 - phi2)
-    if dphi > math.pi:
+    if dphi > math.pi: # Handle phi wrapping around 2*pi.
         dphi = 2*math.pi - dphi
     deta = eta1-eta2
     return math.sqrt(deta**2 + dphi**2)
@@ -22,7 +22,7 @@ def deltaR(eta1, phi1, eta2, phi2):
 def deltaR_vec(eta0, phi0, etas, phis):
     '''Compute deltaR between (eta0,phi0) and arrays of etas, phis (NumPy arrays).'''
     dphi = np.abs(phis - phi0)
-    # wrap
+    # Handle phi wrapping around 2*pi in a vectorised way.
     mask = dphi > np.pi
     dphi[mask] = 2.0 * np.pi - dphi[mask]
     return np.sqrt((etas - eta0)**2 + dphi**2)
@@ -42,7 +42,7 @@ def get_c_quark_mother(particle, event, visited=None):
     if visited is None:
         visited = set()
 
-    # If we have already seen this particle in this search path, stop.
+    # Prevent infinite recursion in complex event histories.
     if particle.index() in visited:
         return None
     visited.add(particle.index())
@@ -53,7 +53,7 @@ def get_c_quark_mother(particle, event, visited=None):
 
     for mother_idx in mother_indices:
         mother = event[mother_idx]
-        if mother.id() in quark_id_set: # Base case: Found the target quark.
+        if mother.id() in quark_id_set:  # Base case: Found the target quark.
             return mother
         # Recursive step: Search this mother's ancestry.
         ancestor = get_c_quark_mother(mother, event, visited)
@@ -63,7 +63,7 @@ def get_c_quark_mother(particle, event, visited=None):
 
 
 def configure_pythia():
-    '''Configure and initialize the Pythia event generator.'''
+    '''Configure and initialise the Pythia event generator.'''
     pythia = pythia8mc.Pythia()
 
     # Configure pp collisions at 13 TeV.
@@ -75,7 +75,7 @@ def configure_pythia():
     pythia.readString('HardQCD:gg2ccbar = on')
     pythia.readString('HardQCD:qqbar2ccbar = on')
 
-    # Enable parton showering and hadronization.
+    # Enable parton showering and hadronisation.
     pythia.readString('PartonLevel:ISR = on')
     pythia.readString('PartonLevel:FSR = on')
     pythia.readString('HadronLevel:Hadronize = on')
@@ -111,7 +111,7 @@ def single_event(event, jet_def):
             if p.id() in hadron_id_set:
                 hadrons.append(p)
 
-        # Cluster jets.
+        # Cluster final-state particles into jets using the anti-kT algorithm.
         cluster_sequence = fastjet.ClusterSequence(final_state_pseudojets, jet_def)
         jets = cluster_sequence.inclusive_jets(ptmin=0.0)
 
@@ -121,7 +121,7 @@ def single_event(event, jet_def):
             if not c_quark:
                 continue
 
-            # Find the jet closest to the charm quark using vectorised method.
+            # Find the jet closest to the charm quark using a vectorised method.
             best_jet = None
             if jets:
                 jet_etas = np.array([j.eta() for j in jets])
@@ -150,12 +150,14 @@ def single_event(event, jet_def):
                 p = event[c.user_index()]
                 p_id = p.id()
 
+                # Exclude charm hadrons and quarks from jet property calculations.
                 if p_id in hadron_id_set or p_id in quark_id_set:
                     continue
 
                 deltaR_sum += deltaR(best_jet.eta(), best_jet.phi(), p.eta(), p.phi())
                 e_jet += p.e()
                 px_jet += p.px()
+                # Accumulate momentum and charge.
                 py_jet += p.py()
                 pz_jet += p.pz()
                 q_jet += p.charge()
@@ -164,6 +166,7 @@ def single_event(event, jet_def):
                 px, py, pz = p.px(), p.py(), p.pz()
                 pt = math.sqrt(px**2 + py**2)
 
+                # Calculate and accumulate impact parameters d0 and z0.
                 if pt > 1e-9:
                     d0 = (xv * py - yv * px) / pt
                     d0_jet += d0
@@ -173,10 +176,12 @@ def single_event(event, jet_def):
                 
                 constituent_count += 1
             
+            # Calculate mean values, avoiding division by zero.
             d0_mean = d0_jet / constituent_count if constituent_count > 0 else 0.0
             z0_mean = z0_jet / constituent_count if constituent_count > 0 else 0.0
             deltaR_mean = deltaR_sum / constituent_count if constituent_count > 0 else 0.0
 
+            # Calculate the invariant mass of the jet.
             jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
             jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
 
@@ -192,6 +197,7 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype):
     charm_events = 0
 
     with h5py.File(output_file, 'w') as h5file:
+        # Pre-allocate the dataset to avoid slow resizing.
         dset = h5file.create_dataset(
             'events',
             shape=(no_events,),
@@ -202,6 +208,7 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype):
         write_ptr = 0
         buffer = []
 
+        # Main generation loop: continues until the desired number of charm events is found.
         while charm_events < no_events:
             if not pythia.next():
                 continue
@@ -211,7 +218,7 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype):
                 buffer.extend(new_records)
                 charm_events += len(new_records)
 
-            # Flush buffer when it's full or at the very end.
+            # Flush buffer to HDF5 file when it's full or at the end of generation.
             if len(buffer) >= chunk_size or (charm_events >= no_events and buffer):
                 n_to_write = len(buffer)
                 if write_ptr + n_to_write > dset.shape[0]:
@@ -223,7 +230,7 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype):
                     write_ptr += n_to_write
                     buffer = buffer[n_to_write:]
         
-        # Write any remaining events from the buffer to the file.
+        # Write any final remaining events from the buffer.
         if buffer and write_ptr < dset.shape[0]:
             n_to_write = min(len(buffer), dset.shape[0] - write_ptr)
             arr = np.array(buffer, dtype=dtype)
@@ -234,6 +241,7 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype):
         if write_ptr < dset.shape[0]:
             dset.resize((write_ptr,))
 
+        # The final number of events is the number of rows written.
         charm_events = write_ptr
     
     duration = time.time() - start_time
@@ -254,7 +262,7 @@ def launch_shards(args):
             '--shards', str(args.shards),
             '--shard-index', str(i)
         ]
-        p = subprocess.Popen(command)
+        p = subprocess.Popen(command) # Launch the worker process in the background.
         processes.append(p)
     
     print('All worker shards launched. Master process (shard 0) will now begin its work.')
@@ -266,6 +274,7 @@ def merge_shards(output_file_base, num_shards, dtype, cleanup=True):
     print('\nMerging shard files into a single output file...')
     shard_files = []
     total_rows = 0
+    # Determine the names of all shard files and calculate the total number of events.
     base, ext = os.path.splitext(output_file_base)
     for i in range(num_shards):
         shard_file = f'{base}_shard_{i}{ext}'
@@ -275,7 +284,7 @@ def merge_shards(output_file_base, num_shards, dtype, cleanup=True):
                 total_rows += f['events'].shape[0]
 
     with h5py.File(output_file_base, 'w') as final_h5:
-        # Create the dataset with the correct total size.
+        # Create the final dataset with the correct total size.
         final_dset = final_h5.create_dataset('events', shape=(total_rows,), dtype=dtype, chunks=True)
         write_ptr = 0
         for shard_file in shard_files:
@@ -288,6 +297,7 @@ def merge_shards(output_file_base, num_shards, dtype, cleanup=True):
 
     print(f'Successfully merged {len(shard_files)} shard files into "{output_file_base}" with {total_rows} total events.')
     
+    # Optional: Clean up temporary shard files after merging.
     if cleanup:
         print('Cleaning up temporary shard files...')
         for shard_file in shard_files:
@@ -300,7 +310,7 @@ def merge_shards(output_file_base, num_shards, dtype, cleanup=True):
     
 if __name__ == '__main__':
     # Command-line arguments for number of events and chunk size.
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Generate particle collision events with Pythia and FastJet.')
     parser.add_argument('output_file', type=str, default='collisions.h5')
     parser.add_argument('no_events', type=int)
     parser.add_argument('chunk_size', type=int)
@@ -316,6 +326,7 @@ if __name__ == '__main__':
     if args.shards > 1 and args.shard_index == 0:
         processes = launch_shards(args)
 
+    # Calculate events for this shard and determine its unique output filename.
     shard_events = math.ceil(args.no_events / args.shards)
     if args.shards > 1:
         base, ext = os.path.splitext(args.output_file)
@@ -337,6 +348,7 @@ if __name__ == '__main__':
         ('deltaR_mean', 'f8'),
     ])
 
+    # Configure Pythia and run the event generation for this specific shard.
     pythia = configure_pythia()
     events_found, duration = generate_events(pythia, jet_def, output_file, shard_events, args.chunk_size, dtype)
     print(f'Shard {args.shard_index}/{args.shards}: Event generation took {duration:.2f} seconds for {events_found} events.')

@@ -30,6 +30,10 @@ var_dict = {
     'lxy': 'Transverse Decay Length L_xy(mm)',
     'q_jet': 'Jet Charge (e)',
     'deltaR_mean': 'Mean ΔR of Jet Constituents',
+    'hadron_mass': 'Mass of Reconstructed Hadron (GeV)',
+    'q_hadron': 'Charge of Reconstructed Hadron (e)',
+    'n_hadron_constituents': 'Number of Jet Constituents',
+    'pt_hadron': 'Transverse Momentum of Reconstructed Hadron (GeV)',
 }
 
 with h5py.File(input_file, 'r') as h5file:

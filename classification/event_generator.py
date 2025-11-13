@@ -45,6 +45,10 @@ dtype = np.dtype([
     ('lxy', 'f8'),
     ('q_jet', 'i4'),
     ('deltaR_mean', 'f8'),
+    ('hadron_mass', 'f8'),
+    ('q_hadron', 'f8'),
+    ('n_hadron_constituents', 'i4'),
+    ('pt_hadron', 'f8'),
 ])
 
 # Configure Pythia and run the event generation for this specific shard.

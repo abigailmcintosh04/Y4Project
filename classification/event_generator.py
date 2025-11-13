@@ -339,12 +339,10 @@ if __name__ == '__main__':
 
     pythia = configure_pythia()
     events_found, duration = generate_events(pythia, jet_def, output_file, shard_events, args.chunk_size, dtype)
-    print('Shard {args.shard_index}/{args.shards}: Event generation took {duration:.2f} seconds for {charm_events} events.')
     print(f'Shard {args.shard_index}/{args.shards}: Event generation took {duration:.2f} seconds for {events_found} events.')
 
     # If this is the master process, wait for workers and merge the results.
     if args.shards > 1 and args.shard_index == 0:
-        print(f'Master process launching {args.shards - 1} worker shards...')
         print('Master process finished its work. Waiting for worker shards to complete...')
         for p in processes:
             p.wait()

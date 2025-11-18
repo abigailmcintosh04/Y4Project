@@ -23,7 +23,7 @@ processes = []
 
 # If this is the master process, launch all worker shards.
 if args.shards > 1 and args.shard_index == 0:
-    processes = launch_shards(args)
+    processes = launch_shards(__file__, args)
 
 # Calculate events for this shard and determine its unique output filename.
 shard_events = math.ceil(args.no_events / args.shards)

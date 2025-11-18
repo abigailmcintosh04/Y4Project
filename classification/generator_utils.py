@@ -246,14 +246,14 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype):
     return charm_events, duration
                 
 
-def launch_shards(args):
+def launch_shards(script_path, args):
     '''Launch worker shards as separate processes.'''
     print(f'Master process launching {args.shards - 1} worker shards...')
     processes = []
     for i in range(1, args.shards):
         command = [
             sys.executable,
-            __file__,
+            script_path,
             args.output_file,
             str(args.no_events),
             str(args.chunk_size),

@@ -2,6 +2,9 @@ import fastjet
 import matplotlib.pyplot as plt
 import os 
 import numpy as np
+from datetime import datetime
+
+run_time = datetime.now().strftime("%Y%m%d-%H%M%S")
 
 from generator_utils import configure_pythia
 
@@ -22,6 +25,7 @@ if pythia.next():
     jets = cluster_sequence.inclusive_jets(ptmin=0.0)
 
     point_list = []
+    id_to_name_map = {}
 
     # Increase the figure size for better visibility
     fig, ax = plt.subplots(figsize=(10, 8))
@@ -33,6 +37,8 @@ if pythia.next():
             p = pythia.event[c.user_index()]
             print(f'  Constituent {c.user_index()}: ID={p.id()}, pT={p.pT():.2f}, eta={p.eta():.2f}, phi={p.phi():.2f}')
             point_list.append((p.id(), p.eta(), p.phi()))
+            if p.id() not in id_to_name_map:
+                id_to_name_map[p.id()] = p.name()
 
         # Make the jet circle thicker and more prominent
         circ = plt.Circle((jet.eta(), jet.phi_std()), 0.4, color='r', fill=False, linestyle='--', linewidth=1)
@@ -49,7 +55,8 @@ if pythia.next():
     for particle_id, points in points_by_id.items():
         etas = [p[0] for p in points]
         phis = [p[1] for p in points]
-        ax.scatter(etas, phis, label=f'ID {particle_id}', alpha=0.75, s=15) # s for marker size
+        particle_name = id_to_name_map.get(particle_id, str(particle_id))
+        ax.scatter(etas, phis, label=f'{particle_name} ({particle_id})', alpha=0.75, s=15) # s for marker size
 
     ax.set_aspect('equal', adjustable='box')
 
@@ -67,9 +74,9 @@ if pythia.next():
     # Keep phi fixed as it's a circular coordinate
     plt.ylim(-np.pi, np.pi)
     plt.grid(True)
-    plt.legend(title='Particle ID', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='small')
+    plt.legend(title='Particle', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='small')
     # Use bbox_inches='tight' to prevent the legend from being cut off
     # Use a higher DPI for a higher resolution image
-    plt.savefig(os.path.join('plots', 'jet_eta_phi.png'), bbox_inches='tight', dpi=300)
+    plt.savefig(os.path.join('plots', f'jet_eta_phi_{run_time}.png'), bbox_inches='tight', dpi=300)
 
     

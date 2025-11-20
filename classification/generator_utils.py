@@ -73,10 +73,16 @@ def configure_pythia():
     pythia.readString('HardQCD:gg2ccbar = on')
     pythia.readString('HardQCD:qqbar2ccbar = on')
 
+    # Set a minimum pT for the hard process to ensure "jetty" events.
+    pythia.readString('PhaseSpace:pTHatMin = 20.0')
+
     # Enable parton showering and hadronisation.
     pythia.readString('PartonLevel:ISR = on')
     pythia.readString('PartonLevel:FSR = on')
     pythia.readString('HadronLevel:Hadronize = on')
+
+    # Enable Multiple Parton Interactions (MPI) for a realistic underlying event.
+    pythia.readString('PartonLevel:MPI = on')
 
     # Quiet Pythia output.
     pythia.readString('Print:quiet = on')

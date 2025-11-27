@@ -117,7 +117,7 @@ def single_event(event, jet_def, consts=False):
 
         # Cluster final-state particles into jets using the anti-kT algorithm.
         cluster_sequence = fastjet.ClusterSequence(final_state_pseudojets, jet_def)
-        jets = cluster_sequence.inclusive_jets(ptmin=0.0)
+        jets = cluster_sequence.inclusive_jets(ptmin=5.0)
 
         # Process each charm hadron in the event.
         for h in hadrons:

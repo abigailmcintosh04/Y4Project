@@ -202,6 +202,7 @@ def single_event(event, jet_def, consts=False):
 def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype):
     '''Main function to generate events and store them in an HDF5 file.'''
     start_time = time.time()
+    last_report_time = start_time
     charm_events = 0
 
     with h5py.File(output_file, 'w') as h5file:
@@ -225,6 +226,12 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype):
             if new_records:
                 buffer.extend(new_records)
                 charm_events += len(new_records)
+
+            current_time = time.time()
+            if current_time - last_report_time >= 30:
+                elapsed_time = current_time - start_time
+                print(f'Shard {os.getpid()}: Generated {charm_events} events in {elapsed_time:.2f} seconds.')
+                last_report_time = current_time
 
             # Flush buffer to HDF5 file when it's full or at the end of generation.
             if len(buffer) >= chunk_size or (charm_events >= no_events and buffer):

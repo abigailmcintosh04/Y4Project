@@ -31,32 +31,36 @@ def deltaR_vec(eta0, phi0, etas, phis):
     return np.sqrt((etas - eta0)**2 + dphi**2)
 
 
-def get_c_quark_mother(particle, event, visited=None):
+def get_c_hadron_daughter(particle, event, visited=None):
     '''
-    Recursively traverses up the mother list of a particle to find the
-    first ancestor that is a charm quark from the hard process.
-    A 'visited' set is used to prevent infinite loops in complex histories.
+    Recursively traverses down the daughter list of a particle (e.g., a charm
+    quark) to find the first descendant that is a charm hadron.
+    A 'visited' set is used to prevent infinite loops.
     '''
     if visited is None:
         visited = set()
 
-    # Prevent infinite recursion in complex event histories.
+    # Base case: If the particle itself is a charm hadron, we've found it.
+    if particle.id() in hadron_id_set:
+        return particle
+
     if particle.index() in visited:
         return None
     visited.add(particle.index())
 
-    mother_indices = particle.motherList()
-    if not mother_indices:
+    daughter_indices = particle.daughterList()
+    if not daughter_indices:
         return None
 
-    for mother_idx in mother_indices:
-        mother = event[mother_idx]
-        if mother.id() in quark_id_set:  # Base case: Found the target quark.
-            return mother
-        # Recursive step: Search this mother's ancestry.
-        ancestor = get_c_quark_mother(mother, event, visited)
-        if ancestor: # If found, pass the result up the call stack.
-            return ancestor
+    for daughter_idx in daughter_indices:
+        daughter = event[daughter_idx]
+        # Base case: Found a charm hadron.
+        if daughter.id() in hadron_id_set:
+            return daughter
+        # Recursive step: Search this daughter's descendants.
+        descendant = get_c_hadron_daughter(daughter, event, visited)
+        if descendant: # If found, pass the result up the call stack.
+            return descendant
     return None
 
 
@@ -102,27 +106,27 @@ def single_event(event, jet_def, consts=False):
     Process a single Pythia event to find charm hadrons and their associated jets.
     Returns a list of records for each charm hadron found in the event.'''
     event_records = []
+    quarks = []
     try:
-        hadrons = []
         final_state_pseudojets = []
 
-        # Create PseudoJets and find hadrons.
+        # Create PseudoJets for jet clustering and find initial charm quarks.
         for p in event:
             if p.isFinal():
                 pj = fastjet.PseudoJet(p.px(), p.py(), p.pz(), p.e())
                 pj.set_user_index(p.index())
                 final_state_pseudojets.append(pj)
-            if p.id() in hadron_id_set:
-                hadrons.append(p)
+            if p.id() in quark_id_set and not p.motherList():
+                quarks.append(p)
 
         # Cluster final-state particles into jets using the anti-kT algorithm.
         cluster_sequence = fastjet.ClusterSequence(final_state_pseudojets, jet_def)
         jets = cluster_sequence.inclusive_jets(ptmin=5.0)
 
-        # Process each charm hadron in the event.
-        for h in hadrons:
-            c_quark = get_c_quark_mother(h, event)
-            if not c_quark:
+        # For each charm quark, find its corresponding hadron and jet.
+        for c_quark in quarks:
+            h = get_c_hadron_daughter(c_quark, event)
+            if not h:
                 continue
 
             # Find the jet closest to the charm quark using a vectorised method.
@@ -143,52 +147,44 @@ def single_event(event, jet_def, consts=False):
                 continue
 
             if not consts:
-                e_jet, d0_jet, z0_jet = 0.0, 0.0, 0.0
-                px_jet, py_jet, pz_jet, q_jet = 0.0, 0.0, 0.0, 0.0
-                deltaR_sum = 0.0
                 # Transverse decay length of the charm hadron.
                 lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
-                constituent_count = 0
 
-                # Loop over jet constituents to calculate jet properties.
-                for c in constituents:
-                    p = event[c.user_index()]
-                    p_id = p.id()
+                # Vectorised calculation of jet properties.
+                p_indices = [c.user_index() for c in constituents]
+                particles = [event[i] for i in p_indices]
 
-                    # Exclude charm hadrons and quarks from jet property calculations.
-                    if p_id in hadron_id_set or p_id in quark_id_set:
-                        continue
+                # Filter out charm quarks/hadrons from property calculations.
+                filtered_particles = [p for p in particles if p.id() not in hadron_id_set and p.id() not in quark_id_set]
+                if not filtered_particles:
+                    continue
 
-                    deltaR_sum += deltaR(best_jet.eta(), best_jet.phi(), p.eta(), p.phi())
-                    e_jet += p.e()
-                    px_jet += p.px()
-                    # Accumulate momentum and charge.
-                    py_jet += p.py()
-                    pz_jet += p.pz()
-                    q_jet += p.charge()
+                constituent_count = len(filtered_particles)
 
-                    xv, yv, zv = p.xProd(), p.yProd(), p.zProd()
-                    px, py, pz = p.px(), p.py(), p.pz()
-                    pt = math.sqrt(px**2 + py**2)
+                # Extract properties into NumPy arrays in a single loop for efficiency.
+                props = [
+                    (p.eta(), p.phi(), p.e(), p.px(), p.py(), p.pz(), p.charge(), p.xProd(), p.yProd(), p.zProd())
+                    for p in filtered_particles
+                ]
+                # Unzip the list of tuples into separate arrays.
+                etas, phis, es, pxs, pys, pzs, charges, xvs, yvs, zvs = (np.array(prop) for prop in zip(*props))
 
-                    # Calculate and accumulate impact parameters d0 and z0.
-                    if pt > 1e-9:
-                        d0 = (xv * py - yv * px) / pt
-                        d0_jet += d0
+                pts = np.sqrt(pxs**2 + pys**2)
 
-                        z0 = zv - (xv * px + yv * py) * (pz / (pt**2))
-                        z0_jet += z0
-                    
-                    constituent_count += 1
-            
-                # Calculate mean values, avoiding division by zero.
+                # Vectorised calculations.
+                deltaRs = deltaR_vec(best_jet.eta(), best_jet.phi(), etas, phis)
+                d0s = (xvs * pys - yvs * pxs) / np.maximum(pts, 1e-9)
+                z0s = zvs - (xvs * pxs + yvs * pys) * (pzs / np.maximum(pts**2, 1e-9))
+
+                d0_jet, z0_jet = np.sum(d0s), np.sum(z0s)
                 d0_mean = d0_jet / constituent_count if constituent_count > 0 else 0.0
                 z0_mean = z0_jet / constituent_count if constituent_count > 0 else 0.0
-                deltaR_mean = deltaR_sum / constituent_count if constituent_count > 0 else 0.0
+                deltaR_mean = np.mean(deltaRs)
 
                 # Calculate the invariant mass of the jet.
-                jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
+                jet_mass_squared = np.sum(es)**2 - (np.sum(pxs)**2 + np.sum(pys)**2 + np.sum(pzs)**2)
                 jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
+                q_jet = np.sum(charges)
 
                 event_records.append((abs(h.id()), d0_mean, z0_mean, jet_mass, lxy, q_jet, deltaR_mean)) # Continue to find all in event
 

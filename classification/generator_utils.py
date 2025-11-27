@@ -198,6 +198,8 @@ def single_event(event, jet_def, consts=False):
     except Exception as e:
         print(f'Error processing event: {e}')
 
+    return event_records
+
 
 def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype):
     '''Main function to generate events and store them in an HDF5 file.'''

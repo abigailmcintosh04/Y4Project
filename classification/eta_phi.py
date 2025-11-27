@@ -22,7 +22,7 @@ if pythia.next():
 
     # Perform jet clustering
     cluster_sequence = fastjet.ClusterSequence(final_state_pseudojets, jet_def)
-    jets = cluster_sequence.inclusive_jets(ptmin=0.0)
+    jets = cluster_sequence.inclusive_jets(ptmin=5.0)
 
     point_list = []
     id_to_name_map = {}

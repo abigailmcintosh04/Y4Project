@@ -217,3 +217,4 @@ __marimo__/
 
 # HDF5 Files
 *.h5
+*.npy

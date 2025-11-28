@@ -286,23 +286,23 @@ def launch_shards(script_path, args):
     return processes
 
 
-def merge_shards(output_file_base, num_shards, dtype, cleanup=True):
+def merge_shards(final_output_file, temp_shard_dir, num_shards, dtype, cleanup=True):
     '''Merge shard files into a single output file.'''
     print('\nMerging shard files into a single output file...')
     shard_files = []
     total_rows = 0
     # Determine the names of all shard files and calculate the total number of events.
-    base, ext = os.path.splitext(output_file_base)
+    base_name, ext = os.path.splitext(os.path.basename(final_output_file))
     for i in range(num_shards):
-        shard_file = f'{base}_shard_{i}{ext}'
+        shard_file = os.path.join(temp_shard_dir, f'{base_name}_shard_{i}{ext}')
         if os.path.exists(shard_file):
             shard_files.append(shard_file)
             with h5py.File(shard_file, 'r') as f:
                 total_rows += f['events'].shape[0]
 
-    with h5py.File(output_file_base, 'w') as final_h5:
+    with h5py.File(final_output_file, 'w') as final_h5:
         # Create the final dataset with the correct total size.
-        final_dset = final_h5.create_dataset('events', shape=(total_rows,), dtype=dtype, chunks=True)
+        final_dset = final_h5.create_dataset('events', shape=(total_rows,), dtype=dtype, chunks=True) # Changed from output_file_base to final_output_file
         write_ptr = 0
         for shard_file in shard_files:
             with h5py.File(shard_file, 'r') as f:
@@ -312,14 +312,14 @@ def merge_shards(output_file_base, num_shards, dtype, cleanup=True):
                     final_dset[write_ptr : write_ptr + n_rows] = data
                     write_ptr += n_rows
 
-    print(f'Successfully merged {len(shard_files)} shard files into "{output_file_base}" with {total_rows} total events.')
+    print(f'Successfully merged {len(shard_files)} shard files into "{final_output_file}" with {total_rows} total events.')
     
     # Optional: Clean up temporary shard files after merging.
     if cleanup:
-        print('Cleaning up temporary shard files...')
-        for shard_file in shard_files:
-            try:
-                os.remove(shard_file)
-            except OSError as e:
-                print(f'Error removing file {shard_file}: {e}')
+        print(f'Cleaning up temporary directory: {temp_shard_dir}')
+        try:
+            import shutil
+            shutil.rmtree(temp_shard_dir)
+        except OSError as e:
+            print(f'Error removing directory {temp_shard_dir}: {e}')
         print('Cleanup complete.')

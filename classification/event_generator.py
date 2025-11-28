@@ -21,17 +21,27 @@ args = parser.parse_args()
 total_start_time = time.time()
 processes = []
 
+# Define paths for final output and temporary shards
+collisions_dir = 'collisions'
+final_output_file = os.path.join(collisions_dir, args.output_file)
+
+base_name, ext = os.path.splitext(args.output_file)
+temp_shard_dir = os.path.join(collisions_dir, base_name)
+
 # If this is the master process, launch all worker shards.
 if args.shards > 1 and args.shard_index == 0:
+    if not os.path.exists(temp_shard_dir):
+        os.makedirs(temp_shard_dir)
     processes = launch_shards(__file__, args)
 
 # Calculate events for this shard and determine its unique output filename.
 shard_events = math.ceil(args.no_events / args.shards)
 if args.shards > 1:
-    base, ext = os.path.splitext(args.output_file)
-    output_file = f'{base}_shard_{args.shard_index}{ext}'
+    output_file = os.path.join(temp_shard_dir, f'{base_name}_shard_{args.shard_index}{ext}')
 else:
-    output_file = args.output_file
+    if not os.path.exists(collisions_dir):
+        os.makedirs(collisions_dir)
+    output_file = final_output_file
 
 # Jet definition.
 jet_def = fastjet.JetDefinition(fastjet.antikt_algorithm, 0.4)
@@ -59,7 +69,7 @@ if args.shards > 1 and args.shard_index == 0:
         p.wait()
     print('All shards have completed successfully.')
 
-    merge_shards(args.output_file, args.shards, dtype, cleanup=args.cleanup)
+    merge_shards(final_output_file, temp_shard_dir, args.shards, dtype, cleanup=args.cleanup)
 
     total_duration = time.time() - total_start_time
     print(f'\nTotal process time (generation + merge + cleanup): {total_duration:.2f} seconds.')

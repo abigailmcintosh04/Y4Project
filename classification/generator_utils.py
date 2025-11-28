@@ -142,55 +142,51 @@ def single_event(event, jet_def, ptmin, consts=False):
             if not constituents:
                 continue
 
-            if not consts:
-                e_jet, d0_jet, z0_jet = 0.0, 0.0, 0.0
-                px_jet, py_jet, pz_jet, q_jet = 0.0, 0.0, 0.0, 0.0
-                deltaR_sum = 0.0
+            if not consts: # This block is now vectorized
                 # Transverse decay length of the charm hadron.
                 lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
-                constituent_count = 0
 
-                # Loop over jet constituents to calculate jet properties.
-                for c in constituents:
-                    p = event[c.user_index()]
-                    p_id = p.id()
+                # Get constituent particles, excluding charm hadrons/quarks.
+                particles = [event[c.user_index()] for c in constituents]
+                valid_particles = [p for p in particles if p.id() not in hadron_id_set and p.id() not in quark_id_set]
 
-                    # Exclude charm hadrons and quarks from jet property calculations.
-                    if p_id in hadron_id_set or p_id in quark_id_set:
-                        continue
+                if not valid_particles:
+                    continue
 
-                    deltaR_sum += deltaR(best_jet.eta(), best_jet.phi(), p.eta(), p.phi())
-                    e_jet += p.e()
-                    px_jet += p.px()
-                    # Accumulate momentum and charge.
-                    py_jet += p.py()
-                    pz_jet += p.pz()
-                    q_jet += p.charge()
+                # Extract properties into numpy arrays for vectorization.
+                px = np.array([p.px() for p in valid_particles])
+                py = np.array([p.py() for p in valid_particles])
+                pz = np.array([p.pz() for p in valid_particles])
+                e = np.array([p.e() for p in valid_particles])
+                q = np.array([p.charge() for p in valid_particles])
+                xProd = np.array([p.xProd() for p in valid_particles])
+                yProd = np.array([p.yProd() for p in valid_particles])
+                zProd = np.array([p.zProd() for p in valid_particles])
+                etas = np.array([p.eta() for p in valid_particles])
+                phis = np.array([p.phi() for p in valid_particles])
+                pt = np.sqrt(px**2 + py**2)
 
-                    xv, yv, zv = p.xProd(), p.yProd(), p.zProd()
-                    px, py, pz = p.px(), p.py(), p.pz()
-                    pt = math.sqrt(px**2 + py**2)
+                # Calculate jet-wide variables using numpy sums.
+                px_jet, py_jet, pz_jet, e_jet = np.sum(px), np.sum(py), np.sum(pz), np.sum(e)
+                q_jet = np.sum(q)
 
-                    # Calculate and accumulate impact parameters d0 and z0.
-                    if pt > 1e-9:
-                        d0 = (xv * py - yv * px) / pt
-                        d0_jet += d0
+                # Calculate mean d0, z0, and deltaR in a vectorized way.
+                with np.errstate(divide='ignore', invalid='ignore'):
+                    d0 = np.where(pt > 1e-9, (xProd * py - yProd * px) / pt, 0.0)
+                    z0 = np.where(pt > 1e-9, zProd - (xProd * px + yProd * py) * (pz / (pt**2)), 0.0)
+                
+                d0_mean = np.mean(d0)
+                z0_mean = np.mean(z0)
 
-                        z0 = zv - (xv * px + yv * py) * (pz / (pt**2))
-                        z0_jet += z0
-                    
-                    constituent_count += 1
-            
-                # Calculate mean values, avoiding division by zero.
-                d0_mean = d0_jet / constituent_count if constituent_count > 0 else 0.0
-                z0_mean = z0_jet / constituent_count if constituent_count > 0 else 0.0
-                deltaR_mean = deltaR_sum / constituent_count if constituent_count > 0 else 0.0
+                # Use the vectorized deltaR function.
+                deltaR_vals = deltaR_vec(best_jet.eta(), best_jet.phi(), etas, phis)
+                deltaR_mean = np.mean(deltaR_vals)
 
                 # Calculate the invariant mass of the jet.
                 jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
                 jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
 
-                event_records.append((abs(h.id()), d0_mean, z0_mean, jet_mass, lxy, q_jet, deltaR_mean)) # Continue to find all in event
+                event_records.append((abs(h.id()), d0_mean, z0_mean, jet_mass, lxy, q_jet, deltaR_mean))
 
             elif consts:
                 return constituents, h, best_jet # Return the first valid jet found

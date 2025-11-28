@@ -82,7 +82,7 @@ def configure_pythia():
     pythia.readString('HadronLevel:Hadronize = on')
 
     # Enable Multiple Parton Interactions (MPI) for a realistic underlying event.
-    pythia.readString('PartonLevel:MPI = on')
+    # pythia.readString('PartonLevel:MPI = on')
 
     # Quiet Pythia output.
     pythia.readString('Print:quiet = on')
@@ -97,7 +97,7 @@ def configure_pythia():
     return pythia
 
 
-def single_event(event, jet_def, consts=False):
+def single_event(event, jet_def, ptmin, consts=False):
     '''
     Process a single Pythia event to find charm hadrons and their associated jets.
     Returns a list of records for each charm hadron found in the event.'''
@@ -117,7 +117,7 @@ def single_event(event, jet_def, consts=False):
 
         # Cluster final-state particles into jets using the anti-kT algorithm.
         cluster_sequence = fastjet.ClusterSequence(final_state_pseudojets, jet_def)
-        jets = cluster_sequence.inclusive_jets(ptmin=5.0)
+        jets = cluster_sequence.inclusive_jets(ptmin=ptmin)
 
         # Process each charm hadron in the event.
         for h in hadrons:
@@ -201,7 +201,7 @@ def single_event(event, jet_def, consts=False):
     return event_records
 
 
-def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype):
+def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, ptmin):
     '''Main function to generate events and store them in an HDF5 file.'''
     start_time = time.time()
     last_report_time = start_time
@@ -224,7 +224,7 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype):
             if not pythia.next():
                 continue
 
-            new_records = single_event(pythia.event, jet_def)
+            new_records = single_event(pythia.event, jet_def, ptmin)
             if new_records:
                 buffer.extend(new_records)
                 charm_events += len(new_records)

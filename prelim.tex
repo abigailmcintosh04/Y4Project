@@ -35,6 +35,7 @@
 \pagebreak
 \pagenumbering{arabic}
 
+
 \section{Introduction}
 
 \subsection{Perturbative and Non-Perturbative QCD}
@@ -42,22 +43,22 @@ Quantum Chromodynamics (QCD) is the quantum theory that describes the strong int
 
 For pp collisions at the LHC, the hard scattering process occurs at high energies, meaning pQCD can be used to describe it. However, the fragmentation occurs at low energies, meaning pQCD cannot be used to describe it, and are instead described by phenomenological models. The two approaches required to describe the collisions are connected by the factorisation theorem, which states that the cross section can be split into three parts: the parton distribution functions (PDFs), the hard scatter, and the fragmentation functions.
 
-
 \subsection{Fragmentation and Universality}
-Fragmentation is the non-perturbative process by which coloured partons, i.e. quarks and gluons, are confined into colourless hadrons. The fragmentation function $D^h_i(x, \mu^2) (i=q,\bar{q},g)$ describes the probability density that a certain outgoing parton $i$ produces a hadron $h$, where $x$ is the fraction of the parton's momentum transferred to the hadron and $\mu$ is the factorisation scale \cite{frag_func}.
+Fragmentation is the non-perturbative process by which coloured partons, i.e. quarks and gluons, are confined into colourless hadrons. The fragmentation function $D^h_i(x, \mu^2) (i=q,\bar{q},g)$ describes the probability density that a certain outgoing parton $i$ produces a hadron $h$, where $x$ is the fraction of the parton's momentum transferred to the hadron and $\mu$ is the factorisation scale \cite{pdg2018}.
 
-Historically, it has been assumed fragmentation functions are universal, meaning they are independent of the hard scattering process. This means fragmentation functions should be the same for pp collisions as for e$^+$e$^-$ collisions. However, recent measurements of charm quark hadronisation in the ALICE collaboration found a larger fraction hadronising into baryons in pp collisions compared to e$^+$e$^-$ collisions \cite{alice_charm}, suggesting fragmentation may not be universal. 
+Historically, it has been assumed fragmentation functions are universal, meaning they are independent of the hard scattering process. This means fragmentation functions should be the same for pp collisions as for e$^+$e$^-$ collisions. However, recent measurements of charm quark hadronisation in the ALICE collaboration found a larger fraction hadronising into baryons in pp collisions compared to e$^+$e$^-$ collisions \cite{alice2023charm}, suggesting fragmentation may not be universal and instead dependent on the environment.
 
 
+\section{Event Generation}
+To train the machine learning model, Monte Carlo (MC) simulated events are used. The events are generated using PYTHIA 8, generating pp collisions at $\sqrt{s} = 13$ TeV. To ensure only charm events are generated, the enabled hard QCD processes are qq $\rightarrow$ c\={c} and gg $\rightarrow$ c\={c}. A minimum transverse momentum of 20 GeV is set for the hard scatter to ensure the events are jet-like in nature. Initial and final state radiation and hadronisation are enabled, while multiple parton interactions are disabled. 
 
-\begin{thebibliography}{99}
 
-\bibitem{frag_func} 
-Particle Data Group (2018). 'Review of Particle Physics'. \textit{Physical Review D}, 98(3), p. 030001.
+\section{Future Plans}
 
-\bibitem{alice_charm}
-ALICE Collaboration (2023). \textit{Charm production and fragmentation fractions at midrapidity in pp collisions at $\sqrt{s}$ = 13 TeV}. Available at: \url{https://arxiv.org/abs/2308.04877}.
+\subsection{Detector Simulation and Realism}
+To further improve the realism of the event generator, a detector will be simulated, possibly using DELPHES. This will allow detector effects, such as efficiency, resolution (via a Gaussian smear) and rejection of high pseudorapidity events, to be included in the simulation. This will improve the realism of the event generation, leading to more accurate training of the machine learning model.
 
-\end{thebibliography}
+\bibliographystyle{plain}
+\bibliography{references}
 
 \end{document}

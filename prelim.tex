@@ -1,6 +1,7 @@
 \documentclass[12pt]{article}
 \usepackage{graphicx}
 \usepackage[a4paper, margin=1in]{geometry}
+\usepackage{hyperref}
 
 \begin{document}
 
@@ -35,5 +36,28 @@
 \pagenumbering{arabic}
 
 \section{Introduction}
+
+\subsection{Perturbative and Non-Perturbative QCD}
+Quantum Chromodynamics (QCD) is the quantum theory that describes the strong interaction between quarks, that is mediated by gluons. A key difference between QCD and Quantum Electrodynamics (QED) is that QCD is non-Abelian gauge theory, which leads to gluons carrying the colour charge. This also means that gluons are self-coupling. This self-coupling leads to the two ranges of QCD: asymptotic freedom and confinement. Under asymptotic freedom at high energies, the strong coupling constant $\alpha_s \ll 1$, meaning perturbative calculations (pQCD) can be used. Under confinement at low energies, $\alpha_s \sim 1$, meaning a non-perturbative approach is necessary. 
+
+For pp collisions at the LHC, the hard scattering process occurs at high energies, meaning pQCD can be used to describe it. However, the fragmentation occurs at low energies, meaning pQCD cannot be used to describe it, and are instead described by phenomenological models. The two approaches required to describe the collisions are connected by the factorisation theorem, which states that the cross section can be split into three parts: the parton distribution functions (PDFs), the hard scatter, and the fragmentation functions.
+
+
+\subsection{Fragmentation and Universality}
+Fragmentation is the non-perturbative process by which coloured partons, i.e. quarks and gluons, are confined into colourless hadrons. The fragmentation function $D^h_i(x, \mu^2) (i=q,\bar{q},g)$ describes the probability density that a certain outgoing parton $i$ produces a hadron $h$, where $x$ is the fraction of the parton's momentum transferred to the hadron and $\mu$ is the factorisation scale \cite{frag_func}.
+
+Historically, it has been assumed fragmentation functions are universal, meaning they are independent of the hard scattering process. This means fragmentation functions should be the same for pp collisions as for e$^+$e$^-$ collisions. However, recent measurements of charm quark hadronisation in the ALICE collaboration found a larger fraction hadronising into baryons in pp collisions compared to e$^+$e$^-$ collisions \cite{alice_charm}, suggesting fragmentation may not be universal. 
+
+
+
+\begin{thebibliography}{99}
+
+\bibitem{frag_func} 
+Particle Data Group (2018). 'Review of Particle Physics'. \textit{Physical Review D}, 98(3), p. 030001.
+
+\bibitem{alice_charm}
+ALICE Collaboration (2023). \textit{Charm production and fragmentation fractions at midrapidity in pp collisions at $\sqrt{s}$ = 13 TeV}. Available at: \url{https://arxiv.org/abs/2308.04877}.
+
+\end{thebibliography}
 
 \end{document}

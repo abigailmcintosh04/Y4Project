@@ -1,6 +1,6 @@
 \documentclass[12pt]{article}
 \usepackage{graphicx}
-\usepackage[a4paper, margin=1in]{geometry}
+\usepackage[a4paper, margin=2cm]{geometry}
 \usepackage{hyperref}
 
 \begin{document}
@@ -50,8 +50,16 @@ Historically, it has been assumed fragmentation functions are universal, meaning
 
 
 \section{Event Generation}
-To train the machine learning model, Monte Carlo (MC) simulated events are used. The events are generated using PYTHIA 8, generating pp collisions at $\sqrt{s} = 13$ TeV. To ensure only charm events are generated, the enabled hard QCD processes are qq $\rightarrow$ c\={c} and gg $\rightarrow$ c\={c}. A minimum transverse momentum of 20 GeV is set for the hard scatter to ensure the events are jet-like in nature. Initial and final state radiation and hadronisation are enabled, while multiple parton interactions are disabled. 
+To train the machine learning model, Monte Carlo (MC) simulated events are used. The events are generated using PYTHIA 8 \cite{pythia8}, generating pp collisions at $\sqrt{s} = 13$ TeV. To ensure only charm events are generated, the enabled hard QCD processes are qq $\rightarrow$ c\={c} and gg $\rightarrow$ c\={c}. A minimum transverse momentum of 20 GeV is set for the hard scatter to ensure the events are jet-like in nature. Initial and final state radiation and hadronisation are enabled, while multiple parton interactions are disabled. 
 
+For each final state particle in a PYTHIA event, a FastJet \cite{fastjet} PseudoJet object is created. The pseudojets are then clustered using the anti-$k_t$ algorithm, with a radius parameter of R = 0.4, to form jets.+ The jets are then matched to the charm quarks via a $\Delta R$ matching, where $\Delta R = \sqrt{(\Delta \eta)^2 + (\Delta \phi)^2}$, with a maximum $\Delta R$ of 0.4. 
+
+\subsection{Lund String Model}
+PYTHIA uses the Lund string model to simulate hadronisation. In this model, when a quark-antiquark pair is separated, the gluon field lines collapse into a flux tube, or string. The potential energy stored in the string increases linearly with the separation distance, $V(r) = \kappa r$, where $\kappa$ is the string tension, approximately 1 GeV/fm. When it becomes energetically favourable, the string will break, creating a new quark-antiquark pair.The probability of creating a pair of mass $\mu$ is given by:
+
+\begin{equation}
+    P(m) \propto \exp\left(-\frac{\pi (\mu^2 + p_{\perp}^2)}{\kappa}\right)
+\end{equation}
 
 \section{Future Plans}
 

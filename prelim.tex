@@ -55,11 +55,15 @@ To train the machine learning model, Monte Carlo (MC) simulated events are used.
 For each final state particle in a PYTHIA event, a FastJet \cite{fastjet} PseudoJet object is created. The pseudojets are then clustered using the anti-$k_t$ algorithm, with a radius parameter of R = 0.4, to form jets.+ The jets are then matched to the charm quarks via a $\Delta R$ matching, where $\Delta R = \sqrt{(\Delta \eta)^2 + (\Delta \phi)^2}$, with a maximum $\Delta R$ of 0.4. 
 
 \subsection{Lund String Model}
-PYTHIA uses the Lund string model to simulate hadronisation. In this model, when a quark-antiquark pair is separated, the gluon field lines collapse into a flux tube, or string. The potential energy stored in the string increases linearly with the separation distance, $V(r) = \kappa r$, where $\kappa$ is the string tension, approximately 1 GeV/fm. When it becomes energetically favourable, the string will break, creating a new quark-antiquark pair.The probability of creating a pair of mass $\mu$ is given by:
+PYTHIA uses the Lund string model to simulate hadronisation. In this model, when a quark-antiquark pair is separated, the gluon field lines collapse into a flux tube, or string. The potential energy stored in the string increases linearly with the separation distance, $V(r) = \kappa r$, where $\kappa$ is the string tension, approximately 1 GeV/fm. When it becomes energetically favourable, the string will break, creating a new quark-antiquark pair. The probability of creating a pair of mass $\mu$ with transverse momentum $p_{\perp}$ is given by:
 
 \begin{equation}
-    P(m) \propto \exp\left(-\frac{\pi (\mu^2 + p_{\perp}^2)}{\kappa}\right)
+    P(m) \propto \exp\left(-\frac{\pi (\mu^2 + p_{\perp}^2)}{\kappa}\right),
 \end{equation}
+
+meaning the production of heavier quarks (charm and bottom) is suppressed \cite{lundmodel}. Therefore, the production of $\Lambda_c$ baryons (quark content udc) is suppressed compared to D mesons (containing one charm quark and another light quark). The mass of a ud-\={u}\={d} diquark is much larger than a u\={u} or d\={d} pair, with the suppression of diquark production to quark production in PYTHIA defined as 0.081 \cite{pythia8}, where universality is assumed.
+
+
 
 \section{Future Plans}
 

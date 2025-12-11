@@ -1,3 +1,5 @@
+% !TeX program = latexmk
+% !TeX outputDirectory = build
 \documentclass[12pt]{article}
 \usepackage{graphicx}
 \usepackage[a4paper, margin=2cm]{geometry}
@@ -73,7 +75,21 @@ Two main distinguishing variables that have been identified so far are $L_{xy}$,
 \begin{equation}
     L_{xy} = \sqrt{(x_{SV}-x_{PV})^2 + (y_{SV}-y_{PV})^2},
 \end{equation}
-where $(x_{SV}$ and $y_{SV})$ are the x and y coordinates of the secondary vertex (SV) of the charmed hadron decay, and $(x_{PV}$ and $y_{PV})$ are the x and y coordinates of the primary vertex (PV) of the initial hard scattering. 
+where $(x_{SV}$ and $y_{SV})$ are the x and y coordinates of the secondary vertex (SV) of the charmed hadron decay, and $(x_{PV}$ and $y_{PV})$ are the x and y coordinates of the primary vertex (PV) of the initial hard scattering;
+\begin{equation}
+    d_0 = \frac{1}{p_T} (x_{PV} p_y - y_{PV} p_x),
+\end{equation}
+where $p_T$ is the transverse momentum of the charmed hadron, $p_x$ and $p_y$ are the x and y components of the momentum of the charmed hadron, and $(x_{PV}, y_{PV})$ are as defined above.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/vertices.png}
+    \caption{Diagram showing a typical decay of a charmed hadron at ATLAS, showing the primary and secondary vertices, as well as $L_{xy}$ and $d_0$ \cite{atlas2021triggers}.}
+    \label{fig:vertices}
+\end{figure}
+
+As can be seen in \ref{fig:vertices}, $L_{xy}$ and $d_0$ are directly related to the displacement of the charmed hadron from the PV. For $L_{xy}$, as this is the transverse distance between the PV and SV, this is directly related to the hadron's lifetime. For $d_0$, as this is the distance of closest approach of the track to the PV, tracks from longer lived hadtons will on average have a larger $d_0$.
+
 
 
 \section{Future Plans}

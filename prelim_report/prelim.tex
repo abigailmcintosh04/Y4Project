@@ -76,14 +76,14 @@ As the D mesons and $\Lambda_c$ baryons have different lifetimes, masses, and de
     \begin{tabular}{|c|c|c|c|}
         \hline
         Hadron & Quark Content & Mass (MeV) & Lifetime (fs) \\
-        \hline \\
+        \hline 
         $D^0$ & $c\bar{u}$ & $1864.84 \pm 0.05$ & $410.3 \pm 1.0$ \\
         $D^+$ & $c\bar{d}$ & $1869.5 \pm 0.4$ & $1033 \pm 5$ \\
         $D_s^+$ & $c\bar{s}$ & $1969.0 \pm 1.4$ & $501.2 \pm 2.2$ \\
         $\Lambda_c^+$ & $udc$ & $2286.46 \pm 0.14$ & $202.6 \pm 1.0$ \\
         \hline
     \end{tabular}
-    \caption{Properties of charmed hadrons being used.}
+    \caption{Properties of charmed hadrons being used \cite{pdg}.}
     \label{tab:charm_props}
 \end{table}
 
@@ -108,7 +108,16 @@ As can be seen in \ref{fig:vertices}, $L_{xy}$ and $d_0$ are directly related to
 
 As can be seen in Table \ref{tab:charm_props}, the lifetimes of the $D_s^+$ and the $D_0$ mesons are similar, within 100fs of each other. This means that purely relying on lifetime-related variables such as $L_{xy}$ and $d_0$ may not be sufficient to distinguish between jets containing those mesons. As a result, distinguishing variables related to the mass will also be investigated.
 
-Mass-based variables require a more nuanced approach. The current approach for calculating lifetime-related summary variables is to take averages across all jet constituents, not just those from the charmed hadron, as despite having the truth information to know which constituents come from the charmed hadron in the event generation, this information will not be available when using real data. The differing values of the lifetime-related variables will affect the averages across the whole jet, meaning this approach is valid. However, for mass-based variables, as the hadron mass is only a small fraction of the total jet mass, the effect on the average could be too small to detect. Hence, an alternative approach was taken, where tracks were filtered based on their $d_0$. Summary variables were calculated for tracks with a $d_0$ above a specific threshold, as those tracks are more likely to have originated from the charmed hadron.
+Mass-based variables require a more nuanced approach. The current approach for calculating lifetime-related summary variables is to take averages across all jet constituents, not just those from the charmed hadron, as despite having the truth information to know which constituents come from the charmed hadron in the event generation, this information will not be available when using real data. The differing values of the lifetime-related variables will affect the averages across the whole jet, meaning this approach is valid. However, for mass-based variables, as the hadron mass is only a small fraction of the total jet mass, the effect on the average could be too small to detect. Hence, an alternative approach was taken, where tracks were filtered based on their $d_0$. Summary variables were calculated for tracks with a $d_0$ above a specific threshold, as those tracks are more likely to have originated from the charmed hadron. 
+
+To find this threshold, a balance must be struck between signal efficiency, which is the fraction of signal events correctly identified as such, and background rejection, which is the fraction of background events correctly identified as such. In this context, signal events are tracks originating from the charmed hadron, whereas background events are other tracks in the jet. A larger signal efficiency leads to a lower background rejection rate, and vice versa, hence the need to strike a balance. To find this balance, signal efficiency and background rejection are plotted on the same axes for different $d_0$ thresholds, as shown in Figure \ref{fig:eff_rej}. The threshold was chosen to be where the two curves intersect, at 0.014mm. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/sig_eff.png}
+    \caption{Signal efficiency and background rejection as a function of $d_0$ threshold.}
+    \label{fig:eff_rej}
+\end{figure}
 
 
 \section{Future Plans}

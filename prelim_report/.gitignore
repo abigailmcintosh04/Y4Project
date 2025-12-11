@@ -1,0 +1,5 @@
+# Ignore the build directory
+build/
+
+# Ignore the final PDF (optional, but recommended if you only want source in git)
+prelim.pdf

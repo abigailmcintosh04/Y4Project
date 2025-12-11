@@ -71,6 +71,22 @@ To explore the fragmentation of charm quarks, a machine learning model will be d
 \subsection{Input Features}
 As the D mesons and $\Lambda_c$ baryons have different lifetimes, masses, and decay properties, the jets containing them are expected to have slightly different properties. Distinguishing variables can be generated from the energy-momentum four vectors of the jet constituents. It is necessary to limit the distinguishing variables to ones that could be calculated from the data available from the ATLAS detector so that when the machine learning algorithm is applied onto real data, the distinguishing variables can still be calculated.
 
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        Hadron & Quark Content & Mass (MeV) & Lifetime (fs) \\
+        \hline \\
+        $D^0$ & $c\bar{u}$ & $1864.84 \pm 0.05$ & $410.3 \pm 1.0$ \\
+        $D^+$ & $c\bar{d}$ & $1869.5 \pm 0.4$ & $1033 \pm 5$ \\
+        $D_s^+$ & $c\bar{s}$ & $1969.0 \pm 1.4$ & $501.2 \pm 2.2$ \\
+        $\Lambda_c^+$ & $udc$ & $2286.46 \pm 0.14$ & $202.6 \pm 1.0$ \\
+        \hline
+    \end{tabular}
+    \caption{Properties of charmed hadrons being used.}
+    \label{tab:charm_props}
+\end{table}
+
 Two main distinguishing variables that have been identified so far are $L_{xy}$, which is the transverse decay length of the charmed hadron, and $d_0$, which is the transverse impact parameter of the charmed hadron. They are defined as follows:
 \begin{equation}
     L_{xy} = \sqrt{(x_{SV}-x_{PV})^2 + (y_{SV}-y_{PV})^2},
@@ -90,6 +106,9 @@ where $p_T$ is the transverse momentum of the charmed hadron, $p_x$ and $p_y$ ar
 
 As can be seen in \ref{fig:vertices}, $L_{xy}$ and $d_0$ are directly related to the displacement of the charmed hadron from the PV. For $L_{xy}$, as this is the transverse distance between the PV and SV, this is directly related to the hadron's lifetime. For $d_0$, as this is the distance of closest approach of the track to the PV, tracks from longer lived hadtons will on average have a larger $d_0$.
 
+As can be seen in Table \ref{tab:charm_props}, the lifetimes of the $D_s^+$ and the $D_0$ mesons are similar, within 100fs of each other. This means that purely relying on lifetime-related variables such as $L_{xy}$ and $d_0$ may not be sufficient to distinguish between jets containing those mesons. As a result, distinguishing variables related to the mass will also be investigated.
+
+Mass-based variables require a more nuanced approach. The current approach for calculating lifetime-related summary variables is to take averages across all jet constituents, not just those from the charmed hadron, as despite having the truth information to know which constituents come from the charmed hadron in the event generation, this information will not be available when using real data. The differing values of the lifetime-related variables will affect the averages across the whole jet, meaning this approach is valid. However, for mass-based variables, as the hadron mass is only a small fraction of the total jet mass, the effect on the average could be too small to detect. Hence, an alternative approach was taken, where tracks were filtered based on their $d_0$. Summary variables were calculated for tracks with a $d_0$ above a specific threshold, as those tracks are more likely to have originated from the charmed hadron.
 
 
 \section{Future Plans}

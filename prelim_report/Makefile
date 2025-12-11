@@ -18,6 +18,9 @@ watch:
 
 # 4. Clean Target
 clean:
-	# Now we can just delete the whole folder!
+	# Delete the build folder
 	rm -rf $(BUILD_DIR)
+	# Delete the final PDF in the root
 	rm -f $(DOCNAME).pdf
+	# Delete "leftover" junk in the root from old builds
+	rm -f *.aux *.log *.out *.toc *.fls *.fdb_latexmk *.bbl *.blg *.synctex.gz

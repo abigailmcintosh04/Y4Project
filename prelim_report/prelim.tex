@@ -66,11 +66,13 @@ PYTHIA uses the Lund string model to simulate hadronisation. In this model, when
 
 meaning the production of heavier quarks (charm and bottom) is suppressed \cite{lundmodel}. Therefore, the production of $\Lambda_c$ baryons (quark content udc) is suppressed compared to D mesons (containing one charm quark and another light quark). The mass of a ud-\={u}\={d} diquark is much larger than a u\={u} or d\={d} pair, with the suppression of diquark production to quark production in PYTHIA defined as 0.081 \cite{pythia8}, where universality is assumed.
 
+\subsection{Event Structure}
+
 \section{Machine Learning}
-To explore the fragmentation of charm quarks, a machine learning model will be developed to classify jets based on the charmed hadron(s) they contain, i.e. D mesons or $\Lambda_c$ baryons. The current approach of reconstruction requires identifying all the decay products of the charmed hadron, leading to low reconstruction efficiency. To solve this, a machine learning model will be used to classify jets based on their overall properties, increasing efficiency. This model will be trained with the Monte Carlo simulated events described in Section 2.
+To explore the fragmentation of charm quarks, a machine learning model will be developed to classify jets based on the charmed hadron(s) they contain. The current approach of reconstruction requires identifying all the decay products of the charmed hadron, leading to low reconstruction efficiency. To solve this, a machine learning model will be used to classify jets based on their overall properties, increasing efficiency. This model will be trained with the Monte Carlo simulated events described in Section 2.
 
 \subsection{Input Features}
-As the D mesons and $\Lambda_c$ baryons have different lifetimes, masses, and decay properties, the jets containing them are expected to have slightly different properties. Distinguishing variables can be generated from the energy-momentum four vectors of the jet constituents. It is necessary to limit the distinguishing variables to ones that could be calculated from the data available from the ATLAS detector so that when the machine learning algorithm is applied onto real data, the distinguishing variables can still be calculated.
+As the charmed hadrons have different lifetimes, masses, and decay properties (as shown in Table \ref{tab:charm_props}), the jets containing them are expected to have slightly different properties. Distinguishing variables can be generated from the energy-momentum four vectors of the jet constituents. It is necessary to limit the distinguishing variables to ones that could be calculated from the data available from the ATLAS detector so that when the machine learning algorithm is applied onto real data, the distinguishing variables can still be calculated.
 
 \begin{table}[h]
     \centering
@@ -123,7 +125,7 @@ As can be seen in Table \ref{tab:charm_props}, the lifetimes of the $D_s^+$ and 
         \caption{Distribution of mean $d_0$}
         \label{fig:d0}
     \end{subfigure}
-    \caption{Distributions of distinguishing variables for charmed hadrons. A sample of 1 million charm hadron events was generated}
+    \caption{Distributions of distinguishing variables for charmed hadrons. A sample of 1 million charm hadron events was generated with a minimum $p_T$ of 20 GeV.}
     \label{fig:charm_vars}
 \end{figure}
 
@@ -143,8 +145,11 @@ To find this threshold, a balance must be struck between signal efficiency, whic
 
 \section{Future Plans}
 
-\subsection{Detector Simulation and Realism}
-To further improve the realism of the event generator, a detector will be simulated, possibly using DELPHES. This will allow detector effects, such as efficiency, resolution (via a Gaussian smear) and rejection of high pseudorapidity events, to be included in the simulation. This will improve the realism of the event generation, leading to more accurate training of the machine learning model.
+\subsection{Machine Learning Model Development}
+The development of the machine learning model will be split into two paths. The author will carry on with a simpler Feed Forward Neural Network (FFNN) approach, continuing the current approach of using summary variables and further developing and fine-tuning those summary variables. In parallel, the project partner will develop a more advanced neural network architecture that can take in the four vectors of the constituents directly, as opposed to using summary variables.
+
+\subsection{Event Generation Development}
+The approach of using $d_0$ thresholds to identify tracks originating from the charmed hadron will be further developed for mass-based variables, and will be applied to lifetime-based variables as well. The effectiveness of using this approach will be evaluated by comparing the performance of the machine learning model for the two different approaches. In addition, the ATLAS detector will be simulated, possibly using DELPHES. This will allow detector effects, such as efficiency, resolution (via a Gaussian smear) and rejection of high pseudorapidity events, to be included in the simulation. This will improve the realism of the event generation, leading to more accurate training of the machine learning model.
 
 \bibliographystyle{plain}
 \bibliography{references}

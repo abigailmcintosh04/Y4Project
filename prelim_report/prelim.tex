@@ -4,6 +4,7 @@
 \usepackage{graphicx}
 \usepackage[a4paper, margin=2cm]{geometry}
 \usepackage{hyperref}
+\usepackage{subcaption}
 
 \begin{document}
 
@@ -107,6 +108,26 @@ where $p_T$ is the transverse momentum of the charmed hadron, $p_x$ and $p_y$ ar
 As can be seen in \ref{fig:vertices}, $L_{xy}$ and $d_0$ are directly related to the displacement of the charmed hadron from the PV. For $L_{xy}$, as this is the transverse distance between the PV and SV, this is directly related to the hadron's lifetime. For $d_0$, as this is the distance of closest approach of the track to the PV, tracks from longer lived hadtons will on average have a larger $d_0$.
 
 As can be seen in Table \ref{tab:charm_props}, the lifetimes of the $D_s^+$ and the $D_0$ mesons are similar, within 100fs of each other. This means that purely relying on lifetime-related variables such as $L_{xy}$ and $d_0$ may not be sufficient to distinguish between jets containing those mesons. As a result, distinguishing variables related to the mass will also be investigated.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/lxy.png}
+        \caption{Distribution of $L_{xy}$}
+        \label{fig:lxy}
+    \end{subfigure}\hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/d0_mean.png}
+        \caption{Distribution of mean $d_0$}
+        \label{fig:d0}
+    \end{subfigure}
+    \caption{Distributions of distinguishing variables for charmed hadrons. A sample of 1 million charm hadron events was generated}
+    \label{fig:charm_vars}
+\end{figure}
+
+\subsection{Impact Parameter Threshold for Mass-based Variables}
 
 Mass-based variables require a more nuanced approach. The current approach for calculating lifetime-related summary variables is to take averages across all jet constituents, not just those from the charmed hadron, as despite having the truth information to know which constituents come from the charmed hadron in the event generation, this information will not be available when using real data. The differing values of the lifetime-related variables will affect the averages across the whole jet, meaning this approach is valid. However, for mass-based variables, as the hadron mass is only a small fraction of the total jet mass, the effect on the average could be too small to detect. Hence, an alternative approach was taken, where tracks were filtered based on their $d_0$. Summary variables were calculated for tracks with a $d_0$ above a specific threshold, as those tracks are more likely to have originated from the charmed hadron. 
 

@@ -26,6 +26,9 @@
   \setlength{\belowdisplayshortskip}{0pt plus 1pt}
 }
 
+% Make image captions smaller
+\usepackage[font=small,labelfont=bf]{caption}
+
 \begin{document}
 
 \begin{titlepage}
@@ -41,7 +44,7 @@
         \vspace{1.5cm}
         \large
         \textbf{Author: } Abigail McIntosh \\
-        \textbf{Project Partner:} Sinead Leckey \\
+        \textbf{Project Partner:} Sinéad Leckey \\
         \textbf{Supervisors:} Dr Andrew Chisholm, Dr Eleni Skorda \\
 
         \vspace{1.0cm}
@@ -50,7 +53,7 @@
         \vspace{0.2cm}
         \begin{minipage}{0.9\textwidth}
             \small
-            [Abstract Placeholder] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            The assumption of universality in heavy quark fragmentation is a component of Monte Carlo event generators, however recent measurements from ALICE have suggested this assumption could be false. This project aims to develop a machine learning model that can classify jets based on the charmed hadron(s) they contain. Monte Carlo events were generated using PYTHIA, and distinguishing variables $d_0$ and $L_{xy}$ were identified. A method of applying a $d_0$ threshold to help distinguish tracks originating from the charmed hadron has been proposed to improve the effectiveness of mass-based variables. A machine learning model will be trained on these simulations, and then applied to ATLAS data to measure the ratio of $\Lambda_c^+$ baryons to D mesons to test universality of charm quark fragmentation.
         \end{minipage}
         \vfill            
 
@@ -77,12 +80,12 @@ Quantum Chromodynamics (QCD) describes the strong interaction between quarks, me
 Fragmentation is the non-perturbative process by which coloured partons are confined into colourless hadrons. The fragmentation function describes the probability density that a certain parton produces a hadron \cite{pdg2018}. Historically, it has been assumed fragmentation functions are universal, meaning they are independent of the hard scattering process and should be identical for pp and e$^+$e$^-$ collisions. However, recent measurements of charm quark hadronisation by the ALICE collaboration found a larger fraction hadronising into baryons in pp collisions compared to e$^+$e$^-$ collisions \cite{alice2023charm}, suggesting fragmentation may not be universal and instead dependent on the environment.
 
 \subsection{Project Aims}
-This project explores heavy quark fragmentation using a machine learning (ML) approach \cite{ML_review}, focusing on charm quarks. An ML model will distinguish between jets containing different charmed hadrons, specifically $D^0$, $D^+$, $D_s^+$ mesons, $\Lambda_c^+$ baryons, and their corresponding antiparticles. An ML-based approach has a higher efficiency than traditional methods using reconstruction due to the need to identify all the charm hadron's decay products. The model will be trained on Monte Carlo (MC) events, and then applied to data from ATLAS. By comparing the ratio of charm hadrons identified in the real data to the MC simulated data, the universality of charm quark fragmentation can be investigated.
+This project explores heavy quark fragmentation using a machine learning (ML) approach \cite{ML_review}, focusing on charm quarks. An ML model will distinguish between jets containing different charmed hadrons, specifically $D^0$, $D^+$, $D_s^+$ mesons, $\Lambda_c^+$ baryons, and their corresponding antiparticles. An ML-based approach has a higher efficiency than traditional methods using reconstruction due to the need to identify all the charmed hadron's decay products. The model will be trained on Monte Carlo (MC) events, and then applied to data from ATLAS. By comparing the ratio of charmed hadrons identified in the real data to the MC simulated data, the universality of charm quark fragmentation can be investigated.
 
 \subsection{Motivations}
-Phenomenological models describing fragmentation require tuning of parameters matching experimental data. By improving the efficiency of identifying charm hadrons, the accuracy of MC generators such as PYTHIA can be improved.
+Phenomenological models describing fragmentation require tuning of parameters matching experimental data. By improving the efficiency of identifying charmed hadrons, the accuracy of MC generators such as PYTHIA can be improved.
 
-For a Higgs mass of 125~GeV, the predicted branching fraction of $H \rightarrow c \bar{c}$ is 3\% \cite{higgs}. This decay is unobserved due to its rarity, similarity to other events and dominance of background processes. To detect this decay, charm jets need to be tagged with a high accuracy. The jet tagging algorithms are typically trained on MC simulated data, which typically assume universality. Hence, if fragmentation is not universal in the ATLAS data, the jet tagging algorithms are not being trained correctly, and so would perform worse when applied to real data. The development of an ML model to classify charm hadrons allows a comparison between MC and ATLAS data to be made, testing the assumption of universality.
+For a Higgs mass of 125~GeV, the predicted branching fraction of $H \rightarrow c \bar{c}$ is 3\% \cite{higgs}. This decay is unobserved due to its rarity, similarity to other events and dominance of background processes. To detect this decay, charm jets need to be tagged with a high accuracy. The jet tagging algorithms are typically trained on MC simulated data, which typically assume universality. Hence, if fragmentation is not universal in the ATLAS data, the jet tagging algorithms are not being trained correctly, and so would perform worse when applied to real data. The development of an ML model to classify charmed hadrons allows a comparison between MC and ATLAS data to be made, testing the assumption of universality.
 
 % ---------- EVENT GENERATION ---------- %
 
@@ -95,10 +98,10 @@ FastJet PseudoJet objects \cite{fastjet} are created for each charged final stat
 PYTHIA uses the Lund string model to simulate hadronisation \cite{pythia8}. In this model, when a quark-antiquark pair is separated, the gluon field lines collapse into a string. When it becomes energetically favourable, the string will break, creating a new quark-antiquark pair. The probability of creating a quark pair is related to the quarks' masses, hence the production of charm and bottom quarks is suppressed \cite{lundmodel}. Therefore, the production of $\Lambda_c$ baryons is suppressed compared to D mesons due to the need to create a $ud-\bar{u}\bar{d}$ diquark. The suppression of diquark production to quark production in PYTHIA is set to 0.081 \cite{pythia8}, where universality is assumed.
 
 \subsection{Event Structure}
-Only constituents of the jet matched to the charm quark are used to calculate the summary variables. Figure \ref{fig:eta_phi} shows a typical event in eta-phi space, with the charm hadrons outlined and the jet constituents  scaled by their $p_T$. A minimum $p_T$ of 10~GeV is applied so only high $p_T$ jets are shown. As can be seen, any given event can include jets containing charmed hadrons, charmed hadrons not matched to any jets, and jets not containing any charmed hadrons.
+Only constituents of the jet matched to the charm quark are used to calculate the summary variables. Figure \ref{fig:eta_phi} shows a typical event in $\eta-\phi$ space, with the charmed hadrons outlined and the jet constituents  scaled by their $p_T$. A minimum $p_T$ of 10~GeV is applied so only high $p_T$ jets are shown. As can be seen, any given event can include jets containing charmed hadrons, charmed hadrons not matched to any jets, and jets not containing any charmed hadrons.
 
 \subsection{ATLAS Detector}
-The ATLAS detector consists of four main layers: the inner detector, the electromagnetic and hadronic calorimeters, and the muon spectrometer \cite{atlas2008}. The inner detector is responsible for tracking charged particles, meaning the primary (PV) and secondary (SV) vertices can be reconstructed and used for calculating variables. The calorimeters measure the energy of particles, allowing particle four-momenta to be reconstructed. Distinguishing variables solely rely on these available measurements to ensure they can be applied to ATLAS data. 
+The ATLAS detector consists of four main layers: the inner detector, the electromagnetic and hadronic calorimeters, and the muon spectrometer \cite{atlas2008}. The inner detector is responsible for tracking charged particles, meaning the primary (PV) and secondary (SV) vertices can be reconstructed and used for calculating variables. The calorimeters measure the energy of particles, allowing track four-momenta to be reconstructed. Distinguishing variables solely rely on these available measurements to ensure they can be applied to ATLAS data. 
 
 % ---------- MACHINE LEARNING ---------- %
 
@@ -116,7 +119,7 @@ To explore the fragmentation of charm quarks, an ML model will be developed to c
     \begin{minipage}{0.56\textwidth}
         \centering
         \includegraphics[width=\linewidth]{images/eta_phi_new.png}
-        \caption{Eta-phi plot showing jet constituents for a single event, with charmed hadrons outlined in black. A minimum $p_T$ of 10~GeV is applied.}
+        \caption{$\eta-\phi$ plot showing jet constituents for a single event, with charmed hadrons outlined in black. A minimum $p_T$ of 10~GeV is applied.}
         \label{fig:eta_phi}
     \end{minipage}
 \end{figure}
@@ -142,58 +145,51 @@ Jets with different charmed hadrons will have different properties due to the di
     \label{tab:charm_props}
 \end{table}
 
-Key distinguishing variables identified so far are $L_{xy}$, the transverse decay length of the charmed hadron, and $d_0$, the transverse impact parameter of the charmed hadron. They are defined as follows:
-\begin{equation}
-    L_{xy} = \sqrt{(x_{SV}-x_{PV})^2 + (y_{SV}-y_{PV})^2},
-\end{equation}
-\begin{equation}
-    d_0 = \frac{1}{p_T} (x_{PV} p_y - y_{PV} p_x),
-\end{equation}
-where ($x_{PV}$, $y_{PV})$ and $(x_{SV}$, $y_{SV})$ are the x and y coordinates of the PV and SV respectively, $p_x$ and $p_y$ are the x and y components of the track momentum respectively, and $p_T$ is the transverse momentum of the track.
+Key distinguishing variables identified so far are $L_{xy}$, the transverse decay length of the charmed hadron, and $d_0$, the transverse impact parameter of the charmed hadron. They are defined as $L_{xy} = \sqrt{(x_{SV}-x_{PV})^2 + (y_{SV}-y_{PV})^2}$ and $d_0 = (x_{PV} p_y - y_{PV} p_x)/p_T$, where ($x_{PV}$, $y_{PV})$ and $(x_{SV}$, $y_{SV})$ are the x and y coordinates of the PV and SV respectively, $p_x$ and $p_y$ are the x and y components of the track momentum respectively, and $p_T$ is the transverse momentum of the track.
 
-$L_{xy}$ is defined for the whole jet, based on the reconstructed SV of the charmed hadron, which is atypical of the currently used and planned summary variables. However, $d_0$ is defined for each individual track. Therefore, the mean of all the track $d_0$ values will be used as the distinguishing variable. This approach of calculating means will likely be the case for other distinguishing variables.
+$L_{xy}$ is defined for the whole jet, based on the reconstructed SV of the charmed hadron, which is atypical of the currently used and planned summary variables. However, $d_0$ is defined for each individual track. Therefore, the mean of all the track $d_0$ values will be used as the distinguishing variable. This approach of calculating the mean will likely be the case for other distinguishing variables.
 
 As can be seen in Figure \ref{fig:vertices}, $L_{xy}$ and $d_0$ are directly related to the displacement of the charmed hadron from the PV. As $L_{xy}$ is the transverse distance between the PV and SV, this is directly related to the hadron's lifetime. For $d_0$, as this is the distance of closest approach of the track to the PV, tracks from longer lived hadrons will on average have a larger $d_0$ due to them not originating from the PV.
 
-As can be seen in Table \ref{tab:charm_props}, the lifetimes of the $D_s^+$ and the $D_0$ mesons are similar, within 100~fs of each other. Thus, relying purely on lifetime-related variables may not be enough to distinguish the charm hadrons, so mass-based variables will also be explored. 
+As can be seen in Table \ref{tab:charm_props}, the lifetimes of the $D_s^+$ and the $D_0$ mesons are similar, within 100~fs of each other. Thus, relying purely on lifetime-related variables may not be enough to distinguish the charmed hadrons, so mass-based variables will also be explored. 
 
 \begin{figure}[ht]
     \centering
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\linewidth]{images/lxy.png}
-        \caption{Distribution of $L_{xy}$}
+        \caption{Distribution of $L_{xy}$.}
         \label{fig:lxy}
     \end{subfigure}\hfill
     \begin{subfigure}{0.48\textwidth}
         \centering
         \includegraphics[width=\linewidth]{images/d0_mean.png}
-        \caption{Distribution of mean $d_0$}
+        \caption{Distribution of mean $d_0$ (log scale).}
         \label{fig:d0}
     \end{subfigure}
-    \caption{Distributions of distinguishing variables for charmed hadrons for sample of 1 million charm hadron events generated with a minimum $p_T$ of 20~GeV.}
+    \caption{Distributions of distinguishing variables for charmed hadrons for sample of 1 million charmed hadron events generated with a minimum $p_T$ of 20~GeV.}
     \label{fig:charm_vars}
 \end{figure}
 
-\subsection{Impact Parameter Threshold for Mass-based Variables}
+\subsection{Impact Parameter Threshold for Mass-Based Variables}
 
-The current approach for calculating lifetime-related summary variables is to average across all jet constituents, as the ATLAS data lacks truth information about track origin. For mass-based variables, the hadron mass is only a small fraction of the total jet mass, so the effect on the average could be too small to detect. An alternative approach has been proposed, where tracks will be filtered based on their $d_0$ values. Summary variables will be calculated for tracks with a $d_0$ above a specific threshold, as those tracks are more likely to have originated from the charmed hadron. 
+The current approach for calculating lifetime-related summary variables is to average across all jet constituents, as the ATLAS data lacks truth information about track origin. For mass-based variables, the hadron mass is only a small fraction of the total jet mass, so the effect on the average could be too small to detect. An alternative approach has been proposed, where tracks will be filtered based on their $d_0$ values. Summary variables will be calculated for tracks with a $d_0$ above a specific threshold, as those tracks are more likely to have originated from the charmed hadron decay. 
 
 To find this threshold, a balance must be struck between signal efficiency and background rejection, as a larger signal efficiency leads to a lower background rejection rate, and vice versa. To find a suitable $d_0$ threshold, signal efficiency and background rejection can be plotted on the same axes for different $d_0$ thresholds.
 
 % ---------- FUTURE PLANS ---------- %
 
 \section{Project Plan and Timeline}
-The initial area of focus for the first two weeks after resuming the project will be implementing and testing the $d_0$ threshold approach for mass-based variables, and finetuning distinguishing variables. Then, two weeks will be dedicated to training an ML model, in the author's case a Feed Forward Neural Network (FFNN), and evaluating its performance. After this, two weeks will be spent simulating the ATLAS detector effects, retraining and reevaluating the model afterwards. The final two weeks will be spent applying the trained model to real ATLAS data and analysing the results. This gives a two week buffer period before the deadline to account for unforeseen issues.
+The initial area of focus for the first two weeks after resuming the project will be implementing and testing the $d_0$ threshold approach for mass-based variables, and finetuning distinguishing variables. Then, two weeks will be dedicated to training an ML model, specifically a Feed Forward Neural Network (FFNN), and evaluating its performance. After this, two weeks will be spent simulating the ATLAS detector effects, retraining and reevaluating the model afterwards. The final two weeks will be spent applying the trained model to real ATLAS data and analysing the results. This gives a two week buffer period before the deadline to account for unforeseen issues.
 
 \subsection{Distinguishing Variable Development}
-The approach of using $d_0$ thresholds to identify tracks originating from the charmed hadron will be further developed to incorporate mass-based variables, and will be applied to lifetime-based variables as well. The effectiveness of using this approach will be evaluated by comparing the performance of the ML model for the two different approaches. Variables that will be explored are the invariant mass of the tracks above the $d_0$ threshold, and the fractional $p_T$ of those tracks compared to the jet. 
+The approach of using $d_0$ thresholds to identify tracks originating from the charmed hadron will be further developed to incorporate mass-based variables, and will be applied to lifetime-based variables as well. The effectiveness of using this approach will be evaluated by comparing the performance of the ML model for the two different approaches. Variables that will be explored include the invariant mass of the tracks above the $d_0$ threshold, and the fractional $p_T$ of those tracks compared to the jet. 
 
 \subsection{Machine Learning Model Development}
 The development of the ML model will be split into two paths. The author will carry on with a simpler FFNN approach, continuing the current approach of using summary variables. In parallel, the project partner will develop a more advanced neural network architecture that can take the four-momenta of the constituents directly as inputs. These approaches will then be compared to determine their relative effectiveness.
 
 \subsection{Detector Simulation}
-In addition, the ATLAS detector will be simulated, potentially using DELPHES \cite{delphes} due to the computational speed advantages compared to GEANT4. This will allow detector effects, such as efficiency, resolution and rejection of high pseudorapidity events, to be included in the simulation, improving the realism of the event generation and leading to more accurate training of the ML model. If implementing DELPHES is too challenging, the detector effects can be approximated with Gaussian smearing.
+In addition, the ATLAS detector will be simulated, potentially using DELPHES \cite{delphes} due to the computational speed advantages compared to GEANT4. This will allow detector effects, such as efficiency, resolution and rejection of high pseudorapidity events, to be included in the simulation, improving the realism of the event generation and leading to more accurate training of the ML model. If implementing DELPHES is too challenging, the detector effects can be manually approximated with Gaussian smearing.
 
 \subsection{Application to ATLAS Data}
 Once MC simulated data is realistic, the trained ML model will be applied to ATLAS data. As this data contains experimental uncertainties, the transverse impact parameter significance, defined as $d_0$ divided by its uncertainty, will be evaluated and potentially incorporated. The ratio of $\Lambda_c^+$ baryons to D mesons in the ATLAS data will be then compared to that in the most realistic MC simulated data to investigate the universality of charm quark fragmentation.
@@ -202,7 +198,7 @@ A challenge in this section will be distinguishing between non-universality effe
 
 % ---------- REFERENCES ---------- %
 \pagebreak
-\bibliographystyle{plain}
+\bibliographystyle{unsrt}
 \bibliography{references}
 
 \end{document}

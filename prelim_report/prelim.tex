@@ -190,16 +190,16 @@ The initial area of focus for the first two weeks after resuming the project wil
 The approach of using $d_0$ thresholds to identify tracks originating from the charmed hadron will be further developed for mass-based variables, and will be applied to lifetime-based variables as well. The effectiveness of using this approach will be evaluated by comparing the performance of the ML model for the two different approaches. This will allow mass-based distinguishing variables to be incorporated. Variables that will be explored are the invariant mass of the tracks above the $d_0$ threshold, and the fractional $p_T$ of those tracks compared to the jet. 
 
 \subsection{Machine Learning Model Development}
-The development of the ML model will be split into two paths. The author will carry on with a simpler FFNN approach, continuing the current approach of using summary variables and further developing and fine-tuning those summary variables. In parallel, the project partner will develop a more advanced neural network architecture that can take in the four-momenta of the constituents directly, as opposed to using summary variables. These approaches will then be compared to determine their relative effectiveness.
+The development of the ML model will be split into two paths. The author will carry on with a simpler FFNN approach, continuing the current approach of using summary variables. In parallel, the project partner will develop a more advanced neural network architecture that can take the four-momenta of the constituents directly as inputs. These approaches will then be compared to determine their relative effectiveness.
 
 \subsection{Detector Simulation}
-In addition, the ATLAS detector will be simulated, possibly using DELPHES. This will allow detector effects, such as efficiency, resolution (via a Gaussian smear) and rejection of high pseudorapidity events, to be included in the simulation. This will improve the realism of the event generation, leading to more accurate training of the ML model.
+In addition, the ATLAS detector will be simulated, potentially using DELPHES \cite{delphes}. This will allow detector effects, such as efficiency, resolution and rejection of high pseudorapidity events, to be included in the simulation. This will improve the realism of the event generation, leading to more accurate training of the ML model.
 
 \subsection{Application to ATLAS Data}
-Once the MC simulated data is as realistic as possible, the trained ML model will be applied to real data from ATLAS. As this data contains experimental uncertainties, the transverse impact parameter significance, defined as $d_0$ divided by its uncertainty, will be evaluated and potentially incorporated. The ratio of $\Lambda_c^+$ baryons to D mesons in the ATLAS data will be then compared to that in the most realistic MC simulated data to investigate the universality of charm quark fragmentation.
+Once MC simulated data is realistic, the trained ML model will be applied to ATLAS data. As this data contains experimental uncertainties, the transverse impact parameter significance, defined as $d_0$ divided by its uncertainty, will be evaluated and potentially incorporated. The ratio of $\Lambda_c^+$ baryons to D mesons in the ATLAS data will be then compared to that in the most realistic MC simulated data to investigate the universality of charm quark fragmentation.
 
 % ---------- REFERENCES ---------- %
-
+\pagebreak
 \bibliographystyle{plain}
 \bibliography{references}
 

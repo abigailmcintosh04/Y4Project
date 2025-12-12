@@ -6,6 +6,24 @@
 \usepackage{hyperref}
 \usepackage{subcaption}
 
+% --- SPACE SAVING PACKAGES & SETTINGS --- %
+\usepackage{titlesec} 
+% Reduce space around sections {left}{before}{after}
+\titlespacing\section{0pt}{12pt plus 4pt minus 2pt}{6pt plus 2pt minus 2pt}
+\titlespacing\subsection{0pt}{10pt plus 4pt minus 2pt}{4pt plus 2pt minus 2pt}
+
+% Reduce space around figures and tables
+\setlength{\textfloatsep}{10pt plus 1.0pt minus 2.0pt}
+\setlength{\floatsep}{10pt plus 1.0pt minus 2.0pt}
+\setlength{\intextsep}{10pt plus 1.0pt minus 2.0pt}
+
+% Reduce space around equations
+\AtBeginDocument{
+  \setlength{\abovedisplayskip}{6pt plus 2pt minus 2pt}
+  \setlength{\belowdisplayskip}{6pt plus 2pt minus 2pt}
+}
+% ---------------------------------------- %
+
 \begin{document}
 
 \begin{titlepage}
@@ -96,7 +114,7 @@ To explore the fragmentation of charm quarks, an ML model will be developed to c
     \begin{minipage}{0.56\textwidth}
         \centering
         \includegraphics[width=\linewidth]{images/eta_phi_new.png}
-        \caption{Eta-phi plot showing jet constituents for a single event, with charmed hadrons outlined in black. A minimum $p_T$ of 10GeV is applied so only high $p_T$ jets are shown.}
+        \caption{Eta-phi plot showing jet constituents for a single event, with charmed hadrons outlined in black. A minimum $p_T$ of 10GeV is applied.}
         \label{fig:eta_phi}
     \end{minipage}
 \end{figure}
@@ -104,8 +122,10 @@ To explore the fragmentation of charm quarks, an ML model will be developed to c
 \subsection{Input Features}
 As the charmed hadrons have different lifetimes, masses, and decay properties (as shown in Table \ref{tab:charm_props}), the jets containing them are expected to have slightly different properties. Distinguishing variables are calculated using the available ATLAS detector data as mentioned in Section 2.3 to ensure the model can be applied to the ATLAS data.
 
+% Reduced table spacing
 \begin{table}[ht]
     \centering
+    \renewcommand{\arraystretch}{0.9} % Make table slightly more compact
     \begin{tabular}{|c|c|c|c|}
         \hline
         Hadron & Quark Content & Mass (MeV) & Lifetime (fs) \\
@@ -175,6 +195,8 @@ In addition, the ATLAS detector will be simulated, possibly using DELPHES. This 
 
 \subsection{Application to ATLAS Data}
 Once the MC simulated data is as realistic as possible, the trained ML model will be applied to real data from ATLAS. As this data contains experimental uncertainties, the transverse impact parameter significance, defined as $d_0$ divided by its uncertainty, will be evaluated and potentially incorporated. The ratio of $\Lambda_c^+$ baryons to D mesons in the ATLAS data will be then compared to that in the most realistic MC simulated data to investigate the universality of charm quark fragmentation.
+
+% ---------- REFERENCES ---------- %
 
 \bibliographystyle{plain}
 \bibliography{references}

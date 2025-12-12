@@ -6,23 +6,25 @@
 \usepackage{hyperref}
 \usepackage{subcaption}
 
-% --- SPACE SAVING PACKAGES & SETTINGS --- %
+% --- AGGRESSIVE SPACE SAVING --- %
 \usepackage{titlesec} 
-% Reduce space around sections {left}{before}{after}
-\titlespacing\section{0pt}{12pt plus 4pt minus 2pt}{6pt plus 2pt minus 2pt}
-\titlespacing\subsection{0pt}{10pt plus 4pt minus 2pt}{4pt plus 2pt minus 2pt}
+% {command}{indent}{space-before}{space-after}
+% Negative values in 'space-before' pull the header up closer to the previous paragraph
+\titlespacing*{\section}{0pt}{6pt plus 2pt minus 2pt}{2pt plus 1pt minus 1pt}
+\titlespacing*{\subsection}{0pt}{4pt plus 2pt minus 2pt}{1pt plus 1pt minus 1pt}
 
-% Reduce space around figures and tables
-\setlength{\textfloatsep}{10pt plus 1.0pt minus 2.0pt}
-\setlength{\floatsep}{10pt plus 1.0pt minus 2.0pt}
-\setlength{\intextsep}{10pt plus 1.0pt minus 2.0pt}
+% Tighten space around figures
+\setlength{\textfloatsep}{4pt plus 2.0pt minus 2.0pt}
+\setlength{\floatsep}{4pt plus 2.0pt minus 2.0pt}
+\setlength{\intextsep}{4pt plus 2.0pt minus 2.0pt}
 
-% Reduce space around equations
+% Tighten space around equations
 \AtBeginDocument{
-  \setlength{\abovedisplayskip}{6pt plus 2pt minus 2pt}
-  \setlength{\belowdisplayskip}{6pt plus 2pt minus 2pt}
+  \setlength{\abovedisplayskip}{3pt plus 1pt minus 1pt}
+  \setlength{\belowdisplayskip}{3pt plus 1pt minus 1pt}
+  \setlength{\abovedisplayshortskip}{0pt plus 1pt}
+  \setlength{\belowdisplayshortskip}{0pt plus 1pt}
 }
-% ---------------------------------------- %
 
 \begin{document}
 
@@ -70,17 +72,17 @@
 \section{Introduction and Motivations}
 
 \subsection{QCD, Fragmentation and Universality}
-Quantum Chromodynamics (QCD) is the quantum theory describing the strong interaction between quarks, mediated by gluons. The self-coupling of gluons leads to two regimes: asymptotic freedom at high energies, where perturbative QCD (pQCD) is applicable, and confinement at low energies, requiring non-perturbative approaches. For pp collisions at the LHC, pQCD can describe the hard scattering, whereas fragmentation has to be modelled pheonomenologically due to the low energies involved. 
+Quantum Chromodynamics (QCD) describes the strong interaction between quarks, mediated by gluons. The self-coupling of gluons leads to two regimes: asymptotic freedom at high energies, where perturbative QCD (pQCD) is applicable, and confinement at low energies, requiring non-perturbative approaches. At the LHC, pQCD describes the high-energy hard scattering, whereas low-energy fragmentation has to be modelled pheonomenologically.
 
-Fragmentation is the non-perturbative process by which coloured partons are confined into colourless hadrons. The fragmentation function descrbes the probability density that a certain parton produces a hadron based on the fraction of momentum transferred \cite{pdg2018}. Historically, it has been assumed fragmentation functions are universal, meaning they are independent of the hard scattering process and should be identical for pp and e$^+$e$^-$ collisions. However, recent measurements of charm quark hadronisation at the ALICE collaboration found a larger fraction hadronising into baryons in pp collisions compared to e$^+$e$^-$ collisions \cite{alice2023charm}, suggesting fragmentation may not be universal and instead dependent on the environment.
+Fragmentation is the non-perturbative process by which coloured partons are confined into colourless hadrons. The fragmentation function descrbes the probability density that a certain parton produces a hadron \cite{pdg2018}. Historically, it has been assumed fragmentation functions are universal, meaning they are independent of the hard scattering process and should be identical for pp and e$^+$e$^-$ collisions. However, recent measurements of charm quark hadronisation at the ALICE collaboration found a larger fraction hadronising into baryons in pp collisions compared to e$^+$e$^-$ collisions \cite{alice2023charm}, suggesting fragmentation may not be universal and instead dependent on the environment.
 
 \subsection{Project Aims}
-The aim of this project is to explore heavy quark fragmentation using a machine learning (ML) approach, focusing on charm quarks. An ML model will be created to distinguish between jets containing different charmed hadrons, specifically $D^0$, $D^+$, $D_s^+$ mesons, $\Lambda_c^+$ baryons, and their corresponding antiparticles. An ML-based approach is chosen as traditional methods using reconstruction have low efficiency due to the need to identify all the charm hadron's decay products. The model will be trained on Monte Carlo (MC) simulated events, and then be applied to real data from the ATLAS detector at the LHC. By comparing the ratio of charm hadrons identified in the real data to the MC simulated data, the universality of the charm quark fragmentation can be investigated.
+This project explores heavy quark fragmentation using a machine learning (ML) approach, focusing on charm quarks. An ML model will distinguish between jets containing different charmed hadrons, specifically $D^0$, $D^+$, $D_s^+$ mesons, $\Lambda_c^+$ baryons, and their corresponding antiparticles. An ML-based approach has a higher efficiency than traditional methods using reconstruction due to the need to identify all the charm hadron's decay products. The model will be trained on Monte Carlo (MC) events, and then applied to data from ATLAS. By comparing the ratio of charm hadrons identified in the real data to the MC simulated data, the universality of charm quark fragmentation can be investigated.
 
 \subsection{Motivations}
-As mentioned earlier, phenomenological models are needed to describe fragmentation, therefore these models need their parameters tuned to match experimental data. By improving the efficiency of identifying charm hadrons, the accuracy of Monte Carlo generators such as PYTHIA can be improved.
+Phenomenological models like fragmentation require tuning of parameters matching experimental data. By improving the efficiency of identifying charm hadrons, the accuracy of Monte Carlo generators such as PYTHIA can be improved.
 
-For a Higgs mass of 125 GeV, the predicted branching fraction of $H \rightarrow c \bar{c}$ is 3\% \cite{higgs}. This decay is yet to be detected, due to its rarity, similarity to other events and domination of background process. In order to detect this decay, charm jets need to be tagged with a high accuracy. The jet tagging algorithms are typically trained on MC simulated data, which typically assume universality. Hence, if fragmentation is not universal in the ATLAS data, the jet tagging algorithms are not being trained correctly, and so would perform worse when applied to real data. By developing an ML model to identify charm hadrons, a comparison between MC and ATLAS data can be made, testing the assumption of universality.
+For a Higgs mass of 125 GeV, the predicted branching fraction of $H \rightarrow c \bar{c}$ is 3\% \cite{higgs}. This decay is undetected due to its rarity, similarity to other events and domination of background processes. To detect this decay, charm jets need to be tagged with a high accuracy. The jet tagging algorithms are typically trained on MC simulated data, which typically assume universality. Hence, if fragmentation is not universal in the ATLAS data, the jet tagging algorithms are not being trained correctly, and so would perform worse when applied to real data. The development of an ML model to classify charm hadrons allows a comparison between MC and ATLAS data to be made, testing the assumption of universality.
 
 % ---------- EVENT GENERATION ---------- %
 

@@ -108,7 +108,7 @@ def single_event(event, jet_def, ptmin, consts=False):
 
         # Create PseudoJets and find hadrons.
         for p in event:
-            if p.isFinal():
+            if p.isFinal() and p.isCharged():
                 pj = fastjet.PseudoJet(p.px(), p.py(), p.pz(), p.e())
                 pj.set_user_index(p.index())
                 final_state_pseudojets.append(pj)
@@ -149,7 +149,6 @@ def single_event(event, jet_def, ptmin, consts=False):
                 # Get constituent particles, excluding charm hadrons/quarks.
                 particles = [event[c.user_index()] for c in constituents]
                 valid_particles = [p for p in particles if p.id() not in hadron_id_set and p.id() not in quark_id_set]
-
                 if not valid_particles:
                     continue
 

@@ -97,7 +97,7 @@ def configure_pythia():
     return pythia
 
 
-def single_event(event, jet_def, ptmin, consts=False):
+def single_event(event, jet_def, ptmin, consts=False, d0_cutoff=0.0):
     '''
     Process a single Pythia event to find charm hadrons and their associated jets.
     Returns a list of records for each charm hadron found in the event.'''
@@ -174,8 +174,13 @@ def single_event(event, jet_def, ptmin, consts=False):
                     d0 = np.where(pt > 1e-9, (xProd * py - yProd * px) / pt, 0.0)
                     z0 = np.where(pt > 1e-9, zProd - (xProd * px + yProd * py) * (pz / (pt**2)), 0.0)
                 
-                d0_mean = np.mean(d0)
-                z0_mean = np.mean(z0)
+                mask = np.abs(d0) > d0_cutoff
+                if np.any(mask):
+                    d0_mean = np.mean(d0[mask])
+                    z0_mean = np.mean(z0[mask])
+                else:
+                    d0_mean = 0.0
+                    z0_mean = 0.0
 
                 # Use the vectorized deltaR function.
                 deltaR_vals = deltaR_vec(best_jet.eta(), best_jet.phi(), etas, phis)
@@ -196,7 +201,7 @@ def single_event(event, jet_def, ptmin, consts=False):
     return event_records
 
 
-def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, ptmin):
+def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, ptmin, d0_cutoff=0.0):
     '''Main function to generate events and store them in an HDF5 file.'''
     start_time = time.time()
     last_report_time = start_time
@@ -219,7 +224,7 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, 
             if not pythia.next():
                 continue
 
-            new_records = single_event(pythia.event, jet_def, ptmin)
+            new_records = single_event(pythia.event, jet_def, ptmin, d0_cutoff=d0_cutoff)
             if new_records:
                 buffer.extend(new_records)
                 charm_events += len(new_records)
@@ -274,6 +279,8 @@ def launch_shards(script_path, args):
             '--shards', str(args.shards),
             '--shard-index', str(i)
         ]
+        if hasattr(args, 'd0_cutoff'):
+            command.extend(['--d0-cutoff', str(args.d0_cutoff)])
         p = subprocess.Popen(command) # Launch the worker process in the background.
         processes.append(p)
     

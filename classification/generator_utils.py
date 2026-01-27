@@ -165,30 +165,44 @@ def single_event(event, jet_def, ptmin, consts=False, d0_cutoff=0.0):
                 phis = np.array([p.phi() for p in valid_particles])
                 pt = np.sqrt(px**2 + py**2)
 
-                # Calculate jet-wide variables using numpy sums.
-                px_jet, py_jet, pz_jet, e_jet = np.sum(px), np.sum(py), np.sum(pz), np.sum(e)
-                q_jet = np.sum(q)
-
-                # Calculate mean d0, z0, and deltaR in a vectorized way.
+                # Calculate d0 and z0 for all particles first.
                 with np.errstate(divide='ignore', invalid='ignore'):
                     d0 = np.where(pt > 1e-9, (xProd * py - yProd * px) / pt, 0.0)
                     z0 = np.where(pt > 1e-9, zProd - (xProd * px + yProd * py) * (pz / (pt**2)), 0.0)
                 
+                # Filter particles based on d0 cutoff.
                 mask = np.abs(d0) > d0_cutoff
-                if np.any(mask):
-                    d0_mean = np.mean(d0[mask])
-                    z0_mean = np.mean(z0[mask])
+                px = px[mask]
+                py = py[mask]
+                pz = pz[mask]
+                e = e[mask]
+                q = q[mask]
+                etas = etas[mask]
+                phis = phis[mask]
+                d0 = d0[mask]
+                z0 = z0[mask]
+
+                if len(px) > 0:
+                    # Calculate jet-wide variables using numpy sums of filtered particles.
+                    px_jet, py_jet, pz_jet, e_jet = np.sum(px), np.sum(py), np.sum(pz), np.sum(e)
+                    q_jet = np.sum(q)
+                    
+                    d0_mean = np.mean(d0)
+                    z0_mean = np.mean(z0)
+
+                    # Use the vectorized deltaR function.
+                    deltaR_vals = deltaR_vec(best_jet.eta(), best_jet.phi(), etas, phis)
+                    deltaR_mean = np.mean(deltaR_vals)
+
+                    # Calculate the invariant mass of the jet.
+                    jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
+                    jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
                 else:
+                    q_jet = 0
                     d0_mean = 0.0
                     z0_mean = 0.0
-
-                # Use the vectorized deltaR function.
-                deltaR_vals = deltaR_vec(best_jet.eta(), best_jet.phi(), etas, phis)
-                deltaR_mean = np.mean(deltaR_vals)
-
-                # Calculate the invariant mass of the jet.
-                jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
-                jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
+                    deltaR_mean = 0.0
+                    jet_mass = 0.0
 
                 event_records.append((abs(h.id()), d0_mean, z0_mean, jet_mass, lxy, q_jet, deltaR_mean))
 

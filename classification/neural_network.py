@@ -23,7 +23,7 @@ run_time = datetime.now().strftime("%Y%m%d-%H%M%S")
 run_dir = os.path.join("runs", run_time)
 os.makedirs(run_dir, exist_ok=True)
 
-X = np.vstack([data['e_sum'], data['pt_sum']]).T.astype(np.float32)
+X = np.vstack([data['d0_mean'], data['lxy']]).T.astype(np.float32)
 y_raw = data['pdg_id_hadron']
 
 # Encode hadron PDG IDs as integer classes.

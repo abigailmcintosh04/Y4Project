@@ -72,7 +72,8 @@ history = model.fit(
 val_loss, val_acc = model.evaluate(X_val, y_val, verbose=0)
 print(f"Validation Accuracy: {val_acc:.4f}")
 
-y_pred = np.argmax(model.predict(X_val, verbose=0), axis=1)
+y_proba = model.predict(X_val, verbose=0)
+y_pred = np.argmax(y_proba, axis=1)
 
 cm = confusion_matrix(y_val, y_pred)
 
@@ -82,6 +83,7 @@ with open(os.path.join(run_dir, "history.json"), "w") as f:
 np.savez(os.path.join(run_dir, "validation_results.npz"),
          y_true=y_val,
          y_pred=y_pred,
+         y_proba=y_proba,
          X_val=X_val,
          class_labels=class_labels)
 

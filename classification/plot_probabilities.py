@@ -6,14 +6,10 @@ import tensorflow as tf
 
 # Mapping for nicer plot labels
 pdg_map = {
-    411: 'D+',
-    421: 'D0',
-    431: 'Ds+',
-    4122: 'Lambdac+',
-    -411: 'D-',
-    -421: 'D0_bar',
-    -431: 'Ds-',
-    -4122: 'Lambdac_bar'
+    411: 'D+/D-',
+    421: 'D0/D0_bar',
+    431: 'Ds+/Ds-',
+    4122: 'Lambdac+/Lambdac_bar'
 }
 
 def get_label_name(pdg_id):
@@ -89,7 +85,7 @@ def main():
             
         plt.title(f'Network Confidence when True Particle is {true_name}')
         plt.xlabel('Predicted Probability')
-        plt.ylabel('Normalized Density')
+        plt.ylabel('Normalised Density')
         plt.legend()
         plt.grid(True, alpha=0.3)
         

@@ -15,8 +15,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('input_file', type=str)
 args = parser.parse_args()
 input_file = args.input_file
+full_file = os.path.join('collisions', input_file)
 
-with h5py.File(input_file, 'r') as f:
+with h5py.File(full_file, 'r') as f:
     data = f['events'][:]
 
 run_time = datetime.now().strftime("%Y%m%d-%H%M%S")

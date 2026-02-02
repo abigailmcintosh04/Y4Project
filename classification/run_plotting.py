@@ -46,9 +46,11 @@ plt.savefig(os.path.join('runs', input_file, 'accuracy_curve.png'), dpi=300, bbo
 plt.close()
 
 # Confusion matrix.
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_labels)
+cm_norm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+
+disp = ConfusionMatrixDisplay(confusion_matrix=cm_norm, display_labels=class_labels)
 fig, ax = plt.subplots(figsize=(8,8))
-disp.plot(ax=ax, cmap='Blues', colorbar=False, xticks_rotation='vertical')
-plt.title('Charm Hadron Classification — Confusion Matrix')
+disp.plot(ax=ax, cmap='Blues', colorbar=False, xticks_rotation='vertical', values_format='.2f')
+plt.title('Charm Hadron Classification — Confusion Matrix (Normalised)')
 plt.savefig(os.path.join('runs', input_file, 'confusion_matrix.png'), dpi=300, bbox_inches='tight')
 plt.close()

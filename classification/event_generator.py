@@ -1,76 +1,78 @@
 import numpy as np
-import math
 import argparse
 import time
 import os
-import fastjet
+import multiprocessing as mp
+from generator_utils import run_worker_shard, merge_shards
 
-from generator_utils import launch_shards, merge_shards, configure_pythia, generate_events
+if __name__ == '__main__':
+    # Command-line arguments
+    parser = argparse.ArgumentParser(description='Generate particle collision events with Pythia and FastJet.')
+    parser.add_argument('output_file', type=str, default='collisions.h5')
+    parser.add_argument('no_events', type=int, help='Total number of events to generate.')
+    parser.add_argument('chunk_size', type=int, help='HDF5 chunk size.')
+    parser.add_argument('--shards', type=int, default=1, help='Number of parallel CPU processes.')
+    parser.add_argument('--cleanup', action='store_true', default=True, help='Delete temporary shard files after merging.')
+    parser.add_argument('--d0-cutoff', type=float, default=0.0, help='Minimum d0 value to consider a track.')
+    args = parser.parse_args()
 
+    total_start_time = time.time()
 
-# Command-line arguments for number of events and chunk size.
-parser = argparse.ArgumentParser(description='Generate particle collision events with Pythia and FastJet.')
-parser.add_argument('output_file', type=str, default='collisions.h5')
-parser.add_argument('no_events', type=int)
-parser.add_argument('chunk_size', type=int)
-parser.add_argument('--shards', type=int, default=1, help='Total number of parallel shards to run.')
-parser.add_argument('--shard-index', type=int, default=0, help='The index of this specific shard (0-based).')
-parser.add_argument('--cleanup', action='store_true', default=True, help='Delete temporary shard files after merging.')
-parser.add_argument('--d0-cutoff', type=float, default=0.0, help='Minimum d0 value to consider a track.')
-args = parser.parse_args()
-
-total_start_time = time.time()
-processes = []
-
-# Define paths for final output and temporary shards
-collisions_dir = 'collisions'
-final_output_file = os.path.join(collisions_dir, args.output_file)
-
-base_name, ext = os.path.splitext(args.output_file)
-temp_shard_dir = os.path.join(collisions_dir, base_name)
-
-# If this is the master process, launch all worker shards.
-if args.shards > 1 and args.shard_index == 0:
-    if not os.path.exists(temp_shard_dir):
-        os.makedirs(temp_shard_dir)
-    processes = launch_shards(__file__, args)
-
-# Calculate events for this shard and determine its unique output filename.
-shard_events = math.ceil(args.no_events / args.shards)
-if args.shards > 1:
-    output_file = os.path.join(temp_shard_dir, f'{base_name}_shard_{args.shard_index}{ext}')
-else:
+    # Define paths
+    collisions_dir = 'collisions'
+    final_output_file = os.path.join(collisions_dir, args.output_file)
+    base_name, ext = os.path.splitext(args.output_file)
+    
+    # Create temp directory for shards if running in parallel
+    temp_shard_dir = os.path.join(collisions_dir, base_name)
+    
     if not os.path.exists(collisions_dir):
         os.makedirs(collisions_dir)
-    output_file = final_output_file
 
-# Jet definition.
-jet_def = fastjet.JetDefinition(fastjet.antikt_algorithm, 0.4)
+    # Data structure (needed for merging)
+    dtype = np.dtype([
+        ('pdg_id_hadron', 'i4'), ('d0_mean', 'f8'), ('z0_mean', 'f8'),
+        ('jet_mass', 'f8'), ('lxy', 'f8'), ('q_jet', 'i4'), ('deltaR_mean', 'f8'),
+    ])
 
-# Data structure for the output HDF5 file.
-dtype = np.dtype([
-    ('pdg_id_hadron', 'i4'),
-    ('d0_mean', 'f8'),
-    ('z0_mean', 'f8'),
-    ('jet_mass', 'f8'),
-    ('lxy', 'f8'),
-    ('q_jet', 'i4'),
-    ('deltaR_mean', 'f8'),
-])
+    if args.shards > 1:
+        if not os.path.exists(temp_shard_dir):
+            os.makedirs(temp_shard_dir)
 
-# Configure Pythia and run the event generation for this specific shard.
-pythia = configure_pythia()
-events_found, duration = generate_events(pythia, jet_def, output_file, shard_events, args.chunk_size, dtype, 20.0, d0_cutoff=args.d0_cutoff)
-print(f'Shard {args.shard_index}/{args.shards}: Event generation took {duration:.2f} seconds for {events_found} events.')
+        print(f"Launching {args.shards} parallel workers...")
+        
+        # Prepare arguments for each worker
+        worker_args = []
+        for i in range(args.shards):
+            worker_args.append((
+                i,                  # shard_index
+                args.shards,        # total_shards
+                temp_shard_dir,     # output_dir
+                base_name,          # base_name
+                ext,                # extension
+                args.no_events,     # total requested events
+                args.chunk_size,    # chunk size
+                args.d0_cutoff      # d0 cutoff
+            ))
 
-# If this is the master process, wait for workers and merge the results.
-if args.shards > 1 and args.shard_index == 0:
-    print('Master process finished its work. Waiting for worker shards to complete...')
-    for p in processes:
-        p.wait()
-    print('All shards have completed successfully.')
+        # Run workers using Multiprocessing Pool
+        with mp.Pool(processes=args.shards) as pool:
+            # starmap unpacks the argument tuples for the function
+            shard_files = pool.starmap(run_worker_shard, worker_args)
 
-    merge_shards(final_output_file, temp_shard_dir, args.shards, dtype, cleanup=args.cleanup)
+        print("All workers finished. Merging results...")
+        merge_shards(final_output_file, temp_shard_dir, shard_files, dtype, cleanup=args.cleanup)
+
+    else:
+        # Single process run (no overhead of temp folders/merging)
+        print("Running in single-process mode.")
+        run_worker_shard(0, 1, collisions_dir, base_name, ext, args.no_events, args.chunk_size, args.d0_cutoff)
+        # Rename the single shard output to the final requested name
+        single_shard_out = os.path.join(collisions_dir, f'{base_name}_shard_0{ext}')
+        if os.path.exists(single_shard_out):
+            if os.path.exists(final_output_file):
+                os.remove(final_output_file)
+            os.rename(single_shard_out, final_output_file)
 
     total_duration = time.time() - total_start_time
-    print(f'\nTotal process time (generation + merge + cleanup): {total_duration:.2f} seconds.')
+    print(f'\nTotal execution time: {total_duration:.2f} seconds.')

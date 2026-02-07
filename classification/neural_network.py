@@ -50,10 +50,13 @@ X_val = scaler.transform(X_val)
 
 model = tf.keras.Sequential([
     tf.keras.layers.Input(shape=(3,)), 
+    # tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dropout(0.2),
     tf.keras.layers.Dense(32, activation='relu'),
-    tf.keras.layers.Dense(32, activation='relu'),
-    tf.keras.layers.Dense(32, activation='relu'),
-    tf.keras.layers.Dense(32, activation='relu'),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dense(16, activation='relu'),
+    tf.keras.layers.Dropout(0.2),
     tf.keras.layers.Dense(n_classes, activation='softmax')
 ])
 

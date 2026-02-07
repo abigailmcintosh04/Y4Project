@@ -144,10 +144,8 @@ def single_event(event, jet_def, jet_ptmin, d0_min, d0_max, track_pt_min, consts
                     continue
 
                 px_jet, py_jet, pz_jet, e_jet = 0.0, 0.0, 0.0, 0.0
-                q_jet = 0
                 d0_values = []
-                z0_values = []
-                deltaR_values = []
+
 
                 # --- TRACK SELECTION LOOP ---
                 for p in valid_particles:
@@ -170,23 +168,20 @@ def single_event(event, jet_def, jet_ptmin, d0_min, d0_max, track_pt_min, consts
                         py_jet += p.py()
                         pz_jet += p.pz()
                         e_jet += p.e()
-                        q_jet += int(p.charge())
-                        
                         d0_values.append(d0)
-                        z0_values.append(z0)
-                        deltaR_values.append(deltaR(best_jet.eta(), best_jet.phi(), p.eta(), p.phi()))
 
                 # Only save the event if we found tracks passing the strict cuts
                 if len(d0_values) > 0:
                     d0_mean = np.mean(d0_values)
-                    z0_mean = np.mean(z0_values)
-                    deltaR_mean = np.mean(deltaR_values)
 
                     # Calculate the invariant mass of the jet using ONLY selected tracks
                     jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
                     jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
                     
-                    event_records.append((abs(h.id()), d0_mean, z0_mean, jet_mass, lxy, q_jet, deltaR_mean))
+                    # Calculate fractional pT
+                    pt_frac = math.sqrt(px_jet**2 + py_jet**2) / best_jet.perp()
+
+                    event_records.append((abs(h.id()), d0_mean, jet_mass, lxy, pt_frac))
 
             elif consts:
                 return constituents, h, best_jet
@@ -282,14 +277,13 @@ def run_worker_shard(shard_index, total_shards, output_dir, base_name, ext, no_e
     shard_events = math.ceil(no_events / total_shards)
 
     # Output structure
+    # Output structure
     dtype = np.dtype([
         ('pdg_id_hadron', 'i4'), 
         ('d0_mean', 'f8'), 
-        ('z0_mean', 'f8'),
         ('jet_mass', 'f8'), 
         ('lxy', 'f8'), 
-        ('q_jet', 'i4'), 
-        ('deltaR_mean', 'f8'),
+        ('pt_frac', 'f8'),
     ])
 
     # Configure

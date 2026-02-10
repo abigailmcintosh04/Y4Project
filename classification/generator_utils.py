@@ -165,6 +165,7 @@ def single_event(event, jet_def, ptmin, consts=False, d0_cutoff=0.0):
                 d0_values = []
                 z0_values = []
                 deltaR_values = []
+                max_pt = 0.0
 
                 for p in valid_particles:
                     pt = p.pT()
@@ -183,6 +184,8 @@ def single_event(event, jet_def, ptmin, consts=False, d0_cutoff=0.0):
                         d0_values.append(d0)
                         z0_values.append(z0)
                         deltaR_values.append(deltaR(best_jet.eta(), best_jet.phi(), p.eta(), p.phi()))
+                        if pt > max_pt:
+                            max_pt = pt
 
                 if len(d0_values) > 0:
                     d0_mean = np.mean(d0_values)
@@ -192,14 +195,18 @@ def single_event(event, jet_def, ptmin, consts=False, d0_cutoff=0.0):
                     # Calculate the invariant mass of the jet.
                     jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
                     jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
+
+                    # Calculate pT frac.
+                    pt_frac = max_pt / best_jet.perp()
                 else:
                     q_jet = 0
                     d0_mean = 0.0
                     z0_mean = 0.0
                     deltaR_mean = 0.0
                     jet_mass = 0.0
+                    pt_frac = 0.0
 
-                event_records.append((abs(h.id()), d0_mean, z0_mean, jet_mass, lxy, q_jet, deltaR_mean))
+                event_records.append((abs(h.id()), d0_mean, z0_mean, jet_mass, lxy, q_jet, deltaR_mean, pt_frac))
 
             elif consts:
                 return constituents, h, best_jet # Return the first valid jet found

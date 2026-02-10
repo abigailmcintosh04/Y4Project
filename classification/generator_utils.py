@@ -161,10 +161,7 @@ def single_event(event, jet_def, ptmin, consts=False, d0_cutoff=0.0):
                     continue
 
                 px_jet, py_jet, pz_jet, e_jet = 0.0, 0.0, 0.0, 0.0
-                q_jet = 0.0
                 d0_values = []
-                z0_values = []
-                deltaR_values = []
                 max_pt = 0.0
 
                 for p in valid_particles:
@@ -173,24 +170,18 @@ def single_event(event, jet_def, ptmin, consts=False, d0_cutoff=0.0):
                         continue
                     
                     d0 = (p.xProd() * p.py() - p.yProd() * p.px()) / pt
-                    z0 = p.zProd() - (p.xProd() * p.px() + p.yProd() * p.py()) * (p.pz() / (pt**2))
 
                     if abs(d0) > d0_cutoff:
                         px_jet += p.px()
                         py_jet += p.py()
                         pz_jet += p.pz()
                         e_jet += p.e()
-                        q_jet += p.charge()
                         d0_values.append(d0)
-                        z0_values.append(z0)
-                        deltaR_values.append(deltaR(best_jet.eta(), best_jet.phi(), p.eta(), p.phi()))
                         if pt > max_pt:
                             max_pt = pt
 
                 if len(d0_values) > 0:
                     d0_mean = np.mean(d0_values)
-                    z0_mean = np.mean(z0_values)
-                    deltaR_mean = np.mean(deltaR_values)
 
                     # Calculate the invariant mass of the jet.
                     jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
@@ -199,14 +190,11 @@ def single_event(event, jet_def, ptmin, consts=False, d0_cutoff=0.0):
                     # Calculate pT frac.
                     pt_frac = max_pt / best_jet.perp()
                 else:
-                    q_jet = 0
                     d0_mean = 0.0
-                    z0_mean = 0.0
-                    deltaR_mean = 0.0
                     jet_mass = 0.0
                     pt_frac = 0.0
 
-                event_records.append((abs(h.id()), d0_mean, z0_mean, jet_mass, lxy, q_jet, deltaR_mean, pt_frac))
+                event_records.append((abs(h.id()), d0_mean, jet_mass, lxy, pt_frac))
 
             elif consts:
                 return constituents, h, best_jet # Return the first valid jet found

@@ -17,9 +17,9 @@ if __name__ == '__main__':
     parser.add_argument('--cleanup', action='store_true', default=True, help='Delete temporary shard files after merging.')
 
     # Physics Cuts (Experimental Track Selection)
-    parser.add_argument('--track-pt-min', type=float, default=1.0, help='Minimum pT for tracks in GeV (default: 1.0).')
-    parser.add_argument('--d0-min', type=float, default=0.05, help='Minimum d0 in mm to reject prompt tracks (default: 0.05).')
-    parser.add_argument('--d0-max', type=float, default=1.0, help='Maximum d0 in mm to reject Strange hadrons (default: 1.0).')
+    parser.add_argument('--track-pt-min', type=float, default=None, help='Minimum pT for tracks in GeV (default: None).')
+    parser.add_argument('--d0-min', type=float, default=None, help='Minimum d0 in mm to reject prompt tracks (default: None).')
+    parser.add_argument('--d0-max', type=float, default=None, help='Maximum d0 in mm to reject Strange hadrons (default: None).')
 
     args = parser.parse_args()
 
@@ -51,7 +51,13 @@ if __name__ == '__main__':
             os.makedirs(temp_shard_dir)
 
         print(f"Launching {args.shards} parallel workers...")
-        print(f"Cuts: pT > {args.track_pt_min} GeV, {args.d0_min} < |d0| < {args.d0_max} mm")
+        
+        cuts_info = []
+        if args.track_pt_min is not None: cuts_info.append(f"pT > {args.track_pt_min} GeV")
+        if args.d0_min is not None: cuts_info.append(f"|d0| > {args.d0_min} mm")
+        if args.d0_max is not None: cuts_info.append(f"|d0| < {args.d0_max} mm")
+        
+        print(f"Cuts: {', '.join(cuts_info) if cuts_info else 'None'}")
         
         # Prepare arguments for each worker
         worker_args = []
@@ -80,7 +86,13 @@ if __name__ == '__main__':
     # 2. SINGLE PROCESS MODE
     else:
         print("Running in single-process mode.")
-        print(f"Cuts: pT > {args.track_pt_min} GeV, {args.d0_min} < |d0| < {args.d0_max} mm")
+        
+        cuts_info = []
+        if args.track_pt_min is not None: cuts_info.append(f"pT > {args.track_pt_min} GeV")
+        if args.d0_min is not None: cuts_info.append(f"|d0| > {args.d0_min} mm")
+        if args.d0_max is not None: cuts_info.append(f"|d0| < {args.d0_max} mm")
+        
+        print(f"Cuts: {', '.join(cuts_info) if cuts_info else 'None'}")
         
         # Run directly in this process
         run_worker_shard(

@@ -152,7 +152,7 @@ def single_event(event, jet_def, jet_ptmin, d0_min, d0_max, track_pt_min, consts
                     pt = p.pT()
                     
                     # 1. Kinematic Cut: fast tracks only
-                    if pt < track_pt_min:
+                    if track_pt_min is not None and pt < track_pt_min:
                         continue
                     
                     # Calculate impact parameters
@@ -163,7 +163,7 @@ def single_event(event, jet_def, jet_ptmin, d0_min, d0_max, track_pt_min, consts
                     # 2. Geometric Band-Pass Filter
                     # d0_min removes Prompt tracks (too close)
                     # d0_max removes Strange hadrons / Material interactions (too far)
-                    if abs_d0 > d0_min and abs_d0 < d0_max:
+                    if (d0_min is None or abs_d0 > d0_min) and (d0_max is None or abs_d0 < d0_max):
                         px_jet += p.px()
                         py_jet += p.py()
                         pz_jet += p.pz()

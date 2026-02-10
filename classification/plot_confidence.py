@@ -64,7 +64,7 @@ var_dict = {
     'd0_mean': 'Mean Transverse Impact Parameter d0 (mm)',
     'lxy': 'Transverse Decay Length L_xy (mm)',
     'jet_mass': 'Jet Mass (GeV)',
-    'pt_sum': 'Sum of Particle pT (GeV)', 
+    'pt_frac': 'Max Fraction of Track pT in Jet', 
 }
 label_name = var_dict.get(args.parameter, args.parameter)
 

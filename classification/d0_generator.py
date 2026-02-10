@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 import argparse
 
-from generator_utils import configure_pythia, single_event, hadron_id_set
+from generator_utils import configure_pythia, single_event, hadron_id_set, quark_id_set
 
 parser = argparse.ArgumentParser()
 parser.add_argument('no_events', type=int)
@@ -47,7 +47,7 @@ def main():
     Main function to generate events, analyze tracks, and save d0 data.
     '''
     run_time = datetime.now().strftime('%Y%m%d-%H%M%S')
-    output_dir = 'data'
+    output_dir = 'd0_np_files'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -66,7 +66,7 @@ def main():
             continue
 
         # We set consts=True to get the first valid jet and its constituents
-        result = single_event(pythia.event, jet_def, ptmin=20.0, consts=True)
+        result = single_event(pythia.event, jet_def, 20.0, None, None, None, consts=True)
         if not result:
             continue
         
@@ -75,8 +75,8 @@ def main():
         for c in constituents:
             particle = pythia.event[c.user_index()]
 
-            # We don't want to evaluate the charm hadron itself
-            if particle.id() in hadron_id_set:
+            # Match generator_utils.py logic: exclude quarks too
+            if particle.id() in hadron_id_set or particle.id() in quark_id_set:
                 continue
 
             if args.d0_z0 == 'd0':
@@ -85,19 +85,24 @@ def main():
                 d0 = calculate_z0(particle)
 
             if is_signal_track(particle, hadron):
-                signal_d0s.append(abs(d0))
+                signal_d0s.append(d0)
             else:
-                background_d0s.append(abs(d0))
+                background_d0s.append(d0)
 
     print(f'Found {len(signal_d0s)} signal tracks and {len(background_d0s)} background tracks.')
 
     # --- Save Data ---
+    # --- Save Data ---
+    output_subdir = os.path.join(output_dir, run_time)
+    if not os.path.exists(output_subdir):
+        os.makedirs(output_subdir)
+
     if args.d0_z0 == 'd0':
-        signal_filename = f'signal_d0s_{run_time}.npy'
-        background_filename = f'background_d0s_{run_time}.npy'
+        signal_filename = os.path.join(output_subdir, 'signal_d0s.npy')
+        background_filename = os.path.join(output_subdir, 'background_d0s.npy')
     elif args.d0_z0 == 'z0':
-        signal_filename = f'signal_z0s_{run_time}.npy'
-        background_filename = f'background_z0s_{run_time}.npy'
+        signal_filename = os.path.join(output_subdir, 'signal_z0s.npy')
+        background_filename = os.path.join(output_subdir, 'background_z0s.npy')
     np.save(signal_filename, np.array(signal_d0s))
     np.save(background_filename, np.array(background_d0s))
     print(f'Data saved to {signal_filename} and {background_filename}')

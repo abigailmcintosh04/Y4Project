@@ -21,8 +21,8 @@ def main():
         os.makedirs('plots')
 
     # --- Load Data ---
-    signal_d0s = np.load(args.signal_file)
-    background_d0s = np.load(args.background_file)
+    signal_d0s = np.abs(np.load(args.signal_file))
+    background_d0s = np.abs(np.load(args.background_file))
 
     print(f'Loaded {len(signal_d0s)} signal tracks and {len(background_d0s)} background tracks.')
 

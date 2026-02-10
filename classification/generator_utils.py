@@ -145,6 +145,7 @@ def single_event(event, jet_def, jet_ptmin, d0_min, d0_max, track_pt_min, consts
 
                 px_jet, py_jet, pz_jet, e_jet = 0.0, 0.0, 0.0, 0.0
                 d0_values = []
+                max_pt = 0.0  # Track the highest pT for pt_frac calculation
 
 
                 # --- TRACK SELECTION LOOP ---
@@ -169,6 +170,8 @@ def single_event(event, jet_def, jet_ptmin, d0_min, d0_max, track_pt_min, consts
                         pz_jet += p.pz()
                         e_jet += p.e()
                         d0_values.append(d0)
+                        if pt > max_pt:
+                            max_pt = pt
 
                 # Only save the event if we found tracks passing the strict cuts
                 if len(d0_values) > 0:
@@ -178,8 +181,8 @@ def single_event(event, jet_def, jet_ptmin, d0_min, d0_max, track_pt_min, consts
                     jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
                     jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
                     
-                    # Calculate fractional pT
-                    pt_frac = math.sqrt(px_jet**2 + py_jet**2) / best_jet.perp()
+                    # Calculate fractional pT (leading track pT / jet pT)
+                    pt_frac = max_pt / best_jet.perp()
 
                     event_records.append((abs(h.id()), d0_mean, jet_mass, lxy, pt_frac))
 

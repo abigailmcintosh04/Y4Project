@@ -51,11 +51,9 @@ jet_def = fastjet.JetDefinition(fastjet.antikt_algorithm, 0.4)
 dtype = np.dtype([
     ('pdg_id_hadron', 'i4'),
     ('d0_mean', 'f8'),
-    ('z0_mean', 'f8'),
     ('jet_mass', 'f8'),
     ('lxy', 'f8'),
-    ('q_jet', 'i4'),
-    ('deltaR_mean', 'f8'),
+    ('pt_frac', 'f8'),
 ])
 
 # Configure Pythia and run the event generation for this specific shard.

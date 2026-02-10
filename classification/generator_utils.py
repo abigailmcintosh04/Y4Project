@@ -60,7 +60,7 @@ def get_c_quark_mother(particle, event, visited=None):
     return None
 
 
-def configure_pythia():
+def configure_pythia(seed=None):
     '''Configure and initialise the Pythia event generator.'''
     pythia = pythia8mc.Pythia()
 
@@ -90,8 +90,16 @@ def configure_pythia():
     pythia.readString('Next:numberShowInfo = 0')
 
     # Use a random seed for the random number generator.
+    # Use a random seed for the random number generator.
+    if seed is None:
+        # Use time and process ID to ensure unique seeds across parallel shards
+        # Pythia seed must be < 900,000,000
+        seed = (int(time.time()) + os.getpid()) % 900_000_000
+    
+    print(f'Shard {os.getpid()} using Pythia seed: {seed}', flush=True)
+    
     pythia.readString('Random:setSeed = on')
-    pythia.readString('Random:seed = 0') # 0 means use current time
+    pythia.readString(f'Random:seed = {seed}')
 
     pythia.init()
     return pythia

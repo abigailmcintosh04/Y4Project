@@ -52,10 +52,15 @@ def main():
         args.xmax = max(np.max(signal_d0s), np.max(background_d0s))
 
     # Create histograms
-    plt.hist(signal_d0s, bins=args.bins, range=(args.xmin, args.xmax), 
+    counts, edges, _ = plt.hist(signal_d0s, bins=args.bins, range=(args.xmin, args.xmax), alpha=0.3, 
              histtype='step', label='Charm Hadron Tracks', density=True, linewidth=2, color='blue')
-    plt.hist(background_d0s, bins=args.bins, range=(args.xmin, args.xmax), 
+    bin_centers = (edges[:-1] + edges[1:]) / 2
+    plt.plot(bin_centers, counts, linestyle='-', marker='none', color='blue')
+
+    counts, edges, _ = plt.hist(background_d0s, bins=args.bins, range=(args.xmin, args.xmax), alpha=0.3, 
              histtype='step', label='Other Tracks', density=True, linewidth=2, color='red')
+    bin_centers = (edges[:-1] + edges[1:]) / 2
+    plt.plot(bin_centers, counts, linestyle='-', marker='none', color='red')
 
     plt.xlabel('d0 (mm)')
     plt.ylabel('Normalized Density')

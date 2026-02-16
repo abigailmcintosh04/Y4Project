@@ -103,15 +103,22 @@ def main():
             d0 = smear_d0(d0, particle.pT())
 
             if is_signal_track(particle, hadron.index(), pythia.event):
-                signal_d0s.append(abs(d0))
+                signal_d0s.append(d0)
             else:
-                background_d0s.append(abs(d0))
+                background_d0s.append(d0)
 
     print(f'Found {len(signal_d0s)} signal tracks and {len(background_d0s)} background tracks.')
 
     # --- Save Data ---
-    signal_filename = f'signal_d0s_{run_time}.npy'
-    background_filename = f'background_d0s_{run_time}.npy'
+    output_dir = 'd0_np_files'
+    run_dir = os.path.join(output_dir, run_time)
+    
+    if not os.path.exists(run_dir):
+        os.makedirs(run_dir)
+
+    signal_filename = os.path.join(run_dir, 'signal_d0s.npy')
+    background_filename = os.path.join(run_dir, 'background_d0s.npy')
+    
     np.save(signal_filename, np.array(signal_d0s))
     np.save(background_filename, np.array(background_d0s))
     print(f'Data saved to {signal_filename} and {background_filename}')

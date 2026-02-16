@@ -12,11 +12,23 @@ args = parser.parse_args()
 
 
 def calculate_d0(particle):
-    '''Calculate the transverse impact parameter (d0) for a particle.'''
+    '''
+    Calculate the transverse impact parameter (d0) for a particle.
+    '''
     pt = particle.pT()
     if pt < 1e-9:
         return 0.0
     return (particle.xProd() * particle.py() - particle.yProd() * particle.px()) / pt
+
+
+def smear_d0(true_d0, pt_gev):
+    '''
+    Smears the true d0 to simulate detector resolution.
+    '''
+    b = 0.100
+    a = 0.012
+    sigma = np.sqrt(a**2 + (b / pt_gev)**2)
+    return np.random.normal(true_d0, sigma)
 
 
 def is_signal_track(particle, hadron_index, event, visited=None):

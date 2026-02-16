@@ -1,6 +1,10 @@
 import numpy as np
 import fastjet
 import os
+import math
+import time
+import sys
+import subprocess
 from datetime import datetime
 import argparse
 
@@ -58,18 +62,93 @@ def is_signal_track(particle, hadron_index, event, visited=None):
     return False
 
 
+def launch_d0_shards(script_path, args):
+    '''Launch worker shards as separate processes for d0 generation.'''
+    print(f'Master process launching {args.shards - 1} worker shards...')
+    processes = []
+    for i in range(1, args.shards):
+        command = [
+            sys.executable,
+            script_path,
+            str(args.no_events),
+            '--shards', str(args.shards),
+            '--shard-index', str(i),
+            '--output-dir', args.output_dir,
+        ]
+        p = subprocess.Popen(command)
+        processes.append(p)
+    
+    print('All worker shards launched. Master process (shard 0) will now begin its work.')
+    return processes
+
+
+def merge_npy_shards(output_dir, num_shards, cleanup=True):
+    '''Merge .npy shard files into single signal and background files.'''
+    print('\nMerging shard files into single output files...')
+    all_signal = []
+    all_background = []
+
+    for i in range(num_shards):
+        signal_file = os.path.join(output_dir, f'signal_d0s_shard_{i}.npy')
+        background_file = os.path.join(output_dir, f'background_d0s_shard_{i}.npy')
+
+        if os.path.exists(signal_file):
+            all_signal.append(np.load(signal_file))
+        if os.path.exists(background_file):
+            all_background.append(np.load(background_file))
+
+    merged_signal = np.concatenate(all_signal) if all_signal else np.array([])
+    merged_background = np.concatenate(all_background) if all_background else np.array([])
+
+    signal_out = os.path.join(output_dir, 'signal_d0s.npy')
+    background_out = os.path.join(output_dir, 'background_d0s.npy')
+    np.save(signal_out, merged_signal)
+    np.save(background_out, merged_background)
+
+    print(f'Successfully merged {num_shards} shards: '
+          f'{len(merged_signal)} signal tracks, {len(merged_background)} background tracks.')
+    print(f'Data saved to {signal_out} and {background_out}')
+
+    # Clean up temporary shard files
+    if cleanup:
+        print('Cleaning up temporary shard files...')
+        for i in range(num_shards):
+            for fn in [f'signal_d0s_shard_{i}.npy', f'background_d0s_shard_{i}.npy']:
+                path = os.path.join(output_dir, fn)
+                if os.path.exists(path):
+                    os.remove(path)
+        print('Cleanup complete.')
+
+
 def main():
     '''
     Main function to generate events, analyze tracks, and save d0 data.
     '''
     parser = argparse.ArgumentParser()
     parser.add_argument('no_events', type=int)
+    parser.add_argument('--shards', type=int, default=1, help='Total number of parallel shards to run.')
+    parser.add_argument('--shard-index', type=int, default=0, help='The index of this specific shard (0-based).')
+    parser.add_argument('--cleanup', action='store_true', default=True, help='Delete temporary shard files after merging.')
+    parser.add_argument('--output-dir', type=str, default='', help='Output directory for .npy files (set automatically for shards).')
     args = parser.parse_args()
 
-    run_time = datetime.now().strftime('%Y%m%d-%H%M%S')
-    output_dir = 'data'
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    total_start_time = time.time()
+    processes = []
+
+    # Set up output directory
+    if not args.output_dir:
+        run_time = datetime.now().strftime('%Y%m%d-%H%M%S')
+        args.output_dir = os.path.join('d0_np_files', run_time)
+
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir, exist_ok=True)
+
+    # If this is the master process, launch all worker shards.
+    if args.shards > 1 and args.shard_index == 0:
+        processes = launch_d0_shards(__file__, args)
+
+    # Calculate events for this shard.
+    shard_events = math.ceil(args.no_events / args.shards)
 
     # --- Configuration ---
     pythia = configure_pythia()
@@ -78,11 +157,11 @@ def main():
     signal_d0s = []
     background_d0s = []
 
-    print(f'Processing {args.no_events} events to generate ROC curve data...')
+    print(f'Shard {args.shard_index}/{args.shards}: Processing {shard_events} events to generate ROC curve data...')
 
     # --- Event Loop and Data Collection ---
     charm_events = 0
-    while charm_events < args.no_events:
+    while charm_events < shard_events:
         if not pythia.next():
             continue
 
@@ -109,21 +188,34 @@ def main():
                 background_d0s.append(d0)
         charm_events += 1
 
-    print(f'Found {len(signal_d0s)} signal tracks and {len(background_d0s)} background tracks.')
+    duration = time.time() - total_start_time
+    print(f'Shard {args.shard_index}/{args.shards}: Found {len(signal_d0s)} signal tracks and '
+          f'{len(background_d0s)} background tracks in {duration:.2f} seconds.')
 
     # --- Save Data ---
-    output_dir = 'd0_np_files'
-    run_dir = os.path.join(output_dir, run_time)
-    
-    if not os.path.exists(run_dir):
-        os.makedirs(run_dir)
+    if args.shards > 1:
+        signal_filename = os.path.join(args.output_dir, f'signal_d0s_shard_{args.shard_index}.npy')
+        background_filename = os.path.join(args.output_dir, f'background_d0s_shard_{args.shard_index}.npy')
+    else:
+        signal_filename = os.path.join(args.output_dir, 'signal_d0s.npy')
+        background_filename = os.path.join(args.output_dir, 'background_d0s.npy')
 
-    signal_filename = os.path.join(run_dir, 'signal_d0s.npy')
-    background_filename = os.path.join(run_dir, 'background_d0s.npy')
-    
     np.save(signal_filename, np.array(signal_d0s))
     np.save(background_filename, np.array(background_d0s))
-    print(f'Data saved to {signal_filename} and {background_filename}')
+    print(f'Shard {args.shard_index} data saved to {signal_filename} and {background_filename}')
+
+    # If this is the master process, wait for workers and merge the results.
+    if args.shards > 1 and args.shard_index == 0:
+        print('Master process finished its work. Waiting for worker shards to complete...')
+        for p in processes:
+            p.wait()
+        print('All shards have completed successfully.')
+
+        merge_npy_shards(args.output_dir, args.shards, cleanup=args.cleanup)
+
+        total_duration = time.time() - total_start_time
+        print(f'\nTotal process time (generation + merge + cleanup): {total_duration:.2f} seconds.')
+
 
 if __name__ == '__main__':
     main()

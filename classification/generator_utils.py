@@ -13,6 +13,9 @@ import fastjet
 hadron_id_set = {411, 421, 431, 4122, -411, -421, -431, -4122}  # Charm hadrons.
 quark_id_set = {4, -4} # Charm quarks.
 
+D0_LOW = 0.04
+D0_HIGH = 0.38
+
 def deltaR(eta1, phi1, eta2, phi2):
     '''Compute deltaR between two (eta,phi) points.'''
     dphi = abs(phi1 - phi2)
@@ -104,7 +107,7 @@ def configure_pythia(seed=None):
     return pythia
 
 
-def single_event(event, jet_def, ptmin, consts=False, d0_cutoff=0.0):
+def single_event(event, jet_def, ptmin, consts=False, d0_low=D0_LOW, d0_high=D0_HIGH):
     '''
     Process a single Pythia event to find charm hadrons and their associated jets.
     Returns a list of records for each charm hadron found in the event.
@@ -205,7 +208,7 @@ def single_event(event, jet_def, ptmin, consts=False, d0_cutoff=0.0):
     return event_records
 
 
-def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, ptmin, d0_cutoff=0.0):
+def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, ptmin, d0_low=D0_LOW, d0_high=D0_HIGH):
     '''Main function to generate events and store them in an HDF5 file.'''
     start_time = time.time()
     last_report_time = start_time
@@ -228,7 +231,7 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, 
             if not pythia.next():
                 continue
 
-            new_records = single_event(pythia.event, jet_def, ptmin, d0_cutoff=d0_cutoff)
+            new_records = single_event(pythia.event, jet_def, ptmin, d0_low=d0_low, d0_high=d0_high)
             if new_records:
                 buffer.extend(new_records)
                 charm_events += len(new_records)

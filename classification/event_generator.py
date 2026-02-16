@@ -7,6 +7,8 @@ import fastjet
 
 from generator_utils import launch_shards, merge_shards, configure_pythia, generate_events
 
+D0_LOW = 0.04
+D0_HIGH = 0.38
 
 # Command-line arguments for number of events and chunk size.
 parser = argparse.ArgumentParser(description='Generate particle collision events with Pythia and FastJet.')
@@ -16,8 +18,8 @@ parser.add_argument('chunk_size', type=int)
 parser.add_argument('--shards', type=int, default=1, help='Total number of parallel shards to run.')
 parser.add_argument('--shard-index', type=int, default=0, help='The index of this specific shard (0-based).')
 parser.add_argument('--cleanup', action='store_true', default=True, help='Delete temporary shard files after merging.')
-parser.add_argument('--d0-low', type=float, default=0.0, help='Minimum d0 value to consider a track.')
-parser.add_argument('--d0-high', type=float, default=1.0, help='Maximum d0 value to consider a track.')
+parser.add_argument('--d0-low', type=float, default=D0_LOW, help='Minimum d0 value to consider a track.')
+parser.add_argument('--d0-high', type=float, default=D0_HIGH, help='Maximum d0 value to consider a track.')
 args = parser.parse_args()
 
 total_start_time = time.time()

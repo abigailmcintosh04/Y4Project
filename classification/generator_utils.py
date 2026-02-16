@@ -174,7 +174,7 @@ def single_event(event, jet_def, ptmin, consts=False, d0_low=D0_LOW, d0_high=D0_
                     
                     d0 = (p.xProd() * p.py() - p.yProd() * p.px()) / pt
 
-                    if abs(d0) > d0_cutoff:
+                    if abs(d0) > d0_low and abs(d0) < d0_high:
                         px_jet += p.px()
                         py_jet += p.py()
                         pz_jet += p.pz()
@@ -286,8 +286,10 @@ def launch_shards(script_path, args):
             '--shards', str(args.shards),
             '--shard-index', str(i)
         ]
-        if hasattr(args, 'd0_cutoff'):
-            command.extend(['--d0-cutoff', str(args.d0_cutoff)])
+        if hasattr(args, 'd0_low'):
+            command.extend(['--d0-low', str(args.d0_low)])
+        if hasattr(args, 'd0_high'):
+            command.extend(['--d0-high', str(args.d0_high)])
         p = subprocess.Popen(command) # Launch the worker process in the background.
         processes.append(p)
     

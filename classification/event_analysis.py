@@ -7,9 +7,9 @@ pythia = configure_pythia()
 jet_def = fastjet.JetDefinition(fastjet.antikt_algorithm, 0.4)
 
 if pythia.next():
-    constituents, h, best_jet = single_event(pythia.event, jet_def, ptmin=20.0, consts=True)
-    if not constituents:
-        print('No constituents found for this event.')
+    try:
+        constituents, h, best_jet = single_event(pythia.event, jet_def, ptmin=20.0, consts=True)
+    except ValueError:
         exit()
 
     print(f"\n--- Analysis for Hadron {h.name()} ({h.id()}) matched to Jet with pT={best_jet.pt():.2f} ---")

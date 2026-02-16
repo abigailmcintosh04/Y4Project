@@ -81,13 +81,15 @@ def main():
     print(f'Processing {args.no_events} events to generate ROC curve data...')
 
     # --- Event Loop and Data Collection ---
-    for i in range(args.no_events):
+    charm_events = 0
+    while charm_events < args.no_events:
         if not pythia.next():
             continue
 
         # We set consts=True to get the first valid jet and its constituents
-        constituents, h, best_jet = single_event(pythia.event, jet_def, ptmin=20.0, consts=True)
-        if not constituents:
+        try:
+            constituents, h, best_jet = single_event(pythia.event, jet_def, ptmin=20.0, consts=True)
+        except ValueError:
             continue
         
         for i, c in enumerate(constituents):
@@ -105,6 +107,7 @@ def main():
                 signal_d0s.append(d0)
             else:
                 background_d0s.append(d0)
+        charm_events += 1
 
     print(f'Found {len(signal_d0s)} signal tracks and {len(background_d0s)} background tracks.')
 

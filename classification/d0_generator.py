@@ -8,7 +8,6 @@ from generator_utils import configure_pythia, single_event, hadron_id_set
 
 parser = argparse.ArgumentParser()
 parser.add_argument('no_events', type=int)
-parser.add_argument('d0_z0', type=str, choices=['d0', 'z0'])
 args = parser.parse_args()
 
 
@@ -20,26 +19,35 @@ def calculate_d0(particle):
     return (particle.xProd() * particle.py() - particle.yProd() * particle.px()) / pt
 
 
-def calculate_z0(particle):
-    '''Calculate the longitudinal impact parameter (z0) for a particle.'''
-    pt = particle.pT()
-    if pt < 1e-9:
-        return 0.0
-    return (particle.zProd() - (particle.xProd() * particle.px() + particle.yProd() * particle.py()) * (particle.pz() / (pt**2)))
-
-
-def is_signal_track(particle, hadron):
+def is_signal_track(particle, hadron_index, event, visited=None):
     '''
-    Determine if a particle is a "signal" track, meaning it's a direct
-    daughter of the charm hadron decay.
+    Recursively determine if a particle is a descendant of the charm hadron,
+    checking through the ancestry chain.
     '''
-    # Check if the particle's mother is the charm hadron.
+    if visited is None:
+        visited = set()
+
+    # Prevent infinite recursion
+    if particle.index() in visited:
+        return False
+    visited.add(particle.index())
+
+    # Check immediate mothers
     mother_indices = particle.motherList()
     if not mother_indices:
         return False
     
-    # In Pythia, the hadron's index is what we need to match.
-    return hadron.index() in mother_indices
+    # If the hadron is a direct mother, it's a signal track
+    if hadron_index in mother_indices:
+        return True
+    
+    # Recursively check if any mother is a descendant
+    for mother_idx in mother_indices:
+        mother = event[mother_idx]
+        if is_signal_track(mother, hadron_index, event, visited):
+            return True
+            
+    return False
 
 
 def main():
@@ -79,12 +87,9 @@ def main():
             if particle.id() in hadron_id_set:
                 continue
 
-            if args.d0_z0 == 'd0':
-                d0 = calculate_d0(particle)
-            elif args.d0_z0 == 'z0':
-                d0 = calculate_z0(particle)
+            d0 = calculate_d0(particle)
 
-            if is_signal_track(particle, hadron):
+            if is_signal_track(particle, hadron.index(), pythia.event):
                 signal_d0s.append(abs(d0))
             else:
                 background_d0s.append(abs(d0))
@@ -92,12 +97,8 @@ def main():
     print(f'Found {len(signal_d0s)} signal tracks and {len(background_d0s)} background tracks.')
 
     # --- Save Data ---
-    if args.d0_z0 == 'd0':
-        signal_filename = f'signal_d0s_{run_time}.npy'
-        background_filename = f'background_d0s_{run_time}.npy'
-    elif args.d0_z0 == 'z0':
-        signal_filename = f'signal_z0s_{run_time}.npy'
-        background_filename = f'background_z0s_{run_time}.npy'
+    signal_filename = f'signal_d0s_{run_time}.npy'
+    background_filename = f'background_d0s_{run_time}.npy'
     np.save(signal_filename, np.array(signal_d0s))
     np.save(background_filename, np.array(background_d0s))
     print(f'Data saved to {signal_filename} and {background_filename}')

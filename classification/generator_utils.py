@@ -90,7 +90,6 @@ def configure_pythia(seed=None):
     pythia.readString('Next:numberShowInfo = 0')
 
     # Use a random seed for the random number generator.
-    # Use a random seed for the random number generator.
     if seed is None:
         # Use time and process ID to ensure unique seeds across parallel shards
         # Pythia seed must be < 900,000,000
@@ -108,7 +107,8 @@ def configure_pythia(seed=None):
 def single_event(event, jet_def, ptmin, consts=False, d0_cutoff=0.0):
     '''
     Process a single Pythia event to find charm hadrons and their associated jets.
-    Returns a list of records for each charm hadron found in the event.'''
+    Returns a list of records for each charm hadron found in the event.
+    '''
     event_records = []
     try:
         hadrons = []

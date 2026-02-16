@@ -100,6 +100,7 @@ def main():
                 continue
 
             d0 = calculate_d0(particle)
+            d0 = smear_d0(d0, particle.pT())
 
             if is_signal_track(particle, hadron.index(), pythia.event):
                 signal_d0s.append(abs(d0))

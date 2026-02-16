@@ -6,10 +6,6 @@ import argparse
 
 from generator_utils import configure_pythia, single_event, hadron_id_set
 
-parser = argparse.ArgumentParser()
-parser.add_argument('no_events', type=int)
-args = parser.parse_args()
-
 
 def calculate_d0(particle):
     '''
@@ -66,6 +62,10 @@ def main():
     '''
     Main function to generate events, analyze tracks, and save d0 data.
     '''
+    parser = argparse.ArgumentParser()
+    parser.add_argument('no_events', type=int)
+    args = parser.parse_args()
+
     run_time = datetime.now().strftime('%Y%m%d-%H%M%S')
     output_dir = 'data'
     if not os.path.exists(output_dir):
@@ -86,23 +86,22 @@ def main():
             continue
 
         # We set consts=True to get the first valid jet and its constituents
-        result = single_event(pythia.event, jet_def, ptmin=20.0, consts=True)
-        if not result:
+        constituents, h, best_jet = single_event(pythia.event, jet_def, ptmin=20.0, consts=True)
+        if not constituents:
             continue
         
-        constituents, hadron, _ = result
-
-        for c in constituents:
-            particle = pythia.event[c.user_index()]
+        for i, c in enumerate(constituents):
+            p = pythia.event[c.user_index()]
+            p_id = p.id()
 
             # We don't want to evaluate the charm hadron itself
-            if particle.id() in hadron_id_set:
+            if p_id in hadron_id_set:
                 continue
 
-            d0 = calculate_d0(particle)
-            d0 = smear_d0(d0, particle.pT())
+            d0 = calculate_d0(p)
+            d0 = smear_d0(d0, p.pT())
 
-            if is_signal_track(particle, hadron.index(), pythia.event):
+            if is_signal_track(p, h.index(), pythia.event):
                 signal_d0s.append(d0)
             else:
                 background_d0s.append(d0)

@@ -213,7 +213,7 @@ def single_event(event, jet_def, ptmin, consts=False, d0_low=None, d0_high=None)
     return event_records
 
 
-def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, ptmin, d0_low=D0_LOW, d0_high=D0_HIGH):
+def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, ptmin, d0_low, d0_high):
     '''Main function to generate events and store them in an HDF5 file.'''
     start_time = time.time()
     last_report_time = start_time

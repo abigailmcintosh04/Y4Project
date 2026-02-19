@@ -291,9 +291,9 @@ def launch_shards(script_path, args):
             '--shards', str(args.shards),
             '--shard-index', str(i)
         ]
-        if hasattr(args, 'd0_low'):
+        if hasattr(args, 'd0_low') and args.d0_low is not None:
             command.extend(['--d0-low', str(args.d0_low)])
-        if hasattr(args, 'd0_high'):
+        if hasattr(args, 'd0_high') and args.d0_high is not None:
             command.extend(['--d0-high', str(args.d0_high)])
         p = subprocess.Popen(command) # Launch the worker process in the background.
         processes.append(p)

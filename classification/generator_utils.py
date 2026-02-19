@@ -13,8 +13,6 @@ import fastjet
 hadron_id_set = {411, 421, 431, 4122, -411, -421, -431, -4122}  # Charm hadrons.
 quark_id_set = {4, -4} # Charm quarks.
 
-D0_LOW = 0.04
-D0_HIGH = 0.38
 
 def deltaR(eta1, phi1, eta2, phi2):
     '''Compute deltaR between two (eta,phi) points.'''
@@ -107,7 +105,7 @@ def configure_pythia(seed=None):
     return pythia
 
 
-def single_event(event, jet_def, ptmin, consts=False, d0_low=D0_LOW, d0_high=D0_HIGH):
+def single_event(event, jet_def, ptmin, consts=False, d0_low=None, d0_high=None):
     '''
     Process a single Pythia event to find charm hadrons and their associated jets.
     Returns a list of records for each charm hadron found in the event.
@@ -174,7 +172,16 @@ def single_event(event, jet_def, ptmin, consts=False, d0_low=D0_LOW, d0_high=D0_
                     
                     d0 = (p.xProd() * p.py() - p.yProd() * p.px()) / pt
 
-                    if abs(d0) > d0_low and abs(d0) < d0_high:
+                    if d0_low is not None and d0_high is not None:
+                        if abs(d0) > d0_low and abs(d0) < d0_high:
+                            px_jet += p.px()
+                            py_jet += p.py()
+                            pz_jet += p.pz()
+                            e_jet += p.e()
+                            d0_values.append(d0)
+                            if pt > max_pt:
+                                max_pt = pt
+                    else:
                         px_jet += p.px()
                         py_jet += p.py()
                         pz_jet += p.pz()
@@ -193,9 +200,7 @@ def single_event(event, jet_def, ptmin, consts=False, d0_low=D0_LOW, d0_high=D0_
                     # Calculate pT frac.
                     pt_frac = max_pt / best_jet.perp()
                 else:
-                    d0_mean = 0.0
-                    jet_mass = 0.0
-                    pt_frac = 0.0
+                    continue
 
                 event_records.append((abs(h.id()), d0_mean, jet_mass, lxy, pt_frac))
 

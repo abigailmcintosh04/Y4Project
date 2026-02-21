@@ -261,7 +261,7 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, 
         # Write any final remaining events from the buffer.
         if buffer and write_ptr < dset.shape[0]:
             n_to_write = min(len(buffer), dset.shape[0] - write_ptr)
-            arr = np.array(buffer, dtype=dtype)
+            arr = np.array(buffer[:n_to_write], dtype=dtype)
             dset[write_ptr : write_ptr + n_to_write] = arr
             write_ptr += n_to_write
 
@@ -321,11 +321,16 @@ def merge_shards(final_output_file, temp_shard_dir, num_shards, dtype, cleanup=T
         write_ptr = 0
         for shard_file in shard_files:
             with h5py.File(shard_file, 'r') as f:
-                data = f['events'][:]
-                n_rows = data.shape[0]
-                if n_rows > 0:
-                    final_dset[write_ptr : write_ptr + n_rows] = data
-                    write_ptr += n_rows
+                dset = f['events']
+                n_rows = dset.shape[0]
+                chunk_read_size = 500_000  # Process in 500k row chunks to save memory
+                for i_start in range(0, n_rows, chunk_read_size):
+                    i_end = min(n_rows, i_start + chunk_read_size)
+                    data = dset[i_start:i_end]
+                    rows_read = data.shape[0]
+                    if rows_read > 0:
+                        final_dset[write_ptr : write_ptr + rows_read] = data
+                        write_ptr += rows_read
 
     print(f'Successfully merged {len(shard_files)} shard files into "{final_output_file}" with {total_rows} total events.')
     

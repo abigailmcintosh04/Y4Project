@@ -200,7 +200,8 @@ def single_event(event, jet_def, ptmin, consts=False, d0_low=None, d0_high=None)
                 else:
                     continue
 
-                event_records.append((abs(h.id()), d0_mean, jet_mass, lxy, pt_frac))
+                n_tracks = len(d0_values)
+                event_records.append((abs(h.id()), d0_mean, jet_mass, lxy, pt_frac, n_tracks))
 
             elif consts:
                 return constituents, h, best_jet # Return the first valid jet found

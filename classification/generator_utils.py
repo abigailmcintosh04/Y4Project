@@ -169,28 +169,26 @@ def single_event(event, jet_def, ptmin, consts=False, d0_low=None, d0_high=None)
                     pt = p.pT()
                     if pt < 1e-9:
                         continue
-                    
+
+                    # Add smearing here in future.
+                    # Also change for d0 significance? d0/sigma(d0)
                     d0 = (p.xProd() * p.py() - p.yProd() * p.px()) / pt
 
+                    # Only tracks passing d0 cut kept.
                     if d0_low is not None and d0_high is not None:
-                        if abs(d0) > d0_low and abs(d0) < d0_high:
-                            px_jet += p.px()
-                            py_jet += p.py()
-                            pz_jet += p.pz()
-                            e_jet += p.e()
-                            d0_values.append(d0)
-                            if pt > max_pt:
-                                max_pt = pt
-                    else:
-                        px_jet += p.px()
-                        py_jet += p.py()
-                        pz_jet += p.pz()
-                        e_jet += p.e()
-                        d0_values.append(d0)
-                        if pt > max_pt:
-                            max_pt = pt
+                        if not (d0_low <= abs(d0) <= d0_high):
+                            continue
 
-                if len(d0_values) > 0:
+                    d0_values.append(d0)
+                    px_jet += p.px()
+                    py_jet += p.py()
+                    pz_jet += p.pz()
+                    e_jet += p.e()
+
+                    if pt > max_pt:
+                        max_pt = pt
+
+                if len(d0_values) > 0:  
                     d0_mean = np.mean(d0_values)
 
                     # Calculate the invariant mass of the jet.

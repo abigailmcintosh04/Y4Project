@@ -15,7 +15,7 @@ parser.add_argument('chunk_size', type=int)
 parser.add_argument('--shards', type=int, default=1, help='Total number of parallel shards to run.')
 parser.add_argument('--shard-index', type=int, default=0, help='The index of this specific shard (0-based).')
 parser.add_argument('--cleanup', action='store_true', default=True, help='Delete temporary shard files after merging.')
-parser.add_argument('--d0-low', type=float, default=0.0, help='Minimum d0 value to consider a track.') # filters out d0=0.0 tracks
+parser.add_argument('--d0-low', type=float, default=None, help='Minimum |d0| cut to apply after smearing.')
 parser.add_argument('--d0-high', type=float, default=None, help='Maximum d0 value to consider a track.')
 args = parser.parse_args()
 

@@ -14,6 +14,26 @@ hadron_id_set = {411, 421, 431, 4122, -411, -421, -431, -4122}  # Charm hadrons.
 quark_id_set = {4, -4} # Charm quarks.
 
 
+def calculate_d0(particle):
+    '''
+    Calculate the transverse impact parameter (d0) for a particle.
+    '''
+    pt = particle.pT()
+    if pt < 1e-9:
+        return 0.0
+    return (particle.xProd() * particle.py() - particle.yProd() * particle.px()) / pt
+
+
+def smear_d0(true_d0, pt_gev):
+    '''
+    Smears the true d0 to simulate detector resolution.
+    '''
+    b = 0.100
+    a = 0.012
+    sigma = np.sqrt(a**2 + (b / pt_gev)**2)
+    return np.random.normal(true_d0, sigma)
+
+
 def deltaR(eta1, phi1, eta2, phi2):
     '''Compute deltaR between two (eta,phi) points.'''
     dphi = abs(phi1 - phi2)
@@ -175,11 +195,11 @@ def single_event(event, jet_def, ptmin, consts=False, d0_low=None, d0_high=None)
                     if pt < 1e-9:
                         continue
 
-                    # Add smearing here in future.
-                    # Also change for d0 significance? d0/sigma(d0)
-                    d0 = (p.xProd() * p.py() - p.yProd() * p.px()) / pt
+                    # Calculate true d0 and smear it to simulate detector resolution.
+                    d0 = calculate_d0(p)
+                    d0 = smear_d0(d0, pt)
 
-                    # Only tracks passing d0 cut kept (filters out d0=0.0 tracks)
+                    # Optional d0 cuts (applied after smearing).
                     if d0_low is not None and abs(d0) <= d0_low:
                         continue
                     if d0_high is not None and abs(d0) > d0_high:

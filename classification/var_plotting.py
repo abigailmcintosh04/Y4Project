@@ -14,6 +14,7 @@ parser.add_argument('parameter', type=str)
 parser.add_argument('x_min', type=float)
 parser.add_argument('x_max', type=float)
 parser.add_argument('--log_scale', action='store_true')
+parser.add_argument('--bins', type=int, default=100)
 args = parser.parse_args()
 input_file = args.input_file
 parameter = args.parameter
@@ -22,17 +23,14 @@ x_max = args.x_max
 log_scale = args.log_scale
 
 var_dict = {
-    'e_sum': 'Sum of Particle Energies (GeV)',
-    'pt_sum': 'Sum of Particle Transverse Momenta (GeV)',
     'd0_mean': 'Mean Transverse Impact Parameter d0 (mm)',
-    'z0_mean': 'Mean Longitudinal Impact Parameter z0 (mm)',
     'jet_mass': 'Jet Mass (GeV)',
     'lxy': 'Transverse Decay Length L_xy(mm)',
-    'q_jet': 'Jet Charge (e)',
-    'deltaR_mean': 'Mean ΔR of Jet Constituents',
+    'pt_frac': 'Fraction of Jet Transverse Momentum from Prompt Charm Hadron',
+    'n_tracks': 'Number of Tracks in Jet',
 }
 
-with h5py.File(input_file, 'r') as h5file:
+with h5py.File(os.path.join('collisions', input_file), 'r') as h5file:
     events = h5file['events'][:]
 
 mask_1 = events['pdg_id_hadron'] == 411  # D+
@@ -41,10 +39,10 @@ mask_3 = events['pdg_id_hadron'] == 431  # Ds+
 mask_4 = events['pdg_id_hadron'] == 4122 # Lambdac+
 
 plt.figure(figsize=(8,6))
-plt.hist(events[parameter][mask_1], bins=np.linspace(x_min, x_max, 100), label='D+ (411)', color='blue', density=True, histtype='step', log=log_scale)
-plt.hist(events[parameter][mask_2], bins=np.linspace(x_min, x_max, 100), label='D0 (421)', color='orange', density=True, histtype='step', log=log_scale)
-plt.hist(events[parameter][mask_3], bins=np.linspace(x_min, x_max, 100), label='Ds+ (431)', color='green', density=True, histtype='step', log=log_scale)
-plt.hist(events[parameter][mask_4], bins=np.linspace(x_min, x_max, 100), label='Lambdac+ (4122)', color='red', density=True, histtype='step', log=log_scale)
+plt.hist(events[parameter][mask_1], bins=np.linspace(x_min, x_max, args.bins), label='D+ (411)', color='blue', density=True, histtype='step', log=log_scale)
+plt.hist(events[parameter][mask_2], bins=np.linspace(x_min, x_max, args.bins), label='D0 (421)', color='orange', density=True, histtype='step', log=log_scale)
+plt.hist(events[parameter][mask_3], bins=np.linspace(x_min, x_max, args.bins), label='Ds+ (431)', color='green', density=True, histtype='step', log=log_scale)
+plt.hist(events[parameter][mask_4], bins=np.linspace(x_min, x_max, args.bins), label='Lambdac+ (4122)', color='red', density=True, histtype='step', log=log_scale)
 plt.xlabel(var_dict[parameter])
 plt.ylabel('Normalized Counts')
 plt.legend()

@@ -80,12 +80,12 @@ def main():
             linestyle = '-' if i == j else '--'
             linewidth = 2 if i == j else 1.5
             
-            plt.hist(probs_j, bins=50, range=(0, 1), density=True, histtype='step', 
+            plt.hist(probs_j, bins=50, range=(0, 1), histtype='step', 
                      linewidth=linewidth, linestyle=linestyle, label=f'P({pred_name})')
             
         plt.title(f'Network Confidence when True Particle is {true_name}')
         plt.xlabel('Predicted Probability')
-        plt.ylabel('Normalised Density')
+        plt.ylabel('Count')
         plt.legend()
         plt.grid(True, alpha=0.3)
         

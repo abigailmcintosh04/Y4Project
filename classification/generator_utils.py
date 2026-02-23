@@ -226,11 +226,11 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, 
     charm_events = 0
 
     with h5py.File(output_file, 'w') as h5file:
-        # Pre-allocate the dataset to avoid slow resizing.
+        # Pre-allocate the dataset; maxshape=None allows growing if needed.
         dset = h5file.create_dataset(
             'events',
             shape=(no_events,),
-            maxshape=(no_events,),
+            maxshape=(None,),
             dtype=dtype,
             chunks=True
         )
@@ -256,24 +256,26 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, 
             # Flush buffer to HDF5 file when it's full or at the end of generation.
             if len(buffer) >= chunk_size or (charm_events >= no_events and buffer):
                 n_to_write = len(buffer)
+                # Grow the dataset if needed to fit all events.
                 if write_ptr + n_to_write > dset.shape[0]:
-                    n_to_write = dset.shape[0] - write_ptr
+                    dset.resize((write_ptr + n_to_write,))
 
-                if n_to_write > 0:
-                    arr = np.array(buffer[:n_to_write], dtype=dtype)
-                    dset[write_ptr : write_ptr + n_to_write] = arr
-                    write_ptr += n_to_write
-                    buffer = buffer[n_to_write:]
+                arr = np.array(buffer[:n_to_write], dtype=dtype)
+                dset[write_ptr : write_ptr + n_to_write] = arr
+                write_ptr += n_to_write
+                buffer = []
         
         # Write any final remaining events from the buffer.
-        if buffer and write_ptr < dset.shape[0]:
-            n_to_write = min(len(buffer), dset.shape[0] - write_ptr)
+        if buffer:
+            n_to_write = len(buffer)
+            if write_ptr + n_to_write > dset.shape[0]:
+                dset.resize((write_ptr + n_to_write,))
             arr = np.array(buffer[:n_to_write], dtype=dtype)
             dset[write_ptr : write_ptr + n_to_write] = arr
             write_ptr += n_to_write
 
-        # Shrink dataset if fewer events were generated.
-        if write_ptr < dset.shape[0]:
+        # Resize dataset to exact number of events written.
+        if write_ptr != dset.shape[0]:
             dset.resize((write_ptr,))
 
         # The final number of events is the number of rows written.

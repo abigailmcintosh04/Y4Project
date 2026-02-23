@@ -9,11 +9,13 @@ def main():
     Main function to load d0 data and plot the ROC curve.
     '''
     parser = argparse.ArgumentParser(description='Plot ROC curve from d0 data.')
-    parser.add_argument('d0_z0', type=str, choices=['d0', 'z0'])
-    parser.add_argument('signal_file', help='Path to the .npy file with signal d0 values.')
-    parser.add_argument('background_file', help='Path to the .npy file with background d0 values.')
+    parser.add_argument('data_dir', help='Path to the folder containing signal_d0s.npy and background_d0s.npy.')
     parser.add_argument('xmin', type=float)
     parser.add_argument('xmax', type=float)
+    parser.add_argument('--mode', choices=['lower', 'upper'], default='lower',
+                        help="'lower': optimise minimum |d0| cut. 'upper': optimise maximum |d0| cut.")
+    parser.add_argument('--significance', action='store_true', default=False,
+                        help='Load d0 significance files (_sig) instead of raw d0.')
     args = parser.parse_args()
 
     run_time = datetime.now().strftime('%Y%m%d-%H%M%S')
@@ -21,8 +23,9 @@ def main():
         os.makedirs('plots')
 
     # --- Load Data ---
-    signal_d0s = np.load(args.signal_file)
-    background_d0s = np.load(args.background_file)
+    suffix = '_sig' if args.significance else ''
+    signal_d0s = np.abs(np.load(os.path.join('d0_np_files', args.data_dir, f'signal_d0s{suffix}.npy')))
+    background_d0s = np.abs(np.load(os.path.join('d0_np_files', args.data_dir, f'background_d0s{suffix}.npy')))
 
     print(f'Loaded {len(signal_d0s)} signal tracks and {len(background_d0s)} background tracks.')
 
@@ -35,26 +38,27 @@ def main():
     total_background = len(background_d0s)
 
     for cut in d0_cuts:
-        # Signal efficiency: fraction of signal tracks with |d0| > cut
-        signal_passed = np.sum(signal_d0s > cut)
-        efficiency = signal_passed / total_signal if total_signal > 0 else 0
-        efficiencies.append(efficiency)
+        if args.mode == 'lower':
+            # Lower cut: keep tracks with |d0| > cut
+            signal_passed = np.sum(signal_d0s > cut)
+            background_rejected = np.sum(background_d0s < cut)
+        else:
+            # Upper cut: keep tracks with |d0| < cut
+            signal_passed = np.sum(signal_d0s < cut)
+            background_rejected = np.sum(background_d0s > cut)
 
-        # Background rejection: fraction of background tracks with |d0| < cut
-        background_rejected = np.sum(background_d0s < cut)
-        rejection = background_rejected / total_background if total_background > 0 else 0
-        rejections.append(rejection)
+        efficiencies.append(signal_passed / total_signal if total_signal > 0 else 0)
+        rejections.append(background_rejected / total_background if total_background > 0 else 0)
 
     # --- Plotting ---
+    cut_label = 'Lower' if args.mode == 'lower' else 'Upper'
+    var_label = 'd0 significance' if args.significance else '|d0|'
+    unit = '' if args.significance else ' (mm)'
     plt.figure(figsize=(10, 8))
     plt.scatter(d0_cuts, efficiencies, label='Signal Efficiency', color='blue')
     plt.scatter(d0_cuts, rejections, label='Background Rejection', color='green')
-    if args.d0_z0 == 'd0':
-        plt.title('Signal Efficiency and Background Rejection vs. d0 Cut')
-        plt.xlabel('d0 Cut Value (mm)')
-    elif args.d0_z0 == 'z0':
-        plt.title('Signal Efficiency and Background Rejection vs. z0 Cut')
-        plt.xlabel('z0 Cut Value (mm)')
+    plt.title(f'Signal Efficiency and Background Rejection vs. {cut_label} {var_label} Cut')
+    plt.xlabel(f'{var_label} Cut Value{unit}')
     plt.ylabel('Fraction')
     plt.grid(True)
     plt.legend()
@@ -64,11 +68,12 @@ def main():
     best_idx = np.argmin(np.abs(np.array(efficiencies) - np.array(rejections)))
     best_cut = d0_cuts[best_idx]
     plt.axvline(x=best_cut, color='red', linestyle='--', linewidth=1)
-    plt.annotate(f'Optimal Cut ≈ {best_cut:.3f} mm\n(Efficiency ≈ {efficiencies[best_idx]:.2f})',
+    plt.annotate(f'Optimal {cut_label} Cut ≈ {best_cut:.3f}{unit}\n(Efficiency ≈ {efficiencies[best_idx]:.2f})',
                  xy=(best_cut, efficiencies[best_idx]),
                  xytext=(best_cut + 0.05 * (args.xmax - args.xmin), 0.5))
 
-    plot_filename = os.path.join('plots', f'd0_roc_curve_{run_time}.png')
+    sig_tag = '_sig' if args.significance else ''
+    plot_filename = os.path.join('plots', f'd0_roc_{args.mode}{sig_tag}_{run_time}.png')
     plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
     print(f'ROC curve plot saved to {plot_filename}')
 

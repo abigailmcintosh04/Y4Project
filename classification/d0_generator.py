@@ -8,7 +8,7 @@ import subprocess
 from datetime import datetime
 import argparse
 
-from generator_utils import configure_pythia, single_event, hadron_id_set, calculate_d0, smear_d0
+from generator_utils import configure_pythia, single_event, hadron_id_set, calculate_d0, smear_d0, d0_significance
 
 
 def is_signal_track(particle, hadron_index, event, visited=None):
@@ -55,6 +55,8 @@ def launch_d0_shards(script_path, args):
             '--shard-index', str(i),
             '--output-dir', args.output_dir,
         ]
+        if args.significance:
+            command.append('--significance')
         p = subprocess.Popen(command)
         processes.append(p)
     
@@ -62,15 +64,15 @@ def launch_d0_shards(script_path, args):
     return processes
 
 
-def merge_npy_shards(output_dir, num_shards, cleanup=True):
+def merge_npy_shards(output_dir, num_shards, suffix='', cleanup=True):
     '''Merge .npy shard files into single signal and background files.'''
     print('\nMerging shard files into single output files...')
     all_signal = []
     all_background = []
 
     for i in range(num_shards):
-        signal_file = os.path.join(output_dir, f'signal_d0s_shard_{i}.npy')
-        background_file = os.path.join(output_dir, f'background_d0s_shard_{i}.npy')
+        signal_file = os.path.join(output_dir, f'signal_d0s{suffix}_shard_{i}.npy')
+        background_file = os.path.join(output_dir, f'background_d0s{suffix}_shard_{i}.npy')
 
         if os.path.exists(signal_file):
             all_signal.append(np.load(signal_file))
@@ -80,8 +82,8 @@ def merge_npy_shards(output_dir, num_shards, cleanup=True):
     merged_signal = np.concatenate(all_signal) if all_signal else np.array([])
     merged_background = np.concatenate(all_background) if all_background else np.array([])
 
-    signal_out = os.path.join(output_dir, 'signal_d0s.npy')
-    background_out = os.path.join(output_dir, 'background_d0s.npy')
+    signal_out = os.path.join(output_dir, f'signal_d0s{suffix}.npy')
+    background_out = os.path.join(output_dir, f'background_d0s{suffix}.npy')
     np.save(signal_out, merged_signal)
     np.save(background_out, merged_background)
 
@@ -93,7 +95,7 @@ def merge_npy_shards(output_dir, num_shards, cleanup=True):
     if cleanup:
         print('Cleaning up temporary shard files...')
         for i in range(num_shards):
-            for fn in [f'signal_d0s_shard_{i}.npy', f'background_d0s_shard_{i}.npy']:
+            for fn in [f'signal_d0s{suffix}_shard_{i}.npy', f'background_d0s{suffix}_shard_{i}.npy']:
                 path = os.path.join(output_dir, fn)
                 if os.path.exists(path):
                     os.remove(path)
@@ -110,6 +112,7 @@ def main():
     parser.add_argument('--shard-index', type=int, default=0, help='The index of this specific shard (0-based).')
     parser.add_argument('--cleanup', action='store_true', default=True, help='Delete temporary shard files after merging.')
     parser.add_argument('--output-dir', type=str, default='', help='Output directory for .npy files (set automatically for shards).')
+    parser.add_argument('--significance', action='store_true', default=False, help='Use d0 significance instead of d0.')
     args = parser.parse_args()
 
     total_start_time = time.time()
@@ -159,8 +162,12 @@ def main():
             if p_id in hadron_id_set:
                 continue
 
-            d0 = calculate_d0(p)
-            d0 = smear_d0(d0, p.pT())
+            true_d0 = calculate_d0(p)
+
+            if args.significance:
+                d0 = d0_significance(true_d0, p.pT())
+            else:
+                d0 = smear_d0(true_d0, p.pT())
 
             if is_signal_track(p, h.index(), pythia.event):
                 signal_d0s.append(d0)
@@ -173,12 +180,13 @@ def main():
           f'{len(background_d0s)} background tracks in {duration:.2f} seconds.')
 
     # --- Save Data ---
+    suffix = '_sig' if args.significance else ''
     if args.shards > 1:
-        signal_filename = os.path.join(args.output_dir, f'signal_d0s_shard_{args.shard_index}.npy')
-        background_filename = os.path.join(args.output_dir, f'background_d0s_shard_{args.shard_index}.npy')
+        signal_filename = os.path.join(args.output_dir, f'signal_d0s{suffix}_shard_{args.shard_index}.npy')
+        background_filename = os.path.join(args.output_dir, f'background_d0s{suffix}_shard_{args.shard_index}.npy')
     else:
-        signal_filename = os.path.join(args.output_dir, 'signal_d0s.npy')
-        background_filename = os.path.join(args.output_dir, 'background_d0s.npy')
+        signal_filename = os.path.join(args.output_dir, f'signal_d0s{suffix}.npy')
+        background_filename = os.path.join(args.output_dir, f'background_d0s{suffix}.npy')
 
     np.save(signal_filename, np.array(signal_d0s))
     np.save(background_filename, np.array(background_d0s))
@@ -191,7 +199,7 @@ def main():
             p.wait()
         print('All shards have completed successfully.')
 
-        merge_npy_shards(args.output_dir, args.shards, cleanup=args.cleanup)
+        merge_npy_shards(args.output_dir, args.shards, suffix=suffix, cleanup=args.cleanup)
 
         total_duration = time.time() - total_start_time
         print(f'\nTotal process time (generation + merge + cleanup): {total_duration:.2f} seconds.')

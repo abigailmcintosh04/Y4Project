@@ -122,7 +122,12 @@ def single_event(event, jet_def, ptmin, consts=False, d0_low=None, d0_high=None)
                 pj.set_user_index(p.index())
                 final_state_pseudojets.append(pj)
             if p.id() in hadron_id_set:
-                hadrons.append(p)
+                # Only keep the final copy of the hadron (whose daughters
+                # are not themselves charm hadrons) to avoid duplicates
+                # from intermediate copies in Pythia's event history.
+                daughters = p.daughterList()
+                if daughters and all(event[d].id() not in hadron_id_set for d in daughters):
+                    hadrons.append(p)
 
         # Cluster final-state particles into jets using the anti-kT algorithm.
         cluster_sequence = fastjet.ClusterSequence(final_state_pseudojets, jet_def)
@@ -174,10 +179,11 @@ def single_event(event, jet_def, ptmin, consts=False, d0_low=None, d0_high=None)
                     # Also change for d0 significance? d0/sigma(d0)
                     d0 = (p.xProd() * p.py() - p.yProd() * p.px()) / pt
 
-                    # Only tracks passing d0 cut kept.
-                    if d0_low is not None and d0_high is not None:
-                        if not (d0_low <= abs(d0) <= d0_high):
-                            continue
+                    # Only tracks passing d0 cut kept (filters out d0=0.0 tracks)
+                    if d0_low is not None and abs(d0) <= d0_low:
+                        continue
+                    if d0_high is not None and abs(d0) > d0_high:
+                        continue
 
                     d0_values.append(d0)
                     px_jet += p.px()
@@ -195,8 +201,9 @@ def single_event(event, jet_def, ptmin, consts=False, d0_low=None, d0_high=None)
                     jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
                     jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
 
-                    # Calculate pT frac.
-                    pt_frac = max_pt / best_jet.perp()
+                    # Calculate pT frac (using filtered jet pT for consistency).
+                    filtered_jet_pt = math.sqrt(px_jet**2 + py_jet**2)
+                    pt_frac = max_pt / filtered_jet_pt if filtered_jet_pt > 0 else 0.0
                 else:
                     continue
 

@@ -34,6 +34,17 @@ def smear_d0(true_d0, pt_gev):
     return np.random.normal(true_d0, sigma)
 
 
+def d0_significance(true_d0, pt_gev):
+    '''
+    Calculate the d0 significance for a particle.
+    '''
+    b = 0.100
+    a = 0.012
+    sigma = np.sqrt(a**2 + (b / pt_gev)**2)
+    d0_smeared = smear_d0(true_d0, pt_gev)
+    return d0_smeared / sigma
+
+
 def deltaR(eta1, phi1, eta2, phi2):
     '''Compute deltaR between two (eta,phi) points.'''
     dphi = abs(phi1 - phi2)

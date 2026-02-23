@@ -42,7 +42,8 @@ def d0_significance(true_d0, pt_gev):
     a = 0.012
     sigma = np.sqrt(a**2 + (b / pt_gev)**2)
     d0_smeared = smear_d0(true_d0, pt_gev)
-    return d0_smeared / sigma
+    significance = d0_smeared / sigma
+    return significance, d0_smeared
 
 
 def deltaR(eta1, phi1, eta2, phi2):
@@ -136,7 +137,7 @@ def configure_pythia(seed=None):
     return pythia
 
 
-def single_event(event, jet_def, ptmin, consts=False, d0_low=None, d0_high=None):
+def single_event(event, jet_def, ptmin, consts=False, d0_sig_cut=None):
     '''
     Process a single Pythia event to find charm hadrons and their associated jets.
     Returns a list of records for each charm hadron found in the event.
@@ -207,16 +208,15 @@ def single_event(event, jet_def, ptmin, consts=False, d0_low=None, d0_high=None)
                         continue
 
                     # Calculate true d0 and smear it to simulate detector resolution.
-                    d0 = calculate_d0(p)
-                    d0 = smear_d0(d0, pt)
+                    true_d0 = calculate_d0(p)
+                    significance, smeared_d0 = d0_significance(true_d0, pt)
 
-                    # Optional d0 cuts (applied after smearing).
-                    if d0_low is not None and abs(d0) <= d0_low:
-                        continue
-                    if d0_high is not None and abs(d0) > d0_high:
-                        continue
+                    # Optional d0 significance cut (applied after smearing).
+                    if d0_sig_cut is not None:
+                        if abs(significance) < d0_sig_cut:
+                            continue
 
-                    d0_values.append(d0)
+                    d0_values.append(smeared_d0)
                     px_jet += p.px()
                     py_jet += p.py()
                     pz_jet += p.pz()
@@ -250,7 +250,7 @@ def single_event(event, jet_def, ptmin, consts=False, d0_low=None, d0_high=None)
     return event_records
 
 
-def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, ptmin, d0_low, d0_high):
+def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, ptmin, d0_sig_cut=None):
     '''Main function to generate events and store them in an HDF5 file.'''
     start_time = time.time()
     last_report_time = start_time
@@ -273,7 +273,7 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, 
             if not pythia.next():
                 continue
 
-            new_records = single_event(pythia.event, jet_def, ptmin, d0_low=d0_low, d0_high=d0_high)
+            new_records = single_event(pythia.event, jet_def, ptmin, d0_sig_cut=d0_sig_cut)
             if new_records:
                 buffer.extend(new_records)
                 charm_events += len(new_records)
@@ -330,10 +330,8 @@ def launch_shards(script_path, args):
             '--shards', str(args.shards),
             '--shard-index', str(i)
         ]
-        if hasattr(args, 'd0_low') and args.d0_low is not None:
-            command.extend(['--d0-low', str(args.d0_low)])
-        if hasattr(args, 'd0_high') and args.d0_high is not None:
-            command.extend(['--d0-high', str(args.d0_high)])
+        if hasattr(args, 'd0_sig_cut') and args.d0_sig_cut is not None:
+            command.extend(['--d0-sig-cut', str(args.d0_sig_cut)])
         p = subprocess.Popen(command) # Launch the worker process in the background.
         processes.append(p)
     

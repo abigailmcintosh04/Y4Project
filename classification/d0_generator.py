@@ -165,7 +165,7 @@ def main():
             true_d0 = calculate_d0(p)
 
             if args.significance:
-                d0 = d0_significance(true_d0, p.pT())
+                d0, smeared_d0 = d0_significance(true_d0, p.pT())
             else:
                 d0 = smear_d0(true_d0, p.pT())
 

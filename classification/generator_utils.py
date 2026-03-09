@@ -202,6 +202,7 @@ def single_event(event, jet_def, ptmin, consts=False, d0_sig_cut=None):
                 d0_values = []
                 d0_sig_values = []
                 max_pt = 0.0
+                charge_sum = 0
 
                 for p in valid_particles:
                     pt = p.pT()
@@ -219,6 +220,7 @@ def single_event(event, jet_def, ptmin, consts=False, d0_sig_cut=None):
 
                     d0_values.append(smeared_d0)
                     d0_sig_values.append(significance)
+                    charge_sum += int(p.charge())
                     px_jet += p.px()
                     py_jet += p.py()
                     pz_jet += p.pz()
@@ -246,7 +248,7 @@ def single_event(event, jet_def, ptmin, consts=False, d0_sig_cut=None):
 
                 n_tracks = len(d0_values)
                 event_records.append((abs(h.id()), d0_mean, jet_mass, lxy, pt_frac, n_tracks,
-                                      d0_sig_mean, d0_sig_max, jet_pt, d0_std))
+                                      d0_sig_mean, d0_sig_max, jet_pt, d0_std, charge_sum))
 
             elif consts:
                 return constituents, h, best_jet # Return the first valid jet found

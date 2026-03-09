@@ -25,7 +25,8 @@ run_dir = os.path.join("runs", run_time)
 os.makedirs(run_dir, exist_ok=True)
 
 X = np.vstack([data['d0_mean'], data['lxy'], data['jet_mass'], data['pt_frac'], data['n_tracks'],
-              data['d0_sig_mean'], data['d0_sig_max'], data['jet_pt'], data['d0_std']]).T.astype(np.float32)
+              data['d0_sig_mean'], data['d0_sig_max'], data['jet_pt'], data['d0_std'],
+              data['charge_sum']]).T.astype(np.float32)
 y_raw = data['pdg_id_hadron']
 
 # Encode hadron PDG IDs as integer classes.
@@ -50,7 +51,7 @@ X_val = scaler.transform(X_val)
 
 
 model = tf.keras.Sequential([
-    tf.keras.layers.Input(shape=(9,)), 
+    tf.keras.layers.Input(shape=(10,)), 
     tf.keras.layers.Dense(32, activation='relu'),
     tf.keras.layers.Dense(32, activation='relu'),
     tf.keras.layers.Dense(32, activation='relu'),

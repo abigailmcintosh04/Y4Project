@@ -54,6 +54,10 @@ dtype = np.dtype([
     ('lxy', 'f8'),
     ('pt_frac', 'f8'),
     ('n_tracks', 'i4'),
+    ('d0_sig_mean', 'f8'),
+    ('d0_sig_max', 'f8'),
+    ('jet_pt', 'f8'),
+    ('d0_std', 'f8'),
 ])
 
 # Configure Pythia and run the event generation for this specific shard.

@@ -8,7 +8,7 @@ import subprocess
 from datetime import datetime
 import argparse
 
-from generator_utils import configure_pythia, single_event, hadron_id_set, calculate_d0, smear_d0, d0_significance
+from generator_utils import configure_pythia, single_event, hadron_id_set, calculate_d0, smear_d0, d0_significance, smear_pt
 
 
 def is_signal_track(particle, hadron_index, event, visited=None):
@@ -163,11 +163,12 @@ def main():
                 continue
 
             true_d0 = calculate_d0(p)
+            pt = smear_pt(p.pT())
 
             if args.significance:
-                d0, smeared_d0 = d0_significance(true_d0, p.pT())
+                d0, smeared_d0 = d0_significance(true_d0, pt)
             else:
-                d0 = smear_d0(true_d0, p.pT())
+                d0 = smear_d0(true_d0, pt)
 
             if is_signal_track(p, h.index(), pythia.event):
                 signal_d0s.append(d0)

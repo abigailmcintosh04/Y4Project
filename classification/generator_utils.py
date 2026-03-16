@@ -26,10 +26,13 @@ def calculate_d0(particle):
 
 def smear_d0(true_d0, pt_gev):
     '''
-    Smears the true d0 to simulate detector resolution.
+    Smears the true d0 to simulate ATLAS detector resolution.
+    Uses the parameterization from ATL-PHYS-PUB-2015-051:
+        sigma(d0) = a ⊕ b/pT (in mm, with pT in GeV)
+    where a = 0.011 mm (11 um, intrinsic) and b = 0.073 mm*GeV (73 um*GeV, multiple scattering).
     '''
-    b = 0.100
-    a = 0.012
+    a = 0.011
+    b = 0.073
     sigma = np.sqrt(a**2 + (b / pt_gev)**2)
     return np.random.normal(true_d0, sigma)
 
@@ -37,13 +40,27 @@ def smear_d0(true_d0, pt_gev):
 def d0_significance(true_d0, pt_gev):
     '''
     Calculate the d0 significance for a particle.
+    Uses the same resolution parameterization as smear_d0.
     '''
-    b = 0.100
-    a = 0.012
+    a = 0.011
+    b = 0.073
     sigma = np.sqrt(a**2 + (b / pt_gev)**2)
     d0_smeared = smear_d0(true_d0, pt_gev)
     significance = d0_smeared / sigma
     return significance, d0_smeared
+
+
+def smear_pt(true_pt):
+    '''
+    Smears the true pT to simulate ATLAS Inner Detector resolution.
+    Uses the parameterization from EPJC 74 (2014) 3130, Eq. 10:
+        sigma(pT)/pT = r1 ⊕ r2 * pT
+    where r1 = 0.017 (multiple scattering) and r2 = 0.000483 GeV^-1 (intrinsic).
+    '''
+    r1 = 0.017
+    r2 = 0.000483
+    sigma = true_pt * np.sqrt(r1**2 + (r2 * true_pt)**2)
+    return np.random.normal(true_pt, sigma)
 
 
 def deltaR(eta1, phi1, eta2, phi2):
@@ -205,7 +222,8 @@ def single_event(event, jet_def, ptmin, consts=False, d0_sig_cut=None):
                 charge_sum = 0
 
                 for p in valid_particles:
-                    pt = p.pT()
+                    true_pt = p.pT()
+                    pt = smear_pt(true_pt)
                     if pt < 1e-9:
                         continue
 

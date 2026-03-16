@@ -28,6 +28,11 @@ var_dict = {
     'lxy': 'Transverse Decay Length L_xy(mm)',
     'pt_frac': 'Fraction of Jet Transverse Momentum from Prompt Charm Hadron',
     'n_tracks': 'Number of Tracks in Jet',
+    'd0_sig_mean': 'Mean Transverse Impact Parameter Significance d0',
+    'd0_sig_max': 'Maximum Transverse Impact Parameter Significance d0',
+    'jet_pt': 'Jet Transverse Momentum (GeV)',
+    'd0_std': 'Standard Deviation of Transverse Impact Parameter d0',
+    'charge_sum': 'Charge Sum of Tracks in Jet',
 }
 
 with h5py.File(os.path.join('collisions', input_file), 'r') as h5file:

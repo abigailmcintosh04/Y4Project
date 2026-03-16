@@ -51,27 +51,42 @@ X_val = scaler.transform(X_val)
 
 
 model = tf.keras.Sequential([
-    tf.keras.layers.Input(shape=(10,)), 
+    tf.keras.layers.Input(shape=(10,)),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.BatchNormalization(),
+    tf.keras.layers.Dropout(0.3),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.BatchNormalization(),
+    tf.keras.layers.Dropout(0.3),
     tf.keras.layers.Dense(32, activation='relu'),
-    tf.keras.layers.Dense(32, activation='relu'),
-    tf.keras.layers.Dense(32, activation='relu'),
-    tf.keras.layers.Dense(32, activation='relu'),
+    tf.keras.layers.BatchNormalization(),
+    tf.keras.layers.Dropout(0.2),
     tf.keras.layers.Dense(n_classes, activation='softmax')
 ])
 
 model.compile(
-    optimizer='adam',
+    optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
     loss='sparse_categorical_crossentropy',
     metrics=['accuracy']
 )
 
+callbacks = [
+    tf.keras.callbacks.ReduceLROnPlateau(
+        monitor='val_loss', factor=0.5, patience=5, min_lr=1e-6, verbose=1
+    ),
+    tf.keras.callbacks.EarlyStopping(
+        monitor='val_loss', patience=15, restore_best_weights=True, verbose=1
+    ),
+]
+
 history = model.fit(
     X_train, y_train,
     validation_data=(X_val, y_val),
-    epochs=40,
+    epochs=200,
     batch_size=512,
     verbose=1,
-    class_weight=dict_weights
+    class_weight=dict_weights,
+    callbacks=callbacks
 )
 
 val_loss, val_acc = model.evaluate(X_val, y_val, verbose=0)

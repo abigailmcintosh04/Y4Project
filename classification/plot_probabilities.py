@@ -6,6 +6,7 @@ import tensorflow as tf
 
 # Mapping for nicer plot labels
 pdg_map = {
+    0: 'Other Charm',
     411: 'D+/D-',
     421: 'D0/D0_bar',
     431: 'Ds+/Ds-',

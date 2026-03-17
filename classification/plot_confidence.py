@@ -51,8 +51,9 @@ with h5py.File(full_file_path, 'r') as f:
     raw_data = f['events'][:]
 
 y_raw = raw_data['pdg_id_hadron']
+y_binary = np.where(y_raw == 4122, 4122, 0)
 encoder = LabelEncoder()
-y = encoder.fit_transform(y_raw)
+y = encoder.fit_transform(y_binary)
 
 # Re-split to match validation indices
 _, raw_data_val, _, y_val_true = train_test_split(
@@ -70,8 +71,8 @@ label_name = var_dict.get(args.parameter, args.parameter)
 
 plt.figure(figsize=(10, 7))
 
-colors = {411: 'blue', 421: 'orange', 431: 'green', 4122: 'red'}
-names = {411: 'D+', 421: 'D0', 431: 'Ds+', 4122: 'Lambdac+'}
+colors = {0: 'grey', 411: 'blue', 421: 'orange', 431: 'green', 4122: 'red'}
+names = {0: 'Other Charm', 411: 'D+', 421: 'D0', 431: 'Ds+', 4122: 'Lambdac+'}
 
 bins = np.linspace(args.x_min, args.x_max, 100)
 

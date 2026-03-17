@@ -29,9 +29,12 @@ X = np.vstack([data['d0_mean'], data['lxy'], data['jet_mass'], data['pt_frac'], 
               data['charge_sum']]).T.astype(np.float32)
 y_raw = data['pdg_id_hadron']
 
+# Group all non-Lambda_c particles into class '0'
+y_binary = np.where(y_raw == 4122, 4122, 0)
+
 # Encode hadron PDG IDs as integer classes.
 encoder = LabelEncoder()
-y = encoder.fit_transform(y_raw)
+y = encoder.fit_transform(y_binary)
 class_labels = encoder.classes_
 n_classes = len(class_labels)
 

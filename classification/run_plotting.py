@@ -48,7 +48,10 @@ plt.close()
 # Confusion matrix.
 cm_norm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
-disp = ConfusionMatrixDisplay(confusion_matrix=cm_norm, display_labels=class_labels)
+# Convert class labels to readable names
+display_names = ['Other Charm' if label == 0 else 'Lambda_c' for label in class_labels]
+
+disp = ConfusionMatrixDisplay(confusion_matrix=cm_norm, display_labels=display_names)
 fig, ax = plt.subplots(figsize=(8,8))
 disp.plot(ax=ax, cmap='Blues', colorbar=False, xticks_rotation='vertical', values_format='.2f')
 plt.title('Charm Hadron Classification — Confusion Matrix (Normalised)')

@@ -9,6 +9,7 @@ import os
 from datetime import datetime
 import json
 import argparse
+import joblib
 
 # Arguments for number of events and chunk size in command.
 parser = argparse.ArgumentParser()
@@ -51,6 +52,9 @@ dict_weights = dict(enumerate(weights))
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_val = scaler.transform(X_val)
+
+# Save scaler.
+joblib.dump(scaler, os.path.join(run_dir, "scaler.save"))
 
 
 model = tf.keras.Sequential([

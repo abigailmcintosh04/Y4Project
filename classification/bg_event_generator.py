@@ -4,6 +4,7 @@ import numpy as np
 import os
 import shutil
 import argparse
+import time
 
 def main():
     parser = argparse.ArgumentParser()
@@ -12,7 +13,8 @@ def main():
     parser.add_argument('n_bg', type=int)
     parser.add_argument('chunk_size', type=int)
     parser.add_argument('output', type=str)
-    parser.add_argument('--shards', type=int, default=1)
+    parser.add_argument('--charm-shards', type=int, default=1, help='Number of shards for charm generation.')
+    parser.add_argument('--bg-shards', type=int, default=1, help='Number of shards for background generation.')
     args = parser.parse_args()
 
     collisions_dir = 'collisions'
@@ -23,36 +25,51 @@ def main():
     temp_dir = os.path.join(collisions_dir, base_name)
     os.makedirs(temp_dir, exist_ok=True)
 
-    runs = {'background': args.n_bg, 'charm': args.n_charm}
+    runs = {
+        'background': (args.n_bg, args.bg_shards),
+        'charm': (args.n_charm, args.charm_shards),
+    }
 
+    # Launch all processes in parallel.
     generated_files = []
+    active_processes = []
 
-    for process, num_events in runs.items():
+    for process, (num_events, shards) in runs.items():
         if num_events <= 0:
-            print(f"\nSkipping {process} generation (requested 0 events).")
+            print(f"Skipping {process} generation (requested 0 events).")
             continue
-            
+
         raw_file = f"raw_{process}.h5"
         generated_files.append(raw_file)
-        
-        print(f"Launching Pythia Generation: {process.upper()} ({num_events:,} events)")
-        
+
+        print(f"Launching Pythia Generation: {process.upper()} ({num_events:,} events, {shards} shards)")
+
         cmd = [
             "python", "event_generator.py",
             raw_file,
             str(num_events),
             str(args.chunk_size),
-            "--shards", str(args.shards),
+            "--shards", str(shards),
             "--process", process,
             "--temp-dir", temp_dir,
         ]
-        
-        try:
-            subprocess.run(cmd, check=True)
-            print(f"\nSuccessfully finished generating {raw_file}")
-        except subprocess.CalledProcessError as e:
-            print(f"\n[ERROR] Generation failed for {process}. Exiting.")
-            exit(1)
+
+        p = subprocess.Popen(cmd)
+        active_processes.append((process, p))
+
+    # Wait for all processes to complete.
+    failed = False
+    for process, p in active_processes:
+        p.wait()
+        if p.returncode != 0:
+            print(f"\n[ERROR] Generation failed for {process} (exit code {p.returncode}).")
+            failed = True
+        else:
+            print(f"Successfully finished generating {process}.")
+
+    if failed:
+        print("One or more generation processes failed. Exiting.")
+        exit(1)
 
     if not generated_files:
         print("\nNo events generated. Exiting.")

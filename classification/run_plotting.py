@@ -21,6 +21,9 @@ class_labels = val_data['class_labels']
 
 cm = np.load(os.path.join('runs', input_file, 'confusion_matrix.npy'))
 
+label_map = {0: 'Background', 1: 'Other Charm', 2: '$\Lambda_c^+$'}
+display_names = [label_map[label] for label in sorted(class_labels)]
+
 # Training and validation loss.
 plt.figure(figsize=(8,5))
 plt.plot(history['loss'], label='Training Loss')
@@ -47,9 +50,6 @@ plt.close()
 
 # Confusion matrix.
 cm_norm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-
-# Convert class labels to readable names
-display_names = ['Other Charm' if label == 0 else 'Lambda_c' for label in class_labels]
 
 disp = ConfusionMatrixDisplay(confusion_matrix=cm_norm, display_labels=display_names)
 fig, ax = plt.subplots(figsize=(8,8))

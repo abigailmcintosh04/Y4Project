@@ -28,15 +28,9 @@ os.makedirs(run_dir, exist_ok=True)
 X = np.vstack([data['d0_mean'], data['lxy'], data['jet_mass'], data['pt_frac'], data['n_tracks'],
               data['d0_sig_mean'], data['d0_sig_max'], data['jet_pt'], data['d0_std'],
               data['charge_sum']]).T.astype(np.float32)
-y_raw = data['pdg_id_hadron']
 
-# Group all non-Lambda_c particles into class '0'
-y_binary = np.where(y_raw == 4122, 4122, 0)
-
-# Encode hadron PDG IDs as integer classes.
-encoder = LabelEncoder()
-y = encoder.fit_transform(y_binary)
-class_labels = encoder.classes_
+y = data['class_label'].astype(np.int32)
+class_labels = ['Background', 'Other Charm', 'Lambda_c']
 n_classes = len(class_labels)
 
 # Split between train and validation.
@@ -47,6 +41,7 @@ X_train, X_val, y_train, y_val = train_test_split(
 # Compute class weights.
 weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_train), y=y_train)
 dict_weights = dict(enumerate(weights))
+print(f'Class weights: {dict_weights}')
 
 # Standardise.
 scaler = StandardScaler()

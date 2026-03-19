@@ -67,7 +67,7 @@ dtype = np.dtype([
 
 # Configure Pythia and run the event generation for this specific shard.
 pythia = configure_pythia(process=args.process)
-events_found, duration = generate_events(pythia, jet_def, output_file, shard_events, args.chunk_size, dtype, 20.0, d0_sig_cut=args.d0_sig_cut)
+events_found, duration = generate_events(pythia, jet_def, output_file, shard_events, args.chunk_size, dtype, 20.0, process=args.process, d0_sig_cut=args.d0_sig_cut)
 print(f'Shard {args.shard_index}/{args.shards}: Event generation took {duration:.2f} seconds for {events_found} events.')
 
 # If this is the master process, wait for workers and merge the results.

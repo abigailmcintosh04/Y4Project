@@ -65,6 +65,16 @@ def smear_pt(true_pt):
     return np.random.normal(true_pt, sigma)
 
 
+def smear_lxy(true_lxy, pt_gev):
+    '''
+    Smears the true lxy to simulate ATLAS detector resolution.
+    '''
+    a = 0.025
+    b = 0.100
+    sigma = math.sqrt(a**2 + (b / max(pt_gev, 1e-9))**2)
+    return np.random.normal(true_lxy, sigma)
+
+
 def deltaR(eta1, phi1, eta2, phi2):
     '''Compute deltaR between two (eta,phi) points.'''
     dphi = abs(phi1 - phi2)
@@ -192,7 +202,9 @@ def jet_features(jet, event, class_label, lxy, d0_sig_cut=None):
 
         n_tracks = len(d0_values)
 
-        return (class_label, d0_mean, jet_mass, lxy, pt_frac, n_tracks,
+        smeared_lxy = smear_lxy(lxy, filtered_jet_pt)
+
+        return (class_label, d0_mean, jet_mass, smeared_lxy, pt_frac, n_tracks,
                 d0_sig_mean, d0_sig_max, jet_pt, d0_std, charge_sum)
     return None
 

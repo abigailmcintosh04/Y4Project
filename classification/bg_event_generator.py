@@ -2,6 +2,7 @@ import subprocess
 import h5py
 import numpy as np
 import os
+import shutil
 import argparse
 
 def main():
@@ -13,6 +14,14 @@ def main():
     parser.add_argument('output', type=str)
     parser.add_argument('--shards', type=int, default=1)
     args = parser.parse_args()
+
+    collisions_dir = 'collisions'
+    os.makedirs(collisions_dir, exist_ok=True)
+
+    # Create a temporary subdirectory named after the output file (without extension).
+    base_name = os.path.splitext(args.output)[0]
+    temp_dir = os.path.join(collisions_dir, base_name)
+    os.makedirs(temp_dir, exist_ok=True)
 
     runs = {'charm': args.n_charm, 'background': args.n_bg}
 
@@ -34,7 +43,8 @@ def main():
             str(num_events),
             str(args.chunk_size),
             "--shards", str(args.shards),
-            "--process", process
+            "--process", process,
+            "--temp-dir", temp_dir,
         ]
         
         try:
@@ -48,22 +58,23 @@ def main():
         print("\nNo events generated. Exiting.")
         return
 
+    # Merge all generated files into a single output file in collisions/.
     all_data = []
 
     for file_name in generated_files:
-        with h5py.File(os.path.join('collisions', file_name), 'r') as f:
+        file_path = os.path.join(temp_dir, file_name)
+        with h5py.File(file_path, 'r') as f:
             all_data.append(f['events'][:])
 
     combined_data = np.concatenate(all_data)
     np.random.shuffle(combined_data)
 
-    with h5py.File((os.path.join('collisions', args.output)), 'w') as f:
-        # Compression
+    final_output = os.path.join(collisions_dir, args.output)
+    with h5py.File(final_output, 'w') as f:
         f.create_dataset('events', data=combined_data, chunks=True)
 
-    for file_name in generated_files:
-        if os.path.exists(os.path.join('collisions', file_name)):
-            os.remove(os.path.join('collisions', file_name))
+    # Clean up the temporary directory.
+    shutil.rmtree(temp_dir)
 
     print(f'Generation of "{args.output}" complete.\nTotal events: {len(combined_data):,}')
 

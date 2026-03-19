@@ -83,35 +83,6 @@ def deltaR_vec(eta0, phi0, etas, phis):
     return np.sqrt((etas - eta0)**2 + dphi**2)
 
 
-def get_c_quark_mother(particle, event, visited=None):
-    '''
-    Recursively traverses up the mother list of a particle to find the
-    first ancestor that is a charm quark from the hard process.
-    A 'visited' set is used to prevent infinite loops in complex histories.
-    '''
-    if visited is None:
-        visited = set()
-
-    # Prevent infinite recursion in complex event histories.
-    if particle.index() in visited:
-        return None
-    visited.add(particle.index())
-
-    mother_indices = particle.motherList()
-    if not mother_indices:
-        return None
-
-    for mother_idx in mother_indices:
-        mother = event[mother_idx]
-        if mother.id() in quark_id_set:  # Base case: Found the target quark.
-            return mother
-        # Recursive step: Search this mother's ancestry.
-        ancestor = get_c_quark_mother(mother, event, visited)
-        if ancestor: # If found, pass the result up the call stack.
-            return ancestor
-    return None
-
-
 def configure_pythia(process='charm', seed=None):
     '''Configure and initialise the Pythia event generator.'''
     pythia = pythia8mc.Pythia()
@@ -364,6 +335,8 @@ def launch_shards(script_path, args):
         ]
         if hasattr(args, 'd0_sig_cut') and args.d0_sig_cut is not None:
             command.extend(['--d0-sig-cut', str(args.d0_sig_cut)])
+        if hasattr(args, 'temp_dir') and args.temp_dir is not None:
+            command.extend(['--temp-dir', args.temp_dir])
         p = subprocess.Popen(command) # Launch the worker process in the background.
         processes.append(p)
     

@@ -17,22 +17,26 @@ parser.add_argument('--shards', type=int, default=1, help='Total number of paral
 parser.add_argument('--shard-index', type=int, default=0, help='The index of this specific shard (0-based).')
 parser.add_argument('--cleanup', action='store_true', default=True, help='Delete temporary shard files after merging.')
 parser.add_argument('--d0-sig-cut', type=float, default=None, help='Minimum d0 significance (|d0/sigma|) to keep a track.')
+parser.add_argument('--temp-dir', type=str, default=None, help='Directory for temporary output files (used by bg_event_generator).')
 args = parser.parse_args()
 
 total_start_time = time.time()
 processes = []
 
 # Define paths for final output and temporary shards
-collisions_dir = 'collisions'
-final_output_file = os.path.join(collisions_dir, args.output_file)
+if args.temp_dir:
+    output_base_dir = args.temp_dir
+else:
+    output_base_dir = 'collisions'
+
+final_output_file = os.path.join(output_base_dir, args.output_file)
 
 base_name, ext = os.path.splitext(args.output_file)
-temp_shard_dir = os.path.join(collisions_dir, base_name)
+temp_shard_dir = os.path.join(output_base_dir, base_name)
 
 # If this is the master process, launch all worker shards.
 if args.shards > 1 and args.shard_index == 0:
-    if not os.path.exists(temp_shard_dir):
-        os.makedirs(temp_shard_dir)
+    os.makedirs(temp_shard_dir, exist_ok=True)
     processes = launch_shards(__file__, args)
 
 # Calculate events for this shard and determine its unique output filename.
@@ -40,8 +44,7 @@ shard_events = math.ceil(args.no_events / args.shards)
 if args.shards > 1:
     output_file = os.path.join(temp_shard_dir, f'{base_name}_shard_{args.shard_index}{ext}')
 else:
-    if not os.path.exists(collisions_dir):
-        os.makedirs(collisions_dir)
+    os.makedirs(output_base_dir, exist_ok=True)
     output_file = final_output_file
 
 # Jet definition.

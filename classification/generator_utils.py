@@ -116,6 +116,9 @@ def configure_pythia(process='charm', seed=None):
     pythia.readString('PartonLevel:FSR = on')
     pythia.readString('HadronLevel:Hadronize = on')
 
+    # MPI off.
+    pythia.readString('PartonLevel:MPI = off')
+
     # Quiet Pythia output.
     pythia.readString('Print:quiet = on')
     pythia.readString('Next:numberShowEvent = 0')

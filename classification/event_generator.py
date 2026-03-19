@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser(description='Generate particle collision events
 parser.add_argument('output_file', type=str, default='collisions.h5')
 parser.add_argument('no_events', type=int)
 parser.add_argument('chunk_size', type=int)
+parser.add_argument('--process', type=str, default='charm', choices=['charm', 'background'])
 parser.add_argument('--shards', type=int, default=1, help='Total number of parallel shards to run.')
 parser.add_argument('--shard-index', type=int, default=0, help='The index of this specific shard (0-based).')
 parser.add_argument('--cleanup', action='store_true', default=True, help='Delete temporary shard files after merging.')
@@ -48,7 +49,7 @@ jet_def = fastjet.JetDefinition(fastjet.antikt_algorithm, 0.4)
 
 # Data structure for the output HDF5 file.
 dtype = np.dtype([
-    ('pdg_id_hadron', 'i4'),
+    ('class_label', 'i4'),
     ('d0_mean', 'f8'),
     ('jet_mass', 'f8'),
     ('lxy', 'f8'),
@@ -62,7 +63,7 @@ dtype = np.dtype([
 ])
 
 # Configure Pythia and run the event generation for this specific shard.
-pythia = configure_pythia()
+pythia = configure_pythia(process=args.process)
 events_found, duration = generate_events(pythia, jet_def, output_file, shard_events, args.chunk_size, dtype, 20.0, d0_sig_cut=args.d0_sig_cut)
 print(f'Shard {args.shard_index}/{args.shards}: Event generation took {duration:.2f} seconds for {events_found} events.')
 

@@ -10,8 +10,10 @@ import fastjet
 
 
 # PDG IDs for charm hadrons and quarks.
-hadron_id_set = {411, 421, 431, 4122, -411, -421, -431, -4122}  # Charm hadrons.
-quark_id_set = {4, -4} # Charm quarks.
+lambda_c_ids = {4122, -4122}
+other_charm_ids = {411, 421, 431, -411, -421, -431}  # Charm hadrons.
+bottom_ids = {511, 521, 531, 5122, -511, -521, -531, -5122}  # Bottom hadrons.
+all_heavy_ids = lambda_c_ids | other_charm_ids | bottom_ids
 
 
 def calculate_d0(particle):
@@ -110,7 +112,7 @@ def get_c_quark_mother(particle, event, visited=None):
     return None
 
 
-def configure_pythia(seed=None):
+def configure_pythia(process='charm', seed=None):
     '''Configure and initialise the Pythia event generator.'''
     pythia = pythia8mc.Pythia()
 
@@ -119,9 +121,15 @@ def configure_pythia(seed=None):
     pythia.readString('Beams:idB = 2212')
     pythia.readString('Beams:eCM = 13000.')
 
-    # Enable charm quark production.
-    pythia.readString('HardQCD:gg2ccbar = on')
-    pythia.readString('HardQCD:qqbar2ccbar = on')
+    if process == 'charm':
+        # Charm production
+        pythia.readString('HardQCD:hardccbar = on')
+    elif process == 'background':
+        pythia.readString('HardQCD:all = on')
+
+    else:
+        raise ValueError('Unknown process. Use "charm" or "background".')
+
 
     # Set a minimum pT for the hard process to ensure "jetty" events.
     pythia.readString('PhaseSpace:pTHatMin = 20.0')
@@ -130,9 +138,6 @@ def configure_pythia(seed=None):
     pythia.readString('PartonLevel:ISR = on')
     pythia.readString('PartonLevel:FSR = on')
     pythia.readString('HadronLevel:Hadronize = on')
-
-    # Enable Multiple Parton Interactions (MPI) for a realistic underlying event.
-    # pythia.readString('PartonLevel:MPI = on')
 
     # Quiet Pythia output.
     pythia.readString('Print:quiet = on')
@@ -154,7 +159,65 @@ def configure_pythia(seed=None):
     return pythia
 
 
-def single_event(event, jet_def, ptmin, consts=False, d0_sig_cut=None):
+def jet_features(jet, event, class_label, lxy, d0_sig_cut=None):
+    consts = jet.constituents()
+    if not consts:
+        return None
+    
+    valid_particles=[event[c.user_index()] for c in consts]
+
+    px_jet, py_jet, pz_jet, e_jet, max_pt, charge_sum = 0.0, 0.0, 0.0, 0.0, 0.0, 0
+    d0_values = []
+    d0_sig_values = []
+
+    for p in valid_particles:
+        true_pt = p.pT()
+        pt = smear_pt(true_pt)
+        if pt < 1e-9:
+            continue
+
+        # Calculate true d0 and smear it to simulate detector resolution.
+        true_d0 = calculate_d0(p)
+        significance, smeared_d0 = d0_significance(true_d0, pt)
+
+        # Optional d0 significance cut (applied after smearing).
+        if (d0_sig_cut is not None) and (abs(significance) < d0_sig_cut):
+            continue
+
+        d0_values.append(smeared_d0)
+        d0_sig_values.append(significance)
+        charge_sum += int(p.charge())
+        px_jet += p.px()
+        py_jet += p.py()
+        pz_jet += p.pz()
+        e_jet += p.e()
+
+        if pt > max_pt:
+            max_pt = pt
+    
+    if len(d0_values) > 0:  
+        d0_mean = np.mean(d0_values)
+        d0_std = np.std(d0_values)
+        d0_sig_mean = np.mean(np.abs(d0_sig_values))
+        d0_sig_max = np.max(np.abs(d0_sig_values))
+
+        # Calculate the invariant mass of the jet.
+        jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
+        jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
+
+        # Calculate pT frac and jet pT (using filtered jet pT for consistency).
+        filtered_jet_pt = math.sqrt(px_jet**2 + py_jet**2)
+        pt_frac = max_pt / filtered_jet_pt if filtered_jet_pt > 0 else 0.0
+        jet_pt = filtered_jet_pt
+
+        n_tracks = len(d0_values)
+
+        return (class_label, d0_mean, jet_mass, lxy, pt_frac, n_tracks,
+                d0_sig_mean, d0_sig_max, jet_pt, d0_std, charge_sum)
+    return None
+
+
+def single_event(event, jet_def, ptmin, process='charm', d0_sig_cut=None):
     '''
     Process a single Pythia event to find charm hadrons and their associated jets.
     Returns a list of records for each charm hadron found in the event.
@@ -170,118 +233,60 @@ def single_event(event, jet_def, ptmin, consts=False, d0_sig_cut=None):
                 pj = fastjet.PseudoJet(p.px(), p.py(), p.pz(), p.e())
                 pj.set_user_index(p.index())
                 final_state_pseudojets.append(pj)
-            if p.id() in hadron_id_set:
-                # Only keep the final copy of the hadron (whose daughters
-                # are not themselves charm hadrons) to avoid duplicates
-                # from intermediate copies in Pythia's event history.
+
+        # Process hadrons.
+        for p in event:
+            p_id = p.id()
+            if (process == 'charm') and (p_id in lambda_c_ids or p_id in other_charm_ids):
                 daughters = p.daughterList()
-                if daughters and all(event[d].id() not in hadron_id_set for d in daughters):
+                if daughters and all(event[d].id() not in all_heavy_ids for d in daughters):
+                    hadrons.append(p)
+            elif (process == 'background') and (p_id in bottom_ids):
+                daughters = p.daughterList()
+                if daughters and all(event[d].id() not in all_heavy_ids for d in daughters):
                     hadrons.append(p)
 
-        # Cluster final-state particles into jets using the anti-kT algorithm.
         cluster_sequence = fastjet.ClusterSequence(final_state_pseudojets, jet_def)
         jets = cluster_sequence.inclusive_jets(ptmin=ptmin)
+        if not jets: return []
 
-        # Process each charm hadron in the event.
-        for h in hadrons:
-            c_quark = get_c_quark_mother(h, event)
-            if not c_quark:
-                continue
-
-            # Find the jet closest to the charm quark using a vectorised method.
-            best_jet = None
-            if jets:
-                min_dR = 0.4
+        if process == 'charm':
+            for h in hadrons:
+                min_dR = 0.3 
+                best_jet = None
                 for jet in jets:
-                    dR = deltaR(c_quark.eta(), c_quark.phi(), jet.eta(), jet.phi())
+                    dR = deltaR(h.eta(), h.phi(), jet.eta(), jet.phi())
                     if dR < min_dR:
                         min_dR = dR
                         best_jet = jet
 
-            if not best_jet:
-                continue
+                if best_jet:
+                    lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
+                    class_label = 2 if abs(h.id()) == 4122 else 1
+                    record = jet_features(best_jet, event, class_label, lxy, d0_sig_cut)
+                    if record: event_records.append(record)
 
-            constituents = best_jet.constituents()
-            if not constituents:
-                continue
+        elif process == 'background':
+            for jet in jets:
+                lxy = 0.0
+                for h in hadrons:
+                    if deltaR(h.eta(), h.phi(), jet.eta(), jet.phi()) < 0.3:
+                        lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
+                        break 
 
-            if not consts:
-                # Transverse decay length of the charm hadron.
-                lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
-
-                # Get constituent particles, excluding charm hadrons/quarks.
-                particles = [event[c.user_index()] for c in constituents]
-                valid_particles = [p for p in particles if p.id() not in hadron_id_set and p.id() not in quark_id_set]
-                if not valid_particles:
-                    continue
-
-                px_jet, py_jet, pz_jet, e_jet = 0.0, 0.0, 0.0, 0.0
-                d0_values = []
-                d0_sig_values = []
-                max_pt = 0.0
-                charge_sum = 0
-
-                for p in valid_particles:
-                    true_pt = p.pT()
-                    pt = smear_pt(true_pt)
-                    if pt < 1e-9:
-                        continue
-
-                    # Calculate true d0 and smear it to simulate detector resolution.
-                    true_d0 = calculate_d0(p)
-                    significance, smeared_d0 = d0_significance(true_d0, pt)
-
-                    # Optional d0 significance cut (applied after smearing).
-                    if d0_sig_cut is not None:
-                        if abs(significance) < d0_sig_cut:
-                            continue
-
-                    d0_values.append(smeared_d0)
-                    d0_sig_values.append(significance)
-                    charge_sum += int(p.charge())
-                    px_jet += p.px()
-                    py_jet += p.py()
-                    pz_jet += p.pz()
-                    e_jet += p.e()
-
-                    if pt > max_pt:
-                        max_pt = pt
-
-                if len(d0_values) > 0:  
-                    d0_mean = np.mean(d0_values)
-                    d0_std = np.std(d0_values)
-                    d0_sig_mean = np.mean(np.abs(d0_sig_values))
-                    d0_sig_max = np.max(np.abs(d0_sig_values))
-
-                    # Calculate the invariant mass of the jet.
-                    jet_mass_squared = e_jet**2 - (px_jet**2 + py_jet**2 + pz_jet**2)
-                    jet_mass = math.sqrt(jet_mass_squared) if jet_mass_squared > 0 else 0.0
-
-                    # Calculate pT frac and jet pT (using filtered jet pT for consistency).
-                    filtered_jet_pt = math.sqrt(px_jet**2 + py_jet**2)
-                    pt_frac = max_pt / filtered_jet_pt if filtered_jet_pt > 0 else 0.0
-                    jet_pt = filtered_jet_pt
-                else:
-                    continue
-
-                n_tracks = len(d0_values)
-                event_records.append((abs(h.id()), d0_mean, jet_mass, lxy, pt_frac, n_tracks,
-                                      d0_sig_mean, d0_sig_max, jet_pt, d0_std, charge_sum))
-
-            elif consts:
-                return constituents, h, best_jet # Return the first valid jet found
+                record = jet_features(jet, event, class_label=0, lxy=lxy, d0_sig_cut=d0_sig_cut)
+                if record: event_records.append(record)
     
     except Exception as e:
         print(f'Error processing event: {e}')
+    return event_records    
+        
 
-    return event_records
-
-
-def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, ptmin, d0_sig_cut=None):
+def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, ptmin, process='charm', d0_sig_cut=None):
     '''Main function to generate events and store them in an HDF5 file.'''
     start_time = time.time()
     last_report_time = start_time
-    charm_events = 0
+    saved_events = 0
 
     with h5py.File(output_file, 'w') as h5file:
         # Pre-allocate the dataset; maxshape=None allows growing if needed.
@@ -296,23 +301,23 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, 
         buffer = []
 
         # Main generation loop: continues until the desired number of charm events is found.
-        while charm_events < no_events:
+        while saved_events < no_events:
             if not pythia.next():
                 continue
 
-            new_records = single_event(pythia.event, jet_def, ptmin, d0_sig_cut=d0_sig_cut)
+            new_records = single_event(pythia.event, jet_def, ptmin, process=process, d0_sig_cut=d0_sig_cut)
             if new_records:
                 buffer.extend(new_records)
-                charm_events += len(new_records)
+                saved_events += len(new_records)
 
             current_time = time.time()
             if current_time - last_report_time >= 30:
                 elapsed_time = current_time - start_time
-                print(f'Shard {os.getpid()}: Generated {charm_events} events in {elapsed_time:.2f} seconds.')
+                print(f'Shard {os.getpid()}: Generated {saved_events} events in {elapsed_time:.2f} seconds.')
                 last_report_time = current_time
 
             # Flush buffer to HDF5 file when it's full or at the end of generation.
-            if len(buffer) >= chunk_size or (charm_events >= no_events and buffer):
+            if len(buffer) >= chunk_size or (saved_events >= no_events and buffer):
                 n_to_write = len(buffer)
                 # Grow the dataset if needed to fit all events.
                 if write_ptr + n_to_write > dset.shape[0]:
@@ -337,10 +342,10 @@ def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, 
             dset.resize((write_ptr,))
 
         # The final number of events is the number of rows written.
-        charm_events = write_ptr
+        saved_events = write_ptr
     
     duration = time.time() - start_time
-    return charm_events, duration
+    return saved_events, duration
                 
 
 def launch_shards(script_path, args):

@@ -333,6 +333,8 @@ def launch_shards(script_path, args):
             '--shards', str(args.shards),
             '--shard-index', str(i)
         ]
+        if hasattr(args, 'process') and args.process is not None:
+            command.extend(['--process', args.process])
         if hasattr(args, 'd0_sig_cut') and args.d0_sig_cut is not None:
             command.extend(['--d0-sig-cut', str(args.d0_sig_cut)])
         if hasattr(args, 'temp_dir') and args.temp_dir is not None:

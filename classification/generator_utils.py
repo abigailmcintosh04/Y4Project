@@ -96,8 +96,14 @@ def configure_pythia(process='charm', seed=None):
         # Charm production
         pythia.readString('HardQCD:hardccbar = on')
     elif process == 'background':
-        pythia.readString('HardQCD:all = on')
-
+        # Light flavours
+        pythia.readString('HardQCD:gg2gg = on')
+        pythia.readString('HardQCD:qg2qg = on')
+        pythia.readString('HardQCD:qq2qq = on')
+        pythia.readString('HardQCD:qqbar2gg = on') 
+        # Bottom
+        pythia.readString('HardQCD:gg2bbbar = on')
+        pythia.readString('HardQCD:qqbar2bbbar = on')
     else:
         raise ValueError('Unknown process. Use "charm" or "background".')
 

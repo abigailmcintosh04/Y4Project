@@ -23,7 +23,7 @@ def main():
     temp_dir = os.path.join(collisions_dir, base_name)
     os.makedirs(temp_dir, exist_ok=True)
 
-    runs = {'charm': args.n_charm, 'background': args.n_bg}
+    runs = {'background': args.n_bg, 'charm': args.n_charm}
 
     generated_files = []
 

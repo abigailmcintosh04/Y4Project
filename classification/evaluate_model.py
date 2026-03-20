@@ -21,14 +21,10 @@ X_test = np.vstack([data['d0_mean'], data['lxy'], data['jet_mass'], data['pt_fra
               data['d0_sig_mean'], data['d0_sig_max'], data['jet_pt'], data['d0_std'],
               data['charge_sum']]).T.astype(np.float32)
 
-y_raw = data['pdg_id_hadron']
-y_binary = np.where(y_raw == 4122, 4122, 0)
-
 class_labels = np.load(os.path.join(run_dir, "class_labels.npy"))
 scaler = joblib.load(os.path.join(run_dir, "scaler.save"))
 
-# Recreate integer mapping
-y_true = np.where(y_binary == 4122, np.where(class_labels == 4122)[0][0], np.where(class_labels == 0)[0][0])
+y_true = data['class_label'].astype(np.int32)
 
 # Scale the unseen data
 X_test_scaled = scaler.transform(X_test)

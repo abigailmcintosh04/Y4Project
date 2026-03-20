@@ -22,7 +22,7 @@ class_labels = val_data['class_labels']
 cm = np.load(os.path.join('runs', input_file, 'confusion_matrix.npy'))
 
 label_map = {0: 'Background', 1: 'Other Charm', 2: '$\Lambda_c^+$'}
-display_names = [label_map[label] for label in sorted(class_labels)]
+display_names = [label_map[i] for i in sorted(label_map.keys())]
 
 # Training and validation loss.
 plt.figure(figsize=(8,5))

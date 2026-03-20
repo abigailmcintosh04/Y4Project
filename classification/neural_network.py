@@ -118,7 +118,7 @@ metadata = {
     "val_loss": float(val_loss),
     "val_accuracy": float(val_acc),
     "n_classes": int(n_classes),
-    "class_labels": [int(c) for c in class_labels],
+    "class_labels": [c for c in class_labels],
     "timestamp": run_time,
     "input_file": input_file
 }

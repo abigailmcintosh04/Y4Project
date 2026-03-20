@@ -81,8 +81,11 @@ def main():
             linestyle = '-' if i == j else '--'
             linewidth = 2 if i == j else 1.5
             
+            # Total number of true events for class j
+            num_events_j = np.sum(y_true == j)
+            
             plt.hist(probs_j, bins=50, range=(0, 1), histtype='step', 
-                     linewidth=linewidth, linestyle=linestyle, label=f'P({pred_name})')
+                     linewidth=linewidth, linestyle=linestyle, label=f'P({pred_name}) (N={num_events_j})')
             
         plt.title(f'Network Confidence when True Particle is {true_name}')
         plt.xlabel('Predicted Probability')

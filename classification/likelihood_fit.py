@@ -6,15 +6,12 @@ from scipy.optimize import minimize
 import warnings
 
 def poisson_nll(mu, S, B, D):
-    # Expected number of events in each bin
     expected = mu * S + B
-    # Avoid log(0) issues
     expected = np.maximum(expected, 1e-10)
-    # NLL = -sum(D*ln(expected) - expected)
     nll = -np.sum(D * np.log(expected) - expected)
     return nll
 
-def run_likelihood_fit(run_dir, results_path, mu_min, mu_max, inject_mu):
+def run_likelihood_fit(run_dir, results_path, bins, mu_min, mu_max, y_max, inject_mu):
     run_path = os.path.join('runs', run_dir)
     
     if not os.path.exists(results_path):
@@ -26,67 +23,57 @@ def run_likelihood_fit(run_dir, results_path, mu_min, mu_max, inject_mu):
     y_proba = data['y_proba']
     class_labels = data['class_labels']
 
-    signal_pdg = 4122
-    if signal_pdg not in class_labels:
-        print(f"Error: Signal PDG {signal_pdg} not found in class labels.")
-        return
-        
-    sig_idx = np.where(class_labels == signal_pdg)[0][0]
-    
-    probs = y_proba[:, sig_idx]
-    
-    is_signal = (y_true == sig_idx)
-    sig_probs = probs[is_signal]
-    bkg_probs = probs[~is_signal]
+    # Predicted probability for signal class
+    probs = y_proba[:, 2]
 
-    n_bins = 50
-    bins = np.linspace(0, 1.0, n_bins + 1)
-    
-    S, _ = np.histogram(sig_probs, bins=bins)
-    B, _ = np.histogram(bkg_probs, bins=bins)
-    
-    # --- THE INJECTION HAPPENS HERE ---
-    # We build the mock observation assuming the true signal is 'inject_mu' times larger
-    D = (inject_mu * S) + B
-    
-    def objective(mu_val):
-        return poisson_nll(mu_val[0], S, B, D)
+    # Raw probabilities
+    B_bg_prob = probs[y_true == 0]
+    B_other_prob = probs[y_true == 1]
+    S_prob = probs[y_true == 2]
+
+    bin_edges = np.linspace(0, 1.0, bins + 1)
+    B_bg, _ = np.histogram(B_bg_prob, bins=bin_edges)
+    B_other, _ = np.histogram(B_other_prob, bins=bin_edges)
+    S, _ = np.histogram(S_prob, bins=bin_edges)
+    B = B_bg + B_other
+
+    expected = (inject_mu * S) + B
+    D = np.random.poisson(expected).astype(float)
+
         
-    print(f"Performing Maximum Likelihood Fit (Injected true mu = {inject_mu})...")
+    print(' ===== Max Likelihood Fit, mu_inj = {inject_mu}) =====')
     
-    # Minimize the NLL (start the guess at 1.0, let the math find the injection!)
-    initial_guess = [1.0]
-    result = minimize(objective, initial_guess, bounds=[(0.0, None)])
-    
+    # Minimise NLL
+    result = minimize(poisson_nll, [1.0], args=(S, B, D), bounds=[(0.0, None)])
     mu_hat = result.x[0]
     min_nll = result.fun
     
-    print(f"Best fit signal strength (mu_hat) = {mu_hat:.4f}")
+    print(f'mu_hat = {mu_hat:.4f}')
     
     nll_0 = poisson_nll(0.0, S, B, D)
-    q0 = 2.0 * (nll_0 - min_nll)
-    
-    if q0 < 0 and np.isclose(q0, 0, atol=1e-5):
-        q0 = 0.0
+    mu_scaled = 2.0 * (nll_0 - min_nll)
+    if mu_scaled < 0 and np.isclose(mu_scaled, 0, atol=1e-5):
+        mu_scaled = 0.0
         
-    Z = np.sqrt(max(q0, 0.0))
-    print(f"Expected Significance (Wilks' Theorem) Z = {Z:.4f} sigma")
+    Z = np.sqrt(max(mu_scaled, 0.0))
+    print(f'Z = {Z:.4f} sigma')
     
     plots_dir = os.path.join(run_path, 'prob_plots')
     os.makedirs(plots_dir, exist_ok=True)
     
     plt.figure(figsize=(12, 10))
-    
+
     plt.subplot(2, 1, 1)
-    bin_centers = 0.5 * (bins[:-1] + bins[1:])
-    
-    plt.hist(bins[:-1], bins, weights=B, histtype='stepfilled', alpha=0.3, color='blue', label='Background (B)')
-    plt.hist(bins[:-1], bins, weights=S, bottom=B, histtype='stepfilled', alpha=0.3, color='red', label=r'Pythia Signal Theory (S, $\mu=1$)')
-    plt.errorbar(bin_centers, D, yerr=np.sqrt(D), fmt='ko', label=f'Mock Data (Injected $\mu={inject_mu}$)')
+
+    samples = [B_bg_prob, B_other_prob, S_prob]
+    colors = ['blue', 'green', 'red']
+
+    plt.hist(samples, bins=bin_edges, stacked=True, color=colors, label=class_labels, alpha=0.5)
+    bin_centers = 0.5 * (bin_edges[:-1] + bin_edges[1:])
+    plt.errorbar(bin_centers, D, yerr=np.sqrt(D), fmt='ko', label=f'Mock Data (Injected $\\mu={inject_mu}$)')
     
     best_fit_model = mu_hat * S + B
-    plt.step(bins, np.append(best_fit_model, best_fit_model[-1]), where='post', color='black', linestyle='--', label=rf'Best Fit ($\mu={mu_hat:.2f}$)')
-    
+    plt.step(bin_edges, np.append(best_fit_model, best_fit_model[-1]), where='post', color='black', linestyle='--', label=rf'Best Fit ($\mu={mu_hat:.2f}$)')
     plt.yscale('log')
     plt.xlabel(r'Neural Network Output $\mathbb{P}(\Lambda_c^+)$')
     plt.ylabel('Counts / Bin')
@@ -98,9 +85,7 @@ def run_likelihood_fit(run_dir, results_path, mu_min, mu_max, inject_mu):
     
     mu_scan = np.linspace(mu_min, mu_max, 50)
     nll_scan = [poisson_nll(m, S, B, D) for m in mu_scan]
-    
     dnll_scan = 2.0 * (np.array(nll_scan) - min_nll)
-    
     plt.plot(mu_scan, dnll_scan, 'k.-', linewidth=2)
     plt.axvline(mu_hat, color='r', linestyle='--', label=rf'$\hat{{\mu}} = {mu_hat:.4f}$')
     plt.axhline(1.0, color='gray', linestyle=':', label=r'$\Delta(2NLL) = 1$ ($1\sigma$)')
@@ -134,33 +119,51 @@ def run_likelihood_fit(run_dir, results_path, mu_min, mu_max, inject_mu):
 
     plt.xlabel(r'Signal Strength $\mu$')
     plt.ylabel(r'$-2 \Delta \ln \mathcal{L}$')
-    plt.ylim(0, 10)
+    plt.ylim(0, y_max)
     plt.xlim(mu_min, mu_max)
     plt.legend()
     plt.grid(True, alpha=0.3)
     
     plt.tight_layout()
+    
+    # Base name for the plot
     if inject_mu == 1.0:
-        output_path = os.path.join(plots_dir, 'likelihood_scan.png')
+        base_name = 'likelihood_scan'
     else:
-        output_path = os.path.join(plots_dir, f'likelihood_scan_inject_{inject_mu}.png')
+        base_name = f'likelihood_scan_inject_{inject_mu}'
+        
+    ext = '.png'
+    output_path = os.path.join(plots_dir, f'{base_name}{ext}')
+    
+    # Check if file exists and increment suffix sequentially if it does
+    if os.path.exists(output_path):
+        counter = 1
+        while True:
+            new_path = os.path.join(plots_dir, f'{base_name}_{counter}{ext}')
+            if not os.path.exists(new_path):
+                output_path = new_path
+                break
+            counter += 1
+            
     plt.savefig(output_path, dpi=300)
     print(f"Saved plot to {output_path}")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Perform a binned maximum likelihood fit.")
     parser.add_argument('run_dir', type=str, help='Name of the run directory')
-    parser.add_argument('--file', type=str, default='test_results.npz')
+    parser.add_argument('--results_path', type=str, default='test_results.npz')
+    parser.add_argument('--bins', type=int, default=50)
     parser.add_argument('--mu_min', type=float, default=0.96)
     parser.add_argument('--mu_max', type=float, default=1.04)
+    parser.add_argument('--y_max', type=float, default=10)
     parser.add_argument('--inject_mu', type=float, default=1.0)
     
     args = parser.parse_args()
     
     run_path = os.path.join('runs', args.run_dir)
-    results_path = os.path.join(run_path, args.file)
+    results_path = os.path.join(run_path, args.results_path)
     
     if not os.path.exists(results_path):
         print(f"Error: {results_path} not found.")
     else:
-        run_likelihood_fit(args.run_dir, results_path, args.mu_min, args.mu_max, args.inject_mu)
+        run_likelihood_fit(args.run_dir, results_path, args.bins, args.mu_min, args.mu_max, args.y_max, args.inject_mu)

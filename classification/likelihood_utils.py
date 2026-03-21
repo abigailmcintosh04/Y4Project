@@ -65,7 +65,7 @@ def load_fit_data(run_dir, scaling_dict=None, results_filename='test_results.npz
         print(f"Total events found -> Charm: {n_charm_events}, Background: {n_bg_events}")
         print(f"Weights -> Charm: {w_charm:.4f}, Other: {w_other:.4f}")
     else:
-        w_sig = w_charm = w_other = 1.0
+        w_charm = w_other = 1.0
 
     bin_edges = np.linspace(0, 1, bins + 1)
 

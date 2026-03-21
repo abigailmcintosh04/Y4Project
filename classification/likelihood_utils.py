@@ -30,7 +30,15 @@ class FitData:
     bin_edges: np.ndarray
 
 
-def load_fit_data(run_dir, results_filename='test_results.npz', bins=50, inject_mu=1.0):
+def load_fit_data(run_dir, scaling_dict=None, results_filename='test_results.npz', bins=50, inject_mu=1.0):
+    """
+    scaling_dict should look like:
+    {
+        'lumi_fb': 140,
+        'charm': {'sigma_mb': 1.281e-2},
+        'background': {'sigma_mb': 5.175}
+    }
+    """
     run_path = os.path.join('runs', run_dir)
     results_path = os.path.join(run_path, results_filename)
     if not os.path.exists(results_path):
@@ -40,30 +48,62 @@ def load_fit_data(run_dir, results_filename='test_results.npz', bins=50, inject_
     y_true = data['y_true']
     probs = data['y_proba'][:, 2]
 
+    mask_sig = (y_true == 2)
+    mask_charm = (y_true == 1)
+    mask_other = (y_true == 0)
+
+    if scaling_dict is not None:
+        lumi_mb = scaling_dict['lumi_fb'] * 1e9 # convert to mb
+        
+        n_charm_events = np.sum(mask_sig) + np.sum(mask_charm)
+        n_bg_events = np.sum(mask_other)
+        
+        w_charm = (scaling_dict['charm']['sigma_mb'] * lumi_mb) / n_charm_events
+        w_other = (scaling_dict['background']['sigma_mb'] * lumi_mb) / n_bg_events
+
+        print(f"--- Scaling Check ---")
+        print(f"Total events found -> Charm: {n_charm_events}, Background: {n_bg_events}")
+        print(f"Weights -> Charm: {w_charm:.4f}, Other: {w_other:.4f}")
+    else:
+        w_sig = w_charm = w_other = 1.0
+
     bin_edges = np.linspace(0, 1, bins + 1)
-    S, _ = np.histogram(probs[y_true == 2], bins=bin_edges)
-    B_charm, _ = np.histogram(probs[y_true == 1], bins=bin_edges)
-    B_other, _ = np.histogram(probs[y_true == 0], bins=bin_edges)
+
+    S, _ = np.histogram(probs[mask_sig], bins=bin_edges, weights=np.full(np.sum(mask_sig), w_charm))
+    B_charm, _ = np.histogram(probs[mask_charm], bins=bin_edges, weights=np.full(np.sum(mask_charm), w_charm))
+    B_other, _ = np.histogram(probs[mask_other], bins=bin_edges, weights=np.full(np.sum(mask_other), w_other))
+    
     B = B_other + B_charm
     
     expected = inject_mu * S + B
     D = np.random.poisson(expected).astype(float)
     
+    print(f"Expected Yields -> S: {np.sum(S):.1f}, B: {np.sum(B):.1f}")
+    
     return FitData(S, B_charm, B_other, B, D, bin_edges)
 
 
 def poisson_nll(mu, S, B, D):
-    expected = mu * S + B
+    mu_val = mu[0] if isinstance(mu, np.ndarray) and mu.size == 1 else mu
+    expected = mu_val * S + B
     expected = np.maximum(expected, 1e-9)
-    nll = -np.sum(D * np.log(expected) - expected)
-    return nll
+    term = np.where(D > 0, D * np.log(D / expected), 0.0)
+    return np.sum(term + expected - D)
+
+
+def poisson_nll_jac(mu, S, B, D):
+    mu_val = mu[0] if isinstance(mu, np.ndarray) and mu.size == 1 else mu
+    expected = mu_val * S + B
+    expected = np.maximum(expected, 1e-9)
+    grad = np.sum(S * (1.0 - D / expected))
+    return np.array([grad])
 
 
 def perform_fit(S, B, D, mu_min=0.0, mu_max=2.0) -> FitResult:
     '''
     Finds best-fit mu_hat, asymmetric errors (up/down), and significance Z.
     '''
-    res = minimize(poisson_nll, [1.0], args=(S, B, D), method='L-BFGS-B', bounds=[(1e-5, None)])
+    res = minimize(poisson_nll, [1.0], args=(S, B, D), method='L-BFGS-B', jac=poisson_nll_jac, bounds=[(1e-5, None)], options={'ftol': 1e-12, 'gtol': 1e-8})
     mu_hat = res.x[0]
     min_nll = res.fun
 
@@ -96,11 +136,12 @@ def perform_fit(S, B, D, mu_min=0.0, mu_max=2.0) -> FitResult:
     except Exception:
         pass
 
-    nll_0 = poisson_nll(0.0, S, B, D)
-    q0 = 2.0 * (nll_0 - min_nll)
-    if q0 < 0 and np.isclose(q0, 0, atol=1e-5):
-        q0 = 0.0
-    Z = np.sqrt(max(q0, 0.0))
+    nll_1 = poisson_nll(np.array([1.0]), S, B, D)
+    q1 = 2.0 * (nll_1 - min_nll)
+    if q1 < 0 and np.isclose(q1, 0, atol=1e-5):
+        q1 = 0.0
+        
+    Z = np.sqrt(max(q1, 0.0))
         
     return FitResult(mu_hat, sigma_up, sigma_down, mu_max, mu_min, mu_scan, dnll_scan, Z)
 
@@ -182,7 +223,7 @@ def plot_pulls(mu_hats, pulls, run_dir, inject_mu=1.0):
     print(f"Saved plot to {output_path}")   
 
 
-def plot_likelihood_scan(fit_result: FitResult, fit_data: FitData, run_dir: str, inject_mu: float = 1.0):
+def plot_likelihood_scan(fit_result: FitResult, fit_data: FitData, run_dir: str, inject_mu: float = 1.0, y_max: float = 10.0):
     plots_dir = os.path.join(run_dir, 'likelihood_scans')
     os.makedirs(plots_dir, exist_ok=True)
     
@@ -228,10 +269,11 @@ def plot_likelihood_scan(fit_result: FitResult, fit_data: FitData, run_dir: str,
     else:
         plt.title(rf'Profile Likelihood Scan: $\hat{{\mu}} = {fit_result.mu_hat:.3f}$ ($1\sigma$ outside manual range)')
     
-    plt.plot([], [], ' ', label=rf'Significance (from 0): {fit_result.Z:.2f}$\sigma$')
+    plt.plot([], [], ' ', label=rf'Significance (from $\mu=1.0$): {fit_result.Z:.2f}$\sigma$')
 
     plt.xlabel(r'Signal Fraction $\mu$')
     plt.ylabel(r'$\Delta(2NLL)$')
+    plt.ylim(-0.2, y_max)
     plt.legend()
     plt.grid(True, alpha=0.3)
     

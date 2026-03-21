@@ -15,6 +15,7 @@ if __name__ == '__main__':
     parser.add_argument('--mu_max', type=float, default=1.1)
     parser.add_argument('--y_max', type=float, default=10)
     parser.add_argument('--inject_mu', type=float, default=1.0)
+    parser.add_argument('--bg_weight', type=float, default=404.855, help="Weight applied to non-charm background events")
     
     args = parser.parse_args()
     
@@ -24,6 +25,12 @@ if __name__ == '__main__':
     if not os.path.exists(results_path):
         print(f"Error: {results_path} not found.")
     else:
-        fit_data = load_fit_data(args.run_dir, args.results_path, args.bins, args.inject_mu)
+        scaling_dict = {
+            'lumi_fb': 1,
+            'charm': {'sigma_mb': 1.281e-2},
+            'background': {'sigma_mb': 5.175}
+        }
+        
+        fit_data = load_fit_data(args.run_dir, scaling_dict=scaling_dict, results_filename=args.results_path, bins=args.bins, inject_mu=args.inject_mu)
         fit_result = perform_fit(fit_data.S, fit_data.B, fit_data.D, args.mu_min, args.mu_max) 
-        plot_likelihood_scan(fit_result, fit_data, run_path, args.inject_mu)
+        plot_likelihood_scan(fit_result, fit_data, run_path, args.inject_mu, args.y_max)

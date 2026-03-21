@@ -129,11 +129,6 @@ def configure_pythia(process='charm', seed=None):
     # MPI off.
     pythia.readString('PartonLevel:MPI = off')
 
-    # Quiet Pythia output.
-    pythia.readString('Print:quiet = on')
-    pythia.readString('Next:numberShowEvent = 0')
-    pythia.readString('Next:numberShowInfo = 0')
-
     # Use a random seed for the random number generator.
     if seed is None:
         # Use time and process ID to ensure unique seeds across parallel shards

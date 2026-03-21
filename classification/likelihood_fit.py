@@ -34,3 +34,17 @@ if __name__ == '__main__':
         fit_data = load_fit_data(args.run_dir, scaling_dict=scaling_dict, results_filename=args.results_path, bins=args.bins, inject_mu=args.inject_mu)
         fit_result = perform_fit(fit_data.S, fit_data.B, fit_data.D, args.mu_min, args.mu_max) 
         plot_likelihood_scan(fit_result, fit_data, run_path, args.inject_mu, args.y_max)
+        
+        expected_S = np.sum(fit_data.S)
+        expected_C = np.sum(fit_data.B_charm)
+        
+        mu = fit_result.mu_hat
+        f_frac = (mu * expected_S) / (mu * expected_S + expected_C)
+        
+        df_dmu = (expected_S * expected_C) / (mu * expected_S + expected_C)**2
+        err_up = fit_result.sigma_up * df_dmu
+        err_down = fit_result.sigma_down * df_dmu
+        
+        print("\n--- Final Fit Results ---")
+        print(f"Best-fit Signal Strength (mu): {mu:.4f} +{fit_result.sigma_up:.4f} -{fit_result.sigma_down:.4f}")
+        print(f"Detected Lambda_c+ fragmentation fraction: {f_frac*100:.2f}% +{err_up*100:.2f}% -{err_down*100:.2f}%")

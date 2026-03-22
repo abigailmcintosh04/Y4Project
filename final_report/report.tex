@@ -3,6 +3,7 @@
 \usepackage[a4paper, margin=2cm]{geometry}
 \usepackage{hyperref}
 \usepackage{subcaption}
+\usepackage{amsmath}
 
 \begin{document}
 
@@ -11,11 +12,11 @@
         \vspace*{1cm}
         \Huge
         \textbf{Exploring Heavy Quark Fragmentation with Machine Learning at ATLAS}
-        
+
         \vspace{0.5cm}
         \LARGE
         Preliminary Report
-        
+
         \vspace{1.5cm}
         \large
         \textbf{Author: } Abigail McIntosh \\
@@ -30,13 +31,13 @@
             \small
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
         \end{minipage}
-        \vfill            
+        \vfill
 
-            
+
         \Large
         School of Physics and Astronomy\\
         University of Birmingham\\
-        December 2025\\
+        March 2026\\
     \end{center}
 \end{titlepage}
 
@@ -45,4 +46,66 @@
 \pagebreak
 \pagenumbering{arabic}
 
+% ---------- INTRODUCTION ---------- %
+\section{Introduction}
+
+
+% ---------- BACKGROUND ---------- %
+\section{Background}
+
+% ---------- EVENT GENERATION ---------- %
+\section{Event Generation}
+
+\subsection{Monte Carlo Simulation}
+Monte Carlo events are generated using the PYTHIA 8.3 Monte Carlo event generator in Python 3.12.12, via the `pythia8mc' Python package. Two proton beams (PDG ID 2212) are collided at a centre-of-mass energy of 13 TeV.Both background and signal events are generated using this method, but with different processes enabled. The processes enabled for background and signal events are as follows:
+
+\begin{itemize}
+    \item Background: $gg \rightarrow gg$, $qg \rightarrow qg$, $qq \rightarrow qq$, $q\bar{q} \rightarrow gg$, $gg \rightarrow b\bar{b}$, and $q\bar{q} \rightarrow b\bar{b}$.
+    \item Charm events: $qq \rightarrow c\bar{c}$ and $gg \rightarrow c\bar{c}$
+\end{itemize}
+
+As all charm events are generated together, they do not need to be normalised by their cross-section, as this is done automatically by PYTHIA when generating ccbar events together. A minimum transverse is set at $20\text{ GeV}$ for the charm events to ensure that the events are `jet-like' in nature. Initial state radiation, final state radiation, and hadronisation are enabled, and multiple parton interactions is disabled as this describes soft scattering events, rather than the hard scattering events of interest.
+
+\subsection{Jet Clustering}
+For the charm events, a jet clustering algorithm is used to simulate the process of clustering jets at ATLAS. The tracks are clustered using the `fastjet' Python package, with the anti-$k_T$ algorithm and a jet radius of $\Delta R \le 0.4$. The anti-$k_T$ algorithm is a widely used jet clustering algorithm, and is the standard jet clustering algorithm used at ATLAS. $\Delta R$ is defined by adding in quadrature the differences in pseudorapidity and azimuthal angle between the jet axis and the charm hadron axis, and is hence defined as $\Delta R = \sqrt{\Delta \eta^2 + \Delta \phi^2}$. The choice of $R=0.4$ is again motivated by that being the ATLAS standard. In addition, before the jet clustering, an efficiency cut of !!! TALK ABOUT EFFICIENCY CUT HERE !!! is applied to the tracks to simulate the efficiency of the ATLAS detector. As the inner detector cannot detect neutral particles, these are removed from the tracks before jet clustering.
+
+Once the clustered jets are created, the $p_T$ and $d_0$ smearing is applied to the tracks, as described in the detector simulation section. The $L_{xy}$ smearing is applied to the jet overall, as it is a characteristic of the jet and not of the individual tracks. Then, the summary variables are created for each jet.
+
+\subsection{Summary Variables}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.45\textwidth]{images/vertices.png}
+    \caption{Diagram of a typical charm event at ATLAS, showing the primary vertex of the hard scattering, and the secondary decay vertex of the charm hadron.}
+    \label{fig:vertices}
+\end{figure}
+
+\subsection{$d_0$ significance cuts}
+$d_0$ significance is defined as the ratio of the track's $d_0$ to the uncertainty in $d_0$, $\sigma_{d_0}$. It describes how many standard deviations away from the beam axis the track is. $d_0$ significance was chosen as opposed to $d_0$ as it takes into account the detector resolution by inclusion of the error, and so will work across a wider range of $p_T$. As tracks that originated from the primary vertex will have a near-zero $d_0$, they will therefore be normally distributed around the primary vertex. However, secondary vertices will be distributed around the secondary vertex, and so many tracks will have a large $d_0$ significance, many standard deviations away from the primary vertex. Therefore, only calculating summary variables from tracks with a $d_0$ signiificance greater than a certain value ensures as many prompt tracks as possible are excluded. However, this will also exclude tracks from the secondary vertex that happened to pass close to the primary vertex, and so a balance is necessary when finding a value of $d_0$ significance cut. The machine learning model was analysed across a range of $d_0$ significance cuts, from 1 to 5 in increments of 0.5, and it was found that a cut of 3.5 provided the best accuracy of the model and therefore was chosen as the $d_0$ significance cut for the rest of the project. hello
+
+
+\subsection{Detector Simulation}
+
+In an effort to simulate how the ATLAS detector responds to tracks, as opposed to using truth information, two effects are simulated: smearing (of $p_T$, $L_{xy}$ and $d_0$) simulating detector resolution, and detector efficiency.
+
+\begin{equation}
+    \sigma_{d_0} = \sqrt{a^2 + \left(\frac{b}{p_T}\right)^2}
+\end{equation}
+
+\begin{equation}
+    \sigma_{p_T} = p_T \sqrt{\left(\frac{a}{p_T}\right)^2 + b^2}
+\end{equation}
+
+\begin{equation}
+    \sigma_{L_{xy}} = \sqrt{a^2 + \left(\frac{b}{p_T}\right)^2}
+\end{equation}
+
+In all three equations, $a$ is determined by the intrinsic resolution of the detector, and $b$ is determined by the effect of multiple scattering.
+% ---------- MACHINE LEARNING ---------- %
+
+
+
+
+
 \end{document}
+%lock ur laptop :)

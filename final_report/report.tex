@@ -51,7 +51,7 @@
 
 % ---------- INTRODUCTION ---------- %
 \section{Introduction}
-This research project aims to develop a machine learning model to investigate the fragmentation fraction of charmed hadrons, specifically the ratio of $\Lambda_c$ to other charmed hadrons, detected in simulated $pp$ collisions at the ATLAS Detector at the LHC.
+This research project aims to develop a machine learning model to investigate the fragmentation fraction of charmed hadrons, specifically the ratio of $\Lambda_c^+$ to other charmed hadrons, detected in simulated $pp$ collisions at the ATLAS Detector at the LHC.
 
 
 Showing that the model can distinguish these events, as well as background events, from each other and gives a good approximation
@@ -60,13 +60,18 @@ Showing that the model can distinguish these events, as well as background event
 % ---------- BACKGROUND ---------- %
 \section{Background}
 
-Fragmentation is the process in which coloured partons produced in high-energy collisions are confined into colour-neutral hadrons. Specifically for this project, the focus will be on the fragmentation of charm quarks into their corresponding hadrons. The fragmentation fraction for a certain hadron is defined as the ratio of the number of times that hadron is produced to the total number of times that the quark is produced. It has been historically assumed that fragmentation fractions for heavy quark fragmentation are independent of the hard scattering process, and so would be the same regardless of the production environment, e.g. $pp$, $ep$ or $e+e-$ colliders. Recent data from the ALICE experiment seems to contradict this, showing
+\subsection{Fragmentation}
+Fragmentation is the process in which coloured partons produced in high-energy collisions are confined into colour-neutral hadrons. Specifically for this project, the focus will be on the fragmentation of charm quarks into their corresponding hadrons. The fragmentation fraction for a certain hadron is defined as the ratio of the number of times that hadron is produced to the total number of times that the quark is produced. It has been historically assumed that fragmentation fractions for heavy quark fragmentation are independent of the hard scattering process, and so would be the same regardless of the production environment, e.g. $pp$, $ep$ or $e+e-$ colliders. However, recent data from the ALICE experiment appears to contradict this assumption, finding a ``significantly larger fraction of charm quarks hadronising to baryons [...] compared to e+e- and ep collisions'' \cite{alice2023charm}. As current reconstruction algorithms are very inefficient due to requiring detection of all decay products, training a neural network to accurately and efficiently distinguish between types of charm hadron is of great interest, as it would allow more efficient calculations of the fragmentation fraction of the $\Lambda_c^+$ baryon and therefore either verify or contradict the findings of the ALICE experiment.
+
+\subsection{Motivations}
+An accurate description of heavy quark fragmentation fractions is essential for Monte Carlo event generators to accurately simulate particle production. Accuracy of MC generators is crucial due to their widespread use within particle physics, specifically within jet tagging. Detecting $H \rightarrow c\bar{c}$ events has not been achieved yet due to its low cross-section (3\% at $m_H = 125 \text{ GeV}$) and the similarity of it to other processes. Developing accurate jet-tagging algorithms, such as GN2, requires training on MC simulated events, meaning any large discrepancy between MC simulations and real processes could cause poorer performance of these algorithms.
+
 
 % ---------- EVENT GENERATION ---------- %
 \section{Event Generation}
 
 \subsection{Monte Carlo Simulation}
-Monte Carlo events are generated using the PYTHIA 8.3 Monte Carlo event generator in Python 3.12.12, via the `pythia8mc' Python package. Two proton beams (PDG ID 2212) are collided at a centre-of-mass energy of 13 TeV.Both background and signal events are generated using this method, but with different processes enabled. The processes enabled for background and signal events are as follows:
+Monte Carlo events are generated using the PYTHIA 8.3 Monte Carlo event generator in Python 3.12.12, via the `pythia8mc' Python package. Two proton beams (PDG ID 2212) are collided at a centre-of-mass energy of 13 TeV. Both background and signal events are generated using this method, but with different processes enabled. The processes enabled for background and signal events are as follows:
 
 \begin{itemize}
     \item Background: $gg \rightarrow gg$, $qg \rightarrow qg$, $qq \rightarrow qq$, $q\bar{q} \rightarrow gg$, $gg \rightarrow b\bar{b}$, and $q\bar{q} \rightarrow b\bar{b}$.
@@ -202,6 +207,16 @@ The model was trained using the `categorical cross-entropy' (CCE) loss function,
 
 where $p_{i,c}$ and $\hat{p}_{i,c}$ are the true and predicted probabilities for sample $i$ and class $c$, respectively. The total loss is the average loss over all samples in the batch. CCE is used as it heavily penalises confident wrong predictions, which is desirable for this classification task.
 
+\subsection{Training}
+The model was trained on
+
+\section{Results}
+
+
+% ---------- REFERENCES ---------- %
+\pagebreak
+\bibliographystyle{unsrt}
+\bibliography{references}
 
 \end{document}
 %lock ur laptop :)

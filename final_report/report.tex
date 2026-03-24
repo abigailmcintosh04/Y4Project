@@ -218,9 +218,45 @@ The data was split into training and validation sets, with 80\% of the data used
 \section{Results}
 
 \subsection{Four Classes}
+Initially, the machine learning model was only trained on charm events, aiming at distinguishing the four charm hadron species being focused on: $\Lambda_c^+$, $D^0$, $D^+$, and $D_s^+$. The
 
 \subsection{Collapsed Classes}
-As mentioned in the previous section, the NN is more accurate at distinguishing $\Lambda_c^+$ events compared to other charm hadron events. As such, the other charm hadron events were collapsed into a single class. Due to the main
+As mentioned in the previous section, the NN is more accurate at distinguishing $\Lambda_c^+$ events compared to other charm hadron events. As such, the other charm hadron events were collapsed into a single class. This was justified as the main finding made at ALICE was a significantly higher fragmentation fraction of the $\Lambda_c^+$ compared to other charm hadrons, and so measuring this particular fragmentation fraction would be a strong indicator of universality not holding.
+
+In addition to this, background events were added, as detailed above. This left the machine learning model to classify between three classes: $\Lambda_c^+$, other charm hadrons, and background events.
+
+\section{Statistical Analysis}
+
+\subsection{Maximum Likelihood Fit}
+To statistically verify the results of the machine learning model, a maximum likelihood fit was performed. The signal strength, $\mu$, is defined as:
+
+\begin{equation}
+    \mu = \frac{N_{\Lambda_c^+}}{N_{\Lambda_c^+}^{\text{PYTHIA}}},
+\end{equation}
+
+where $N_{\Lambda_c^+}$ is the number of $\Lambda_c^+$ events in the ``observed'' data, and $N_{\Lambda_c^+}^{\text{PYTHIA}}$ is the number of $\Lambda_c^+$ events in the PYTHIA simulation. For data that perfectly follows universality, a value of $\mu = 1$ would be expected, whereas if the fragmentation fraction of $\Lambda_c^+$ is significantly higher than that of other charm hadrons, a value of $\mu > 1$ would be expected.
+
+The maximum likelihood fit finds the most probable value of signal strength that the observed data would give. As each bin in the histogram follows a Poisson distribution. The probability mass function of the Poisson distribution is defined as:
+
+\begin{equation}
+    P(n; \lambda) = \frac{\lambda^n e^{-\lambda}}{n!},
+\end{equation}
+
+where $\lambda$ is the expected number of events, and $n$ is the observed number of events. The total likelihood is therefore calculated as the product of the PMFs for each bin:
+
+\begin{equation}
+    \mathcal{L}(\mu) = \prod_{i=1}^{N} \frac{\lambda_i^{n_i} e^{-\lambda_i}}{n_i!},
+\end{equation}
+
+where $\lambda_i$ is the expected number of events in bin $i$, and $n_i$ is the observed number of events in bin $i$. The maximum likelihood estimate of $\mu$ is the value of $\mu$ that maximises the likelihood function. To find this, the negative logarithm of the likelihood function is minimised:
+
+\begin{equation}
+    - \ln \mathcal{L}(\mu) = -\sum^{N}_{i=1} \left( n_i \ln \lambda_i - \lambda_i - \ln n_i! \right).
+\end{equation}
+
+This is done by iterating over a range of $\mu$ values and calculating the negative log likelihood for each one, and then finding the minimum along that curve. This gives the most likely value of $\mu$ for that dataset. To find the $1\sigma$ errors, the values of $\mu$ corresponding to an increase of 0.5 in the negative log likelihood from the minimum are found.
+
+To show that the model would be able to find a signal strength correspinding to an increase in $\Lambda_c^+$ fragmentation fraction similar to that observed at ALICE,
 
 
 % ---------- REFERENCES ---------- %

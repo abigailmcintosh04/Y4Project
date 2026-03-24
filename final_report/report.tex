@@ -135,8 +135,6 @@ In all three equations, $a_i$ are determined by the intrinsic resolution of the 
 \section{Neural Network}
 Two different neural networks were trained to classify charm hadron events. The author used a Feed Forward Neural Network (FFNN), using the summary variables outlined before, and the project partner used a Recurrent Neural Network (RNN), using track level information and minimal event processing. Therefore, this report will focus on the implementation of the FFNN.
 
-\subsection{Neural Network Architecture}
-
 \begin{wrapfigure}{l}{0.3\textwidth} % {l} for left, 0.4 of the page
     \centering
     \begin{tikzpicture}[
@@ -193,6 +191,9 @@ Two different neural networks were trained to classify charm hadron events. The 
     \label{fig:nn_architecture}
 \end{wrapfigure}
 
+\subsection{Neural Network Architecture}
+The neural network was coded using the `tensorflow' package in Python 3.12.12, using the `keras' API.
+
 \subsubsection{Layer Architecture}
 The final FFNN architecture was determined through a combination of research and trial and error. The final configuration settled on is outlined in Figure \ref{fig:nn_architecture}. The input layer is comprised of the ten summary variables outlined in Section \ref{sec:summary_variables}. A decreasing layer-width architecture $(128 \rightarrow 64 \rightarrow 32)$ is used for the hidden layers. This ensures that the model is less prone to overfitting, and forces the model to learn the most important high-level features of the data. After each hidden layer, batch normalisation and dropout layers are added. Batch normalisation helps mitigate the problem of internal covariate shift, by normalising the data within each batch. This keeps the inputs in a stable range, increasing training stability and speed. Dropout layers randomly set a subset of the neurons to zero during training, improving generalisation by forcing the model to learn more robust features without relying on specific node connections. Finally, the output layer is comprised of three neurons, corresponding to the three classes: $\Lambda_c^+$, $c$, and light.
 
@@ -208,9 +209,18 @@ The model was trained using the `categorical cross-entropy' (CCE) loss function,
 where $p_{i,c}$ and $\hat{p}_{i,c}$ are the true and predicted probabilities for sample $i$ and class $c$, respectively. The total loss is the average loss over all samples in the batch. CCE is used as it heavily penalises confident wrong predictions, which is desirable for this classification task.
 
 \subsection{Training}
-The model was trained on
+The model was trained on 10 million events, split between 5 million charm events (including $\Lambda_c^+$ and other charmed hadrons) and 5 million background events (light and bottom quark events). This 50/50 split was decided on due to the low cross-section of charm events compared to background events (around 1:400), which would lead to the NN being biased towards predicting background events. This is taken into consideration when evaluating the results. As the charm events are automatically weighted by cross-section in PYTHIA, this does not need to be done for these events.
 
+The data was split into training and validation sets, with 80\% of the data used for training and 20\% of the data used for validation. For evaluation, a separate test set of 10 million events split in the same way as the training data was used. This is to ensure the model was evaluated on unseen, statistically independent data.
+
+
+% ---------- RESULTS ---------- %
 \section{Results}
+
+\subsection{Four Classes}
+
+\subsection{Collapsed Classes}
+As mentioned in the previous section, the NN is more accurate at distinguishing $\Lambda_c^+$ events compared to other charm hadron events. As such, the other charm hadron events were collapsed into a single class. Due to the main
 
 
 % ---------- REFERENCES ---------- %

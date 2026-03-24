@@ -4,6 +4,9 @@
 \usepackage{hyperref}
 \usepackage{subcaption}
 \usepackage{amsmath}
+\usepackage{wrapfig}
+\usepackage{tikz}
+\usetikzlibrary{positioning, shapes.geometric, arrows.meta, calc}
 
 \begin{document}
 
@@ -48,10 +51,16 @@
 
 % ---------- INTRODUCTION ---------- %
 \section{Introduction}
+This research project aims to develop a machine learning model to investigate the fragmentation fraction of charmed hadrons, specifically the ratio of $\Lambda_c$ to other charmed hadrons, detected in simulated $pp$ collisions at the ATLAS Detector at the LHC.
+
+
+Showing that the model can distinguish these events, as well as background events, from each other and gives a good approximation
 
 
 % ---------- BACKGROUND ---------- %
 \section{Background}
+
+Fragmentation is the process in which coloured partons produced in high-energy collisions are confined into colour-neutral hadrons. Specifically for this project, the focus will be on the fragmentation of charm quarks into their corresponding hadrons. The fragmentation fraction for a certain hadron is defined as the ratio of the number of times that hadron is produced to the total number of times that the quark is produced. It has been historically assumed that fragmentation fractions for heavy quark fragmentation are independent of the hard scattering process, and so would be the same regardless of the production environment, e.g. $pp$, $ep$ or $e+e-$ colliders. Recent data from the ALICE experiment seems to contradict this, showing
 
 % ---------- EVENT GENERATION ---------- %
 \section{Event Generation}
@@ -72,6 +81,7 @@ For the charm events, a jet clustering algorithm is used to simulate the process
 Once the clustered jets are created, the $p_T$ and $d_0$ smearing is applied to the tracks, as described in the detector simulation section. The $L_{xy}$ smearing is applied to the jet overall, as it is a characteristic of the jet and not of the individual tracks. Then, the summary variables are created for each jet.
 
 \subsection{Summary Variables}
+\label{sec:summary_variables}
 
 \begin{figure}
     \centering
@@ -80,31 +90,117 @@ Once the clustered jets are created, the $p_T$ and $d_0$ smearing is applied to 
     \label{fig:vertices}
 \end{figure}
 
+\subsubsection{Mean Transverse Impact Parameter}
+The transverse impact parameter, $d_0$, is defined as the distance of closest approach of the track to the secondary vertex. It is a measure of how close the track approaches to the secondary vertex, and so can be used to distinguish between prompt tracks and those from the charm hadron decay. Each $d_0$ value for a track is calculated and smeared, and then the mean of the $d_0$ values for all tracks in a jet is calculated.
+
+\subsubsection{Transverse Decay Length}
+The transverse decay length, $L_{xy}$, is defined as the distance between the primary vertex and the secondary vertex in the transverse plane. It measures how far the charmed hadron travels in the transverse plane before decaying, and therefore can be used as a proxy for charmed hadron lifetime. As $L_{xy}$ is a property of the jet, rather than the individual tracks, it is calculated for each jet and then smeared.
+
+\subsubsection{Jet Transverse Momentum}
+The jet transverse momentum, $p_T$, is defined as the sum of the transverse momenta of all detected tracks in the jet.
+
+\subsubsection{Number of Tracks}
+The number of tracks is simply the number of tracks in the jet. As the ATLAS inner detector cannot detect neutral particles, this can be used as a proxy for charge, as neutral charmed hadrons decay to an even number of charged particles (assuming each particle has a relative charge of $\pm 1$), and conversely charged charmed hadrons decay to an odd number of charged particles. This is helpful to distinguish between $D^0$ and $D^+$ decays, due to their similar masses and lifetimes.
+
 \subsection{$d_0$ significance cuts}
-$d_0$ significance is defined as the ratio of the track's $d_0$ to the uncertainty in $d_0$, $\sigma_{d_0}$. It describes how many standard deviations away from the beam axis the track is. $d_0$ significance was chosen as opposed to $d_0$ as it takes into account the detector resolution by inclusion of the error, and so will work across a wider range of $p_T$. As tracks that originated from the primary vertex will have a near-zero $d_0$, they will therefore be normally distributed around the primary vertex. However, secondary vertices will be distributed around the secondary vertex, and so many tracks will have a large $d_0$ significance, many standard deviations away from the primary vertex. Therefore, only calculating summary variables from tracks with a $d_0$ signiificance greater than a certain value ensures as many prompt tracks as possible are excluded. However, this will also exclude tracks from the secondary vertex that happened to pass close to the primary vertex, and so a balance is necessary when finding a value of $d_0$ significance cut. The machine learning model was analysed across a range of $d_0$ significance cuts, from 1 to 5 in increments of 0.5, and it was found that a cut of 3.5 provided the best accuracy of the model and therefore was chosen as the $d_0$ significance cut for the rest of the project. hello
+$d_0$ significance is defined as the ratio of the track's $d_0$ to the uncertainty in $d_0$, $\sigma_{d_0}$. It describes how many standard deviations away from the beam axis the track is. $d_0$ significance was chosen as opposed to $d_0$ as it takes into account the detector resolution by inclusion of the error, and so will work across a wider range of $p_T$. As tracks that originated from the primary vertex will have a near-zero $d_0$, they will therefore be normally distributed around the primary vertex. However, secondary vertices will be distributed around the secondary vertex, and so many tracks will have a large $d_0$ significance, many standard deviations away from the primary vertex. Therefore, only calculating summary variables from tracks with a $d_0$ signiificance greater than a certain value ensures as many prompt tracks as possible are excluded. However, this will also exclude tracks from the secondary vertex that happened to pass close to the primary vertex, and so a balance is necessary when finding a value of $d_0$ significance cut, otherwise too many tracks from the charmed hadron decay will be excluded and measurements will be less accurate. The machine learning model was analysed across a range of $d_0$ significance cuts, from 1 to 5 in increments of 0.5, and it was found that a cut of 3.5 provided the best accuracy of the model and therefore was chosen as the $d_0$ significance cut for the rest of the project.
 
 
 \subsection{Detector Simulation}
 
-In an effort to simulate how the ATLAS detector responds to tracks, as opposed to using truth information, two effects are simulated: smearing (of $p_T$, $L_{xy}$ and $d_0$) simulating detector resolution, and detector efficiency.
+In an effort to simulate how the ATLAS detector responds to tracks, as opposed to using truth information, two effects are simulated: smearing (of $p_T$, $L_{xy}$ and $d_0$) simulating detector resolution, and detector efficiency. To simulate smearing in the detector, the following equations were used:
 
 \begin{equation}
-    \sigma_{d_0} = \sqrt{a^2 + \left(\frac{b}{p_T}\right)^2}
+    \sigma_{d_0} = \sqrt{a_1^2 + \left(\frac{b_1}{p_T}\right)^2} (a_1 = 10 \text{$\mu$m}, b_1 = 0.100 \text{$\mu$m} \cdot \text{GeV}),
 \end{equation}
 
 \begin{equation}
-    \sigma_{p_T} = p_T \sqrt{\left(\frac{a}{p_T}\right)^2 + b^2}
+    \sigma_{p_T} = p_T \sqrt{\left(\frac{a_2}{p_T}\right)^2 + b_2^2} (a_2 = 0.05\% \text{GeV}^{-1}, b_2 = 1.5 \%),
 \end{equation}
 
 \begin{equation}
     \sigma_{L_{xy}} = \sqrt{a^2 + \left(\frac{b}{p_T}\right)^2}
 \end{equation}
 
-In all three equations, $a$ is determined by the intrinsic resolution of the detector, and $b$ is determined by the effect of multiple scattering.
+In all three equations, $a_i$ are determined by the intrinsic resolution of the detector, and $b_i$ are determined by the effect of multiple scattering. To determine these values for $\sigma_{d_0}$, i cant be bothered rn.
+
+
 % ---------- MACHINE LEARNING ---------- %
+\newpage
+\section{Neural Network}
+Two different neural networks were trained to classify charm hadron events. The author used a Feed Forward Neural Network (FFNN), using the summary variables outlined before, and the project partner used a Recurrent Neural Network (RNN), using track level information and minimal event processing. Therefore, this report will focus on the implementation of the FFNN.
 
+\subsection{Neural Network Architecture}
 
+\begin{wrapfigure}{l}{0.3\textwidth} % {l} for left, 0.4 of the page
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.2cm,
+        % The 'font' parameter handles both size (\small) and shape (\itshape)
+        layer/.style={rectangle, draw, fill=blue!10, text width=4cm, align=center, minimum height=0.8cm, font=\small\sffamily, line width=0.8pt},
+        bn/.style={rectangle, draw, fill=green!10, text width=4cm, align=center, minimum height=0.6cm, font=\footnotesize\sffamily\itshape},
+        dropout/.style={rectangle, draw, dashed, fill=orange!5, text width=4cm, align=center, minimum height=0.6cm, font=\footnotesize\sffamily},
+        arrow/.style={-{Stealth[scale=1.2]}, line width=0.8pt}
+        ]
 
+        % --- Nodes ---
+        \node (input) [layer, fill=gray!20] {\textbf{Input Layer} \\ (10 Features)};
+
+        % Block 1
+        \node (dense1) [layer, below=of input] {\textbf{Dense Layer} \\ 128 Nodes (ReLU)};
+        \node (bn1) [bn, below=0.15cm of dense1] {Batch Normalisation};
+        \node (drop1) [dropout, below=0.15cm of bn1] {Dropout ($p=0.3$)};
+
+        % Block 2
+        \node (dense2) [layer, below=of drop1] {\textbf{Dense Layer} \\ 64 Nodes (ReLU)};
+        \node (bn2) [bn, below=0.15cm of dense2] {Batch Normalisation};
+        \node (drop2) [dropout, below=0.15cm of bn2] {Dropout ($p=0.3$)};
+
+        % Block 3
+        \node (dense3) [layer, below=of drop2] {\textbf{Dense Layer} \\ 32 Nodes (ReLU)};
+        \node (bn3) [bn, below=0.15cm of dense3] {Batch Normalisation};
+        \node (drop3) [dropout, below=0.15cm of bn3] {Dropout ($p=0.2$)};
+
+        % Output
+        \node (output) [layer, fill=red!10, below=of drop3] {\textbf{Output Layer} \\ 3 Classes (Softmax)};
+
+        % --- Paths ---
+        \draw [arrow] (input) -- (dense1);
+        \draw [arrow] (dense1) -- (bn1);
+        \draw [arrow] (bn1) -- (drop1);
+
+        \draw [arrow] (drop1) -- (dense2);
+        \draw [arrow] (dense2) -- (bn2);
+        \draw [arrow] (bn2) -- (drop2);
+
+        \draw [arrow] (drop2) -- (dense3);
+        \draw [arrow] (dense3) -- (bn3);
+        \draw [arrow] (bn3) -- (drop3);
+
+        \draw [arrow] (drop3) -- (output);
+
+        % --- Annotations ---
+        % \node [right=0.5cm of dense1, text width=3cm, font=\tiny\sffamily\itshape] {He-Uniform Initialization};
+        % \node [left=0.5cm of output, text width=3.5cm, font=\tiny\sffamily\itshape, align=right] {$\mathbb{P}(\Lambda_c^+), \mathbb{P}(c), \mathbb{P}(light)$};
+
+    \end{tikzpicture}
+    \caption{Feed Forward Neural Network architecture used.}
+    \label{fig:nn_architecture}
+\end{wrapfigure}
+
+\subsubsection{Layer Architecture}
+The final FFNN architecture was determined through a combination of research and trial and error. The final configuration settled on is outlined in Figure \ref{fig:nn_architecture}. The input layer is comprised of the ten summary variables outlined in Section \ref{sec:summary_variables}. A decreasing layer-width architecture $(128 \rightarrow 64 \rightarrow 32)$ is used for the hidden layers. This ensures that the model is less prone to overfitting, and forces the model to learn the most important high-level features of the data. After each hidden layer, batch normalisation and dropout layers are added. Batch normalisation helps mitigate the problem of internal covariate shift, by normalising the data within each batch. This keeps the inputs in a stable range, increasing training stability and speed. Dropout layers randomly set a subset of the neurons to zero during training, improving generalisation by forcing the model to learn more robust features without relying on specific node connections. Finally, the output layer is comprised of three neurons, corresponding to the three classes: $\Lambda_c^+$, $c$, and light.
+
+For the hidden layers, the `ReLU' activation function was used to avoid the problem of vanishing gradients and to increase the speed of computation. For the output layer, the `softmax' activation was used to convert the raw output of the neurons into a probability distribution over the three classes. The `Adam' optimiser was used due to its adaptive learning rates for each parameter, and its strong ability to converge despite noise in the data.
+
+\subsubsection{Loss Function}
+The model was trained using the `categorical cross-entropy' (CCE) loss function, which is a standard loss function for multi-class classification problems. For one sample $i$ with $C$ classes, the loss is defined as:
+
+\begin{equation}
+    L_i = -\sum^{C}_{c=1} p_{i,c} \log(\hat{p}_{i,c}),
+\end{equation}
+
+where $p_{i,c}$ and $\hat{p}_{i,c}$ are the true and predicted probabilities for sample $i$ and class $c$, respectively. The total loss is the average loss over all samples in the batch. CCE is used as it heavily penalises confident wrong predictions, which is desirable for this classification task.
 
 
 \end{document}

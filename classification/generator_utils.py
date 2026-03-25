@@ -217,6 +217,9 @@ def single_event(event, jet_def, ptmin, process='charm', d0_sig_cut=None):
         # Create PseudoJets and find hadrons.
         for p in event:
             if p.isFinal() and p.isCharged():
+                # Apply 95% detection efficiency cut
+                if np.random.rand() > 0.95:
+                    continue
                 pj = fastjet.PseudoJet(p.px(), p.py(), p.pz(), p.e())
                 pj.set_user_index(p.index())
                 final_state_pseudojets.append(pj)

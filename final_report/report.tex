@@ -19,7 +19,7 @@
 
         \vspace{0.5cm}
         \LARGE
-        Preliminary Report
+        Final Report
 
         \vspace{1.5cm}
         \large
@@ -67,6 +67,11 @@ Fragmentation is the process in which coloured partons produced in high-energy c
 \subsection{Motivations}
 An accurate description of heavy quark fragmentation fractions is essential for Monte Carlo event generators to accurately simulate particle production. Accuracy of MC generators is crucial due to their widespread use within particle physics, specifically within jet tagging. Detecting $H \rightarrow c\bar{c}$ events has not been achieved yet due to its low cross-section (3\% at $m_H = 125 \text{ GeV}$) and the similarity of it to other processes. Developing accurate jet-tagging algorithms, such as GN2, requires training on MC simulated events, meaning any large discrepancy between MC simulations and real processes could cause poorer performance of these algorithms.
 
+\subsection{ATLAS Detector}
+The ATLAS Detector at the LHC consists of four layers: the inner detector, the electromagnetic calorimeter, the hadronic calorimeter, and the muon spectrometer. The inner detector allows for the tracking of charged particles, and consists of three sub-detectors: the Pixel Detector, the Semiconductor Tracker (SCT), and the Transition Radiation Tracker (TRT). The Pixel Detector consists of over 92 million silicon pixels, and determines the origin and momentum of charged particles. The SCT consists of silicon microstrips, and performs tracking of charged particles. The TRT consists of 300,000 drift tubes, and provides information on the type of particle detected.
+
+The electromagnetic calorimeter measures the energy of particles that interact electromagnetically, such as electrons and photons. The hadronic calorimeter measures the energy of particles that pass through the electromagnetic calorimeter and interact via the strong interaction, such as hadrons. The muon spectrometer measures the momentum of muons. The combination of the inner detector and the electromagnetic calorimeter allows the measurement of primary and secondary vertices, momentum and energy, as well as particle identification. Therefore, this project will limit its scope to charged particles, as only these particles can have their primary and secondary vertices reconstructed. When determining resolution, the parameters will be determined from which part of the inner detector is responsible for these measurements. 
+
 
 % ---------- EVENT GENERATION ---------- %
 \section{Event Generation}
@@ -82,7 +87,7 @@ Monte Carlo events are generated using the PYTHIA 8.3 Monte Carlo event generato
 As all charm events are generated together, they do not need to be normalised by their cross-section, as this is done automatically by PYTHIA when generating ccbar events together. A minimum transverse is set at $20\text{ GeV}$ for the charm events to ensure that the events are `jet-like' in nature. Initial state radiation, final state radiation, and hadronisation are enabled, and multiple parton interactions is disabled as this describes soft scattering events, rather than the hard scattering events of interest.
 
 \subsection{Jet Clustering}
-For the charm events, a jet clustering algorithm is used to simulate the process of clustering jets at ATLAS. The tracks are clustered using the `fastjet' Python package, with the anti-$k_T$ algorithm and a jet radius of $\Delta R \le 0.4$. The anti-$k_T$ algorithm is a widely used jet clustering algorithm, and is the standard jet clustering algorithm used at ATLAS. $\Delta R$ is defined by adding in quadrature the differences in pseudorapidity and azimuthal angle between the jet axis and the charm hadron axis, and is hence defined as $\Delta R = \sqrt{\Delta \eta^2 + \Delta \phi^2}$. The choice of $R=0.4$ is again motivated by that being the ATLAS standard. In addition, before the jet clustering, an efficiency cut of !!! TALK ABOUT EFFICIENCY CUT HERE !!! is applied to the tracks to simulate the efficiency of the ATLAS detector. As the inner detector cannot detect neutral particles, these are removed from the tracks before jet clustering.
+For the charm events, a jet clustering algorithm is used to simulate the process of clustering jets at ATLAS. The tracks are clustered using the `fastjet' Python package, with the anti-$k_T$ algorithm and a jet radius of $\Delta R \le 0.4$. The anti-$k_T$ algorithm is a widely used jet clustering algorithm, and is the standard jet clustering algorithm used at ATLAS. $\Delta R$ is defined by adding in quadrature the differences in pseudorapidity and azimuthal angle between the jet axis and the charm hadron axis, and is hence defined as $\Delta R = \sqrt{\Delta \eta^2 + \Delta \phi^2}$. The choice of $R=0.4$ is again motivated by that being the ATLAS standard. In addition, before the jet clustering, an efficiency cut of $\epsilon = 0.95$ is applied to the tracks to simulate the efficiency of the ATLAS detector. As the inner detector cannot detect neutral particles, these are removed from the tracks before jet clustering.
 
 Once the clustered jets are created, the $p_T$ and $d_0$ smearing is applied to the tracks, as described in the detector simulation section. The $L_{xy}$ smearing is applied to the jet overall, as it is a characteristic of the jet and not of the individual tracks. Then, the summary variables are created for each jet.
 
@@ -97,10 +102,25 @@ Once the clustered jets are created, the $p_T$ and $d_0$ smearing is applied to 
 \end{figure}
 
 \subsubsection{Mean Transverse Impact Parameter}
-The transverse impact parameter, $d_0$, is defined as the distance of closest approach of the track to the secondary vertex. It is a measure of how close the track approaches to the secondary vertex, and so can be used to distinguish between prompt tracks and those from the charm hadron decay. Each $d_0$ value for a track is calculated and smeared, and then the mean of the $d_0$ values for all tracks in a jet is calculated.
+The transverse impact parameter, $d_0$, is defined as the distance of closest approach of the track to the secondary vertex. It is a measure of how close the track approaches to the secondary vertex, and so can be used to distinguish between prompt tracks and those from the charm hadron decay. Each $d_0$ value for a track is calculated and smeared, and then the mean of the $d_0$ values for all tracks in a jet is calculated. $d_0$ is defined as follows:
+
+\begin{equation}
+    d_0 = \frac{u_x p_y - u_y p_x}{p_T},
+\end{equation}
+
+where $(u_x, u_y)$ are the $x$ and $y$ coordinates of the primary vertex, and $(p_x, p_y)$ are the $x$ and $y$ components of the track momentum.
+
+\subsubsection{Mean Transverse Impact Parameter Significance}
+The transverse impact parameter significance, $S_{d_0}$, is defined as the ratio of a track's transverse impact parameter, $d_0$, to the uncertainty of its measurement, $\sigma_{d_0}$. It is a measure of how many standard deviations away from the primary vertex the track is, and so can be used to distinguish between prompt tracks and those originating from the charm hadron decay. The mean $S_{d_0}$ is then calculated for all tracks in a jet.
 
 \subsubsection{Transverse Decay Length}
-The transverse decay length, $L_{xy}$, is defined as the distance between the primary vertex and the secondary vertex in the transverse plane. It measures how far the charmed hadron travels in the transverse plane before decaying, and therefore can be used as a proxy for charmed hadron lifetime. As $L_{xy}$ is a property of the jet, rather than the individual tracks, it is calculated for each jet and then smeared.
+The transverse decay length, $L_{xy}$, is defined as the distance between the primary vertex and the secondary vertex in the transverse plane. It measures how far the charmed hadron travels in the transverse plane before decaying, and therefore can be used as a proxy for charmed hadron lifetime. As $L_{xy}$ is a property of the jet, rather than the individual tracks, it is calculated for each jet and then smeared. $L_{xy}$ is defined as follows:
+
+\begin{equation}
+    L_{xy} = \sqrt{(v_x - u_x)^2 + (v_y - u_y)^2},
+\end{equation}
+
+where $(v_x, v_y)$ are the $x$ and $y$ coordinates of the secondary vertex, and $(u_x, u_y)$ are the $x$ and $y$ coordinates of the primary vertex.
 
 \subsubsection{Jet Transverse Momentum}
 The jet transverse momentum, $p_T$, is defined as the sum of the transverse momenta of all detected tracks in the jet.
@@ -108,13 +128,23 @@ The jet transverse momentum, $p_T$, is defined as the sum of the transverse mome
 \subsubsection{Number of Tracks}
 The number of tracks is simply the number of tracks in the jet. As the ATLAS inner detector cannot detect neutral particles, this can be used as a proxy for charge, as neutral charmed hadrons decay to an even number of charged particles (assuming each particle has a relative charge of $\pm 1$), and conversely charged charmed hadrons decay to an odd number of charged particles. This is helpful to distinguish between $D^0$ and $D^+$ decays, due to their similar masses and lifetimes.
 
+\subsubsection{Jet Mass}
+The jet mass is defined as the sum of the invariant masses of all tracks clustered in the jet. 
+
+\subsubsection{Fractional Transverse Momentum}
+
 \subsection{$d_0$ significance cuts}
-$d_0$ significance is defined as the ratio of the track's $d_0$ to the uncertainty in $d_0$, $\sigma_{d_0}$. It describes how many standard deviations away from the beam axis the track is. $d_0$ significance was chosen as opposed to $d_0$ as it takes into account the detector resolution by inclusion of the error, and so will work across a wider range of $p_T$. As tracks that originated from the primary vertex will have a near-zero $d_0$, they will therefore be normally distributed around the primary vertex. However, secondary vertices will be distributed around the secondary vertex, and so many tracks will have a large $d_0$ significance, many standard deviations away from the primary vertex. Therefore, only calculating summary variables from tracks with a $d_0$ signiificance greater than a certain value ensures as many prompt tracks as possible are excluded. However, this will also exclude tracks from the secondary vertex that happened to pass close to the primary vertex, and so a balance is necessary when finding a value of $d_0$ significance cut, otherwise too many tracks from the charmed hadron decay will be excluded and measurements will be less accurate. The machine learning model was analysed across a range of $d_0$ significance cuts, from 1 to 5 in increments of 0.5, and it was found that a cut of 3.5 provided the best accuracy of the model and therefore was chosen as the $d_0$ significance cut for the rest of the project.
+$d_0$ significance is defined as the ratio of the track's $d_0$ to the uncertainty in $d_0$, $\sigma_{d_0}$. It describes how many standard deviations away from the beam axis the track is. $d_0$ significance was chosen as opposed to $d_0$ as it takes into account the detector resolution by inclusion of the error, and so will work across a wider range of $p_T$. As tracks that originated from the primary vertex will have a near-zero $d_0$, they will therefore be normally distributed around the primary vertex. However, secondary vertices will be distributed around the secondary vertex, and so many tracks will have a large $d_0$ significance, many standard deviations away from the primary vertex. Therefore, only calculating summary variables from tracks with a $d_0$ signiificance greater than a certain value ensures as many prompt tracks as possible are excluded. However, this will also exclude tracks from the secondary vertex that happened to pass close to the primary vertex, and so a balance is necessary when finding a value of $d_0$ significance cut, otherwise too many tracks from the charmed hadron decay will be excluded and measurements will be less accurate.
+
+The machine learning model was analysed across a range of $d_0$ significance cuts, training the model on samples of 1,000,000 charm-only events for each cut, with values ranging from 1 to 5 in increments of 0.5. It was found that a cut of 3.5 provided the highest validation accuracy, and therefore was chosen as the $d_0$ significance cut for the rest of the project. All summary variables were calculated using tracks that passed this $S_{d_0}$ threshold.
 
 
 \subsection{Detector Simulation}
 
-In an effort to simulate how the ATLAS detector responds to tracks, as opposed to using truth information, two effects are simulated: smearing (of $p_T$, $L_{xy}$ and $d_0$) simulating detector resolution, and detector efficiency. To simulate smearing in the detector, the following equations were used:
+In an effort to simulate how the ATLAS detector responds to tracks, as opposed to using truth information, two effects are simulated: smearing (of $p_T$, $L_{xy}$ and $d_0$) simulating detector resolution, and detector efficiency. 
+
+\subsubsection{Detector Resolution}
+To simulate smearing in the detector, the following equations were used:
 
 \begin{equation}
     \sigma_{d_0} = \sqrt{a_1^2 + \left(\frac{b_1}{p_T}\right)^2} ;

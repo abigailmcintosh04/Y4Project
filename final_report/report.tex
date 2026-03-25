@@ -5,6 +5,7 @@
 \usepackage{subcaption}
 \usepackage{amsmath}
 \usepackage{wrapfig}
+\usepackage{siunitx}
 \usepackage{tikz}
 \usetikzlibrary{positioning, shapes.geometric, arrows.meta, calc}
 
@@ -116,18 +117,33 @@ $d_0$ significance is defined as the ratio of the track's $d_0$ to the uncertain
 In an effort to simulate how the ATLAS detector responds to tracks, as opposed to using truth information, two effects are simulated: smearing (of $p_T$, $L_{xy}$ and $d_0$) simulating detector resolution, and detector efficiency. To simulate smearing in the detector, the following equations were used:
 
 \begin{equation}
-    \sigma_{d_0} = \sqrt{a_1^2 + \left(\frac{b_1}{p_T}\right)^2} (a_1 = 10 \text{$\mu$m}, b_1 = 0.100 \text{$\mu$m} \cdot \text{GeV}),
+    \sigma_{d_0} = \sqrt{a_1^2 + \left(\frac{b_1}{p_T}\right)^2} ;
 \end{equation}
 
 \begin{equation}
-    \sigma_{p_T} = p_T \sqrt{\left(\frac{a_2}{p_T}\right)^2 + b_2^2} (a_2 = 0.05\% \text{GeV}^{-1}, b_2 = 1.5 \%),
+    \sigma_{p_T} = p_T \sqrt{\left(\frac{a_2}{p_T}\right)^2 + b_2^2} ;
 \end{equation}
 
 \begin{equation}
-    \sigma_{L_{xy}} = \sqrt{a^2 + \left(\frac{b}{p_T}\right)^2}
+    \sigma_{L_{xy}} = \sqrt{a^2 + \left(\frac{b}{p_T}\right)^2}.
 \end{equation}
 
-In all three equations, $a_i$ are determined by the intrinsic resolution of the detector, and $b_i$ are determined by the effect of multiple scattering. To determine these values for $\sigma_{d_0}$, i cant be bothered rn.
+In all three equations, $a_i$ are determined by the intrinsic resolution of the detector, and $b_i$ are determined by the effect of multiple scattering. The values of $a_i$ and $b_i$ were determined as shown in Table \ref{tab:smearing_parameters}.
+
+\begin{table}[ht]
+    \centering
+    \caption{Inner Detector Smearing Parameters}
+    \begin{tabular}{|c|c|p{3.5in}|}
+        \hline
+        Parameter & Value & Source \\
+        \hline
+        $a_1$ & \qty{10}{\micro\metre} & \cite{atlas_spatial_res}\\
+        $b_1$ & \qty{100}{\micro\metre\giga\electronvolt} & \cite{atlas_performance}, Figure 7a. The value of $\sigma(d_0)$ at $p_T = 1$~GeV can be used as a close approximation for $b_1$. \\
+        $a_2$ & \qty{5e-4}{\per\giga\electronvolt} & \\
+        \hline
+    \end{tabular}
+    \label{tab:smearing_parameters}
+\end{table}
 
 \subsection{PYTHIA Tuning}
 
@@ -266,7 +282,10 @@ where $\lambda_i$ is the expected number of events in bin $i$, and $n_i$ is the 
 
 This is done by iterating over a range of $\mu$ values and calculating the negative log likelihood for each one, and then finding the minimum along that curve. This gives the most likely value of $\mu$ for that dataset. To find the $1\sigma$ errors, the values of $\mu$ corresponding to an increase of 0.5 in the negative log likelihood from the minimum are found.
 
-To show that the model would be able to find a signal strength correspinding to an increase in $\Lambda_c^+$ fragmentation fraction similar to that observed at ALICE,
+\subsubsection{Pull Distributions}
+To ensure that the maximum likelihood fit is statistically reliable, pull distributions were generated. These show the difference between the fitted signal strength and the true signal strength divided by the uncertainty for many likelihood fits, in this case 10000. If the likelihood is statistically reliable, the pull distribution should be a Gaussian distribution, with a mean of 0 and a standard deviation of 1, via the central limit theorem. If this is not the case, then the maximum likelihood fit will either consistently underestimate or overestimate the signal strength, making the results unreliable.
+
+To show that the model would be able to find a signal strength corresponding to an increase in $\Lambda_c^+$ fragmentation fraction similar to that observed at ALICE, the model was evaluated on two different PYTHIA tunings, one with the Monash tuning simulating fragmentation functions similar to those found at $e^+e^-$ colliders, and one with the CR-BLC Mode 2 tuning simulating fragmentation functions similar to those found by ALICE.
 
 
 % ---------- REFERENCES ---------- %

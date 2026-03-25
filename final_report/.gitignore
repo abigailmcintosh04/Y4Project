@@ -3,3 +3,11 @@ build/
 
 # Ignore the final PDF (optional, but recommended if you only want source in git)
 report.pdf
+*.log
+*.aux
+*.out
+*.bbl
+*.blg
+*.fdb_latexmk
+*.synctex.gz
+*.fls

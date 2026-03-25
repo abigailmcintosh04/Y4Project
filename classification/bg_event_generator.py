@@ -15,6 +15,7 @@ def main():
     parser.add_argument('output', type=str)
     parser.add_argument('--charm-shards', type=int, default=1, help='Number of shards for charm generation.')
     parser.add_argument('--bg-shards', type=int, default=1, help='Number of shards for background generation.')
+    parser.add_argument('--pTHatMin', type=float, default=20.0, help='Minimum pT for the hard process.')
     args = parser.parse_args()
 
     collisions_dir = 'collisions'
@@ -52,6 +53,7 @@ def main():
             "--shards", str(shards),
             "--process", process,
             "--temp-dir", temp_dir,
+            "--pTHatMin", str(args.pTHatMin),
         ]
 
         p = subprocess.Popen(cmd)

@@ -33,8 +33,8 @@ def smear_d0(true_d0, pt_gev):
         sigma(d0) = a ⊕ b/pT (in mm, with pT in GeV)
     where a = 0.011 mm (11 um, intrinsic) and b = 0.073 mm*GeV (73 um*GeV, multiple scattering).
     '''
-    a = 0.011
-    b = 0.073
+    a = 0.010
+    b = 0.100
     sigma = np.sqrt(a**2 + (b / pt_gev)**2)
     return np.random.normal(true_d0, sigma)
 
@@ -44,8 +44,8 @@ def d0_significance(true_d0, pt_gev):
     Calculate the d0 significance for a particle.
     Uses the same resolution parameterization as smear_d0.
     '''
-    a = 0.011
-    b = 0.073
+    a = 0.010
+    b = 0.100
     sigma = np.sqrt(a**2 + (b / pt_gev)**2)
     d0_smeared = smear_d0(true_d0, pt_gev)
     significance = d0_smeared / sigma
@@ -93,7 +93,7 @@ def deltaR_vec(eta0, phi0, etas, phis):
     return np.sqrt((etas - eta0)**2 + dphi**2)
 
 
-def configure_pythia(process='charm', seed=None):
+def configure_pythia(process='charm', pTHatMin=20.0, seed=None):
     '''Configure and initialise the Pythia event generator.'''
     pythia = pythia8mc.Pythia()
 
@@ -119,7 +119,7 @@ def configure_pythia(process='charm', seed=None):
 
 
     # Set a minimum pT for the hard process to ensure "jetty" events.
-    pythia.readString('PhaseSpace:pTHatMin = 20.0')
+    pythia.readString(f'PhaseSpace:pTHatMin = {pTHatMin}')
 
     # Enable parton showering and hadronisation.
     pythia.readString('PartonLevel:ISR = on')
@@ -355,6 +355,8 @@ def launch_shards(script_path, args):
             command.extend(['--d0-sig-cut', str(args.d0_sig_cut)])
         if hasattr(args, 'temp_dir') and args.temp_dir is not None:
             command.extend(['--temp-dir', args.temp_dir])
+        if hasattr(args, 'pTHatMin') and args.pTHatMin is not None:
+            command.extend(['--pTHatMin', str(args.pTHatMin)])
         p = subprocess.Popen(command) # Launch the worker process in the background.
         processes.append(p)
     

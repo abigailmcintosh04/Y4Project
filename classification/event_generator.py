@@ -13,6 +13,7 @@ parser.add_argument('output_file', type=str, default='collisions.h5')
 parser.add_argument('no_events', type=int)
 parser.add_argument('chunk_size', type=int)
 parser.add_argument('--pTHatMin', type=float, default=20.0, help='Minimum pT for the hard process.')
+parser.add_argument('--pTHatMax', type=float, default=None, help='Maximum pT for the hard process.')
 parser.add_argument('--process', type=str, default='charm', choices=['charm', 'background'])
 parser.add_argument('--shards', type=int, default=1, help='Total number of parallel shards to run.')
 parser.add_argument('--shard-index', type=int, default=0, help='The index of this specific shard (0-based).')
@@ -67,7 +68,7 @@ dtype = np.dtype([
 ])
 
 # Configure Pythia and run the event generation for this specific shard.
-pythia = configure_pythia(process=args.process, pTHatMin=args.pTHatMin)
+pythia = configure_pythia(process=args.process, pTHatMin=args.pTHatMin, pTHatMax=args.pTHatMax)
 events_found, duration = generate_events(pythia, jet_def, output_file, shard_events, args.chunk_size, dtype, args.pTHatMin, process=args.process, d0_sig_cut=args.d0_sig_cut)
 print(f'Shard {args.shard_index}/{args.shards}: Event generation took {duration:.2f} seconds for {events_found} events.')
 

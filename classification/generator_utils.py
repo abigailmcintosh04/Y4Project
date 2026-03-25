@@ -93,7 +93,7 @@ def deltaR_vec(eta0, phi0, etas, phis):
     return np.sqrt((etas - eta0)**2 + dphi**2)
 
 
-def configure_pythia(process='charm', pTHatMin=20.0, seed=None):
+def configure_pythia(process='charm', pTHatMin=20.0, pTHatMax=None, seed=None):
     '''Configure and initialise the Pythia event generator.'''
     pythia = pythia8mc.Pythia()
 
@@ -120,6 +120,8 @@ def configure_pythia(process='charm', pTHatMin=20.0, seed=None):
 
     # Set a minimum pT for the hard process to ensure "jetty" events.
     pythia.readString(f'PhaseSpace:pTHatMin = {pTHatMin}')
+    if pTHatMax is not None:
+        pythia.readString(f'PhaseSpace:pTHatMax = {pTHatMax}')
 
     # Enable parton showering and hadronisation.
     pythia.readString('PartonLevel:ISR = on')
@@ -360,6 +362,8 @@ def launch_shards(script_path, args):
             command.extend(['--temp-dir', args.temp_dir])
         if hasattr(args, 'pTHatMin') and args.pTHatMin is not None:
             command.extend(['--pTHatMin', str(args.pTHatMin)])
+        if hasattr(args, 'pTHatMax') and args.pTHatMax is not None:
+            command.extend(['--pTHatMax', str(args.pTHatMax)])
         p = subprocess.Popen(command) # Launch the worker process in the background.
         processes.append(p)
     

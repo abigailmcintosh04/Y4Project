@@ -16,6 +16,7 @@ def main():
     parser.add_argument('--charm-shards', type=int, default=1, help='Number of shards for charm generation.')
     parser.add_argument('--bg-shards', type=int, default=1, help='Number of shards for background generation.')
     parser.add_argument('--pTHatMin', type=float, default=20.0, help='Minimum pT for the hard process.')
+    parser.add_argument('--d0-sig-cut', type=float, default=None, help='Minimum d0 significance (|d0/sigma|) to keep a track.')
     args = parser.parse_args()
 
     collisions_dir = 'collisions'
@@ -55,6 +56,8 @@ def main():
             "--temp-dir", temp_dir,
             "--pTHatMin", str(args.pTHatMin),
         ]
+        if args.d0_sig_cut is not None:
+            cmd.extend(["--d0-sig-cut", str(args.d0_sig_cut)])
 
         p = subprocess.Popen(cmd)
         active_processes.append((process, p))

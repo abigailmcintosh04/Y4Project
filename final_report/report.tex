@@ -12,37 +12,37 @@
 \begin{document}
 
 \begin{titlepage}
-    \begin{center}
-        \vspace*{1cm}
-        \Huge
-        \textbf{Exploring Heavy Quark Fragmentation with Machine Learning at ATLAS}
+  \begin{center}
+    \vspace*{1cm}
+    \Huge
+    \textbf{Exploring Heavy Quark Fragmentation with Machine Learning at ATLAS}
 
-        \vspace{0.5cm}
-        \LARGE
-        Final Report
+    \vspace{0.5cm}
+    \LARGE
+    Final Report
 
-        \vspace{1.5cm}
-        \large
-        \textbf{Author: } Abigail McIntosh \\
-        \textbf{Project Partner:} Sinéad Leckey \\
-        \textbf{Supervisors:} Dr Andrew Chisholm, Dr Eleni Skorda \\
+    \vspace{1.5cm}
+    \large
+    \textbf{Author: } Abigail McIntosh \\
+    \textbf{Project Partner:} Sinéad Leckey \\
+    \textbf{Supervisors:} Dr Andrew Chisholm, Dr Eleni Skorda \\
 
-        \vspace{1.0cm}
-        \textbf{Abstract}
+    \vspace{1.0cm}
+    \textbf{Abstract}
 
-        \vspace{0.2cm}
-        \begin{minipage}{0.9\textwidth}
-            \small
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        \end{minipage}
-        \vfill
+    \vspace{0.2cm}
+    \begin{minipage}{0.9\textwidth}
+      \small
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    \end{minipage}
+    \vfill
 
 
-        \Large
-        School of Physics and Astronomy\\
-        University of Birmingham\\
-        March 2026\\
-    \end{center}
+    \Large
+    School of Physics and Astronomy\\
+    University of Birmingham\\
+    March 2026\\
+  \end{center}
 \end{titlepage}
 
 \pagenumbering{roman}
@@ -70,7 +70,7 @@ An accurate description of heavy quark fragmentation fractions is essential for 
 \subsection{ATLAS Detector}
 The ATLAS Detector at the LHC consists of four layers: the inner detector, the electromagnetic calorimeter, the hadronic calorimeter, and the muon spectrometer. The inner detector allows for the tracking of charged particles, and consists of three sub-detectors: the Pixel Detector, the Semiconductor Tracker (SCT), and the Transition Radiation Tracker (TRT). The Pixel Detector consists of over 92 million silicon pixels, and determines the origin and momentum of charged particles. The SCT consists of silicon microstrips, and performs tracking of charged particles. The TRT consists of 300,000 drift tubes, and provides information on the type of particle detected.
 
-The electromagnetic calorimeter measures the energy of particles that interact electromagnetically, such as electrons and photons. The hadronic calorimeter measures the energy of particles that pass through the electromagnetic calorimeter and interact via the strong interaction, such as hadrons. The muon spectrometer measures the momentum of muons. The combination of the inner detector and the electromagnetic calorimeter allows the measurement of primary and secondary vertices, momentum and energy, as well as particle identification. Therefore, this project will limit its scope to charged particles, as only these particles can have their primary and secondary vertices reconstructed. When determining resolution, the parameters will be determined from which part of the inner detector is responsible for these measurements. 
+The electromagnetic calorimeter measures the energy of particles that interact electromagnetically, such as electrons and photons. The hadronic calorimeter measures the energy of particles that pass through the electromagnetic calorimeter and interact via the strong interaction, such as hadrons. The muon spectrometer measures the momentum of muons. The combination of the inner detector and the electromagnetic calorimeter allows the measurement of primary and secondary vertices, momentum and energy, as well as particle identification. Therefore, this project will limit its scope to charged particles, as only these particles can have their primary and secondary vertices reconstructed. When determining resolution, the parameters will be determined from which part of the inner detector is responsible for these measurements.
 
 
 % ---------- EVENT GENERATION ---------- %
@@ -80,14 +80,14 @@ The electromagnetic calorimeter measures the energy of particles that interact e
 Monte Carlo events are generated using the PYTHIA 8.3 Monte Carlo event generator in Python 3.12.12, via the `pythia8mc' Python package. Two proton beams (PDG ID 2212) are collided at a centre-of-mass energy of 13 TeV. Both background and signal events are generated using this method, but with different processes enabled. The processes enabled for background and signal events are as follows:
 
 \begin{itemize}
-    \item Background: $gg \rightarrow gg$, $qg \rightarrow qg$, $qq \rightarrow qq$, $q\bar{q} \rightarrow gg$, $gg \rightarrow b\bar{b}$, and $q\bar{q} \rightarrow b\bar{b}$.
-    \item Charm events: $qq \rightarrow c\bar{c}$ and $gg \rightarrow c\bar{c}$
+  \item Background: $gg \rightarrow gg$, $qg \rightarrow qg$, $qq \rightarrow qq$, $q\bar{q} \rightarrow gg$, $gg \rightarrow b\bar{b}$, and $q\bar{q} \rightarrow b\bar{b}$.
+  \item Charm events: $qq \rightarrow c\bar{c}$ and $gg \rightarrow c\bar{c}$
 \end{itemize}
 
-As all charm events are generated together, they do not need to be normalised by their cross-section, as this is done automatically by PYTHIA when generating ccbar events together. A minimum transverse is set at $20\text{ GeV}$ for the charm events to ensure that the events are `jet-like' in nature. Initial state radiation, final state radiation, and hadronisation are enabled, and multiple parton interactions is disabled as this describes soft scattering events, rather than the hard scattering events of interest.
+As all charm events are generated together, they do not need to be normalised by their cross-section, as this is done automatically by PYTHIA when generating $c\bar{c}$ events together. Due to the fragmentation fraction varying over different values of $p_T$, events were generated in six bins of $p_T$: 5-10, 10-15, 15-20, 20-25, 25-30, and 30+ GeV. Initial state radiation, final state radiation, and hadronisation are enabled, and multiple parton interactions is disabled as this describes soft scattering events, rather than the hard scattering events of interest.
 
 \subsection{Jet Clustering}
-For the charm events, a jet clustering algorithm is used to simulate the process of clustering jets at ATLAS. The tracks are clustered using the `fastjet' Python package, with the anti-$k_T$ algorithm and a jet radius of $\Delta R \le 0.4$. The anti-$k_T$ algorithm is a widely used jet clustering algorithm, and is the standard jet clustering algorithm used at ATLAS. $\Delta R$ is defined by adding in quadrature the differences in pseudorapidity and azimuthal angle between the jet axis and the charm hadron axis, and is hence defined as $\Delta R = \sqrt{\Delta \eta^2 + \Delta \phi^2}$. The choice of $R=0.4$ is again motivated by that being the ATLAS standard. In addition, before the jet clustering, an efficiency cut of $\epsilon = 0.95$ is applied to the tracks to simulate the efficiency of the ATLAS detector. As the inner detector cannot detect neutral particles, these are removed from the tracks before jet clustering.
+For the charm events, a jet clustering algorithm is used to simulate the process of clustering jets at ATLAS. The tracks are clustered using the `fastjet' Python package \cite{fastjet}, with the anti-$k_T$ algorithm \cite{antikt} and a jet radius of $\Delta R \le 0.4$. The anti-$k_T$ algorithm is a widely used jet clustering algorithm, and is the standard jet clustering algorithm used at ATLAS. $\Delta R$ is defined by adding in quadrature the differences in pseudorapidity and azimuthal angle between the jet axis and the charm hadron axis, and is hence defined as $\Delta R = \sqrt{\Delta \eta^2 + \Delta \phi^2}$. The choice of $R=0.4$ is again motivated by that being the ATLAS standard. In addition, before the jet clustering, an efficiency cut of $\epsilon = 0.95$ is applied to the tracks to simulate the efficiency of the ATLAS detector. As the inner detector cannot detect neutral particles, these are removed from the tracks before jet clustering.
 
 Once the clustered jets are created, the $p_T$ and $d_0$ smearing is applied to the tracks, as described in the detector simulation section. The $L_{xy}$ smearing is applied to the jet overall, as it is a characteristic of the jet and not of the individual tracks. Then, the summary variables are created for each jet.
 
@@ -95,17 +95,17 @@ Once the clustered jets are created, the $p_T$ and $d_0$ smearing is applied to 
 \label{sec:summary_variables}
 
 \begin{figure}
-    \centering
-    \includegraphics[width=0.45\textwidth]{images/vertices.png}
-    \caption{Diagram of a typical charm event at ATLAS, showing the primary vertex of the hard scattering, and the secondary decay vertex of the charm hadron.}
-    \label{fig:vertices}
+  \centering
+  \includegraphics[width=0.45\textwidth]{images/vertices.png}
+  \caption{Diagram of a typical charm event at ATLAS, showing the primary vertex of the hard scattering, and the secondary decay vertex of the charm hadron.}
+  \label{fig:vertices}
 \end{figure}
 
 \subsubsection{Mean Transverse Impact Parameter}
 The transverse impact parameter, $d_0$, is defined as the distance of closest approach of the track to the secondary vertex. It is a measure of how close the track approaches to the secondary vertex, and so can be used to distinguish between prompt tracks and those from the charm hadron decay. Each $d_0$ value for a track is calculated and smeared, and then the mean of the $d_0$ values for all tracks in a jet is calculated. $d_0$ is defined as follows:
 
 \begin{equation}
-    d_0 = \frac{u_x p_y - u_y p_x}{p_T},
+  d_0 = \frac{u_x p_y - u_y p_x}{p_T},
 \end{equation}
 
 where $(u_x, u_y)$ are the $x$ and $y$ coordinates of the primary vertex, and $(p_x, p_y)$ are the $x$ and $y$ components of the track momentum.
@@ -117,7 +117,7 @@ The transverse impact parameter significance, $S_{d_0}$, is defined as the ratio
 The transverse decay length, $L_{xy}$, is defined as the distance between the primary vertex and the secondary vertex in the transverse plane. It measures how far the charmed hadron travels in the transverse plane before decaying, and therefore can be used as a proxy for charmed hadron lifetime. As $L_{xy}$ is a property of the jet, rather than the individual tracks, it is calculated for each jet and then smeared. $L_{xy}$ is defined as follows:
 
 \begin{equation}
-    L_{xy} = \sqrt{(v_x - u_x)^2 + (v_y - u_y)^2},
+  L_{xy} = \sqrt{(v_x - u_x)^2 + (v_y - u_y)^2},
 \end{equation}
 
 where $(v_x, v_y)$ are the $x$ and $y$ coordinates of the secondary vertex, and $(u_x, u_y)$ are the $x$ and $y$ coordinates of the primary vertex.
@@ -129,7 +129,7 @@ The jet transverse momentum, $p_T$, is defined as the sum of the transverse mome
 The number of tracks is simply the number of tracks in the jet. As the ATLAS inner detector cannot detect neutral particles, this can be used as a proxy for charge, as neutral charmed hadrons decay to an even number of charged particles (assuming each particle has a relative charge of $\pm 1$), and conversely charged charmed hadrons decay to an odd number of charged particles. This is helpful to distinguish between $D^0$ and $D^+$ decays, due to their similar masses and lifetimes.
 
 \subsubsection{Jet Mass}
-The jet mass is defined as the sum of the invariant masses of all tracks clustered in the jet. 
+The jet mass is defined as the sum of the invariant masses of all tracks clustered in the jet.
 
 \subsubsection{Fractional Transverse Momentum}
 
@@ -138,41 +138,45 @@ $d_0$ significance is defined as the ratio of the track's $d_0$ to the uncertain
 
 The machine learning model was analysed across a range of $d_0$ significance cuts, training the model on samples of 1,000,000 charm-only events for each cut, with values ranging from 1 to 5 in increments of 0.5. It was found that a cut of 3.5 provided the highest validation accuracy, and therefore was chosen as the $d_0$ significance cut for the rest of the project. All summary variables were calculated using tracks that passed this $S_{d_0}$ threshold.
 
+\subsection{Transverse Momentum}
+One of the key findings at the LHC has been that the fragmentation fraction of $\Lambda_c^+$ in charm hadron decays is dependent on its transverse momentum, with higher fragmentation fractions for lower $p_T$. Both PYTHIA and FastJet have the option for setting a minimum value of $p_T$ (denoted $p_t^{min}$) at the generation and clustering stages respectively. Careful consideration of the choice of $p_t^{min}$ is necessary, as the implementation of a minimum is necessary so the events have a ``jet-like'' nature, reducing the effects of soft QCD processes, essential for accurate simulation of ATLAS events. However, going to a too high $p_t^{min}$ will suppress the fragmentation fraction of $\Lambda_c^+$. Hence, the fragmentation fractions were calculated across a range of $p_t^{min}$, specifically $\qtylist{5;10;15;20;25;30}{\giga\electronvolt}$, which covers the medium and high $p_T$ regions.
+
+
 
 \subsection{Detector Simulation}
 
-In an effort to simulate how the ATLAS detector responds to tracks, as opposed to using truth information, two effects are simulated: smearing (of $p_T$, $L_{xy}$ and $d_0$) simulating detector resolution, and detector efficiency. 
+In an effort to simulate how the ATLAS detector responds to tracks, as opposed to using truth information, two effects are simulated: smearing (of $p_T$, $L_{xy}$ and $d_0$) simulating detector resolution, and detector efficiency.
 
 \subsubsection{Detector Resolution}
 To simulate smearing in the detector, the following equations were used:
 
 \begin{equation}
-    \sigma_{d_0} = \sqrt{a_1^2 + \left(\frac{b_1}{p_T}\right)^2} ;
+  \sigma_{d_0} = \sqrt{a_1^2 + \left(\frac{b_1}{p_T}\right)^2} ;
 \end{equation}
 
 \begin{equation}
-    \sigma_{p_T} = p_T \sqrt{\left(\frac{a_2}{p_T}\right)^2 + b_2^2} ;
+  \sigma_{p_T} = p_T \sqrt{\left(\frac{a_2}{p_T}\right)^2 + b_2^2} ;
 \end{equation}
 
 \begin{equation}
-    \sigma_{L_{xy}} = \sqrt{a^2 + \left(\frac{b}{p_T}\right)^2}.
+  \sigma_{L_{xy}} = \sqrt{a^2 + \left(\frac{b}{p_T}\right)^2}.
 \end{equation}
 
 In all three equations, $a_i$ are determined by the intrinsic resolution of the detector, and $b_i$ are determined by the effect of multiple scattering. The values of $a_i$ and $b_i$ were determined as shown in Table \ref{tab:smearing_parameters}.
 
 \begin{table}[ht]
-    \centering
-    \caption{Inner Detector Smearing Parameters}
-    \begin{tabular}{|c|c|p{3.5in}|}
-        \hline
-        Parameter & Value & Source \\
-        \hline
-        $a_1$ & \qty{10}{\micro\metre} & \cite{atlas_spatial_res}\\
-        $b_1$ & \qty{100}{\micro\metre\giga\electronvolt} & \cite{atlas_performance}, Figure 7a. The value of $\sigma(d_0)$ at $p_T = 1$~GeV can be used as a close approximation for $b_1$. \\
-        $a_2$ & \qty{5e-4}{\per\giga\electronvolt} & \\
-        \hline
-    \end{tabular}
-    \label{tab:smearing_parameters}
+  \centering
+  \caption{Inner Detector Smearing Parameters}
+  \begin{tabular}{|c|c|p{3.5in}|}
+    \hline
+    Parameter & Value                                     & Source                                                                                                                           \\
+    \hline
+    $a_1$     & \qty{10}{\micro\metre}                    & \cite{atlas_spatial_res}                                                                                                         \\
+    $b_1$     & \qty{100}{\micro\metre\giga\electronvolt} & \cite{atlas_performance}, Figure 7a. The value of $\sigma(d_0)$ at $p_T = 1$~GeV can be used as a close approximation for $b_1$. \\
+    $a_2$     & \qty{5e-4}{\per\giga\electronvolt}        &                                                                                                                                  \\
+    \hline
+  \end{tabular}
+  \label{tab:smearing_parameters}
 \end{table}
 
 \subsection{PYTHIA Tuning}
@@ -192,59 +196,59 @@ The CR-BLC (Colour Reconnection Beyond Leading Colour) model extends the Lund st
 Two different neural networks were trained to classify charm hadron events. The author used a Feed Forward Neural Network (FFNN), using the summary variables outlined before, and the project partner used a Recurrent Neural Network (RNN), using track level information and minimal event processing. Therefore, this report will focus on the implementation of the FFNN.
 
 \begin{wrapfigure}{l}{0.3\textwidth} % {l} for left, 0.4 of the page
-    \centering
-    \begin{tikzpicture}[
-        node distance=1.2cm,
-        % The 'font' parameter handles both size (\small) and shape (\itshape)
-        layer/.style={rectangle, draw, fill=blue!10, text width=4cm, align=center, minimum height=0.8cm, font=\small\sffamily, line width=0.8pt},
-        bn/.style={rectangle, draw, fill=green!10, text width=4cm, align=center, minimum height=0.6cm, font=\footnotesize\sffamily\itshape},
-        dropout/.style={rectangle, draw, dashed, fill=orange!5, text width=4cm, align=center, minimum height=0.6cm, font=\footnotesize\sffamily},
-        arrow/.style={-{Stealth[scale=1.2]}, line width=0.8pt}
-        ]
+  \centering
+  \begin{tikzpicture}[
+    node distance=1.2cm,
+    % The 'font' parameter handles both size (\small) and shape (\itshape)
+    layer/.style={rectangle, draw, fill=blue!10, text width=4cm, align=center, minimum height=0.8cm, font=\small\sffamily, line width=0.8pt},
+    bn/.style={rectangle, draw, fill=green!10, text width=4cm, align=center, minimum height=0.6cm, font=\footnotesize\sffamily\itshape},
+    dropout/.style={rectangle, draw, dashed, fill=orange!5, text width=4cm, align=center, minimum height=0.6cm, font=\footnotesize\sffamily},
+    arrow/.style={-{Stealth[scale=1.2]}, line width=0.8pt}
+    ]
 
-        % --- Nodes ---
-        \node (input) [layer, fill=gray!20] {\textbf{Input Layer} \\ (10 Features)};
+    % --- Nodes ---
+    \node (input) [layer, fill=gray!20] {\textbf{Input Layer} \\ (10 Features)};
 
-        % Block 1
-        \node (dense1) [layer, below=of input] {\textbf{Dense Layer} \\ 128 Nodes (ReLU)};
-        \node (bn1) [bn, below=0.15cm of dense1] {Batch Normalisation};
-        \node (drop1) [dropout, below=0.15cm of bn1] {Dropout ($p=0.3$)};
+    % Block 1
+    \node (dense1) [layer, below=of input] {\textbf{Dense Layer} \\ 128 Nodes (ReLU)};
+    \node (bn1) [bn, below=0.15cm of dense1] {Batch Normalisation};
+    \node (drop1) [dropout, below=0.15cm of bn1] {Dropout ($p=0.3$)};
 
-        % Block 2
-        \node (dense2) [layer, below=of drop1] {\textbf{Dense Layer} \\ 64 Nodes (ReLU)};
-        \node (bn2) [bn, below=0.15cm of dense2] {Batch Normalisation};
-        \node (drop2) [dropout, below=0.15cm of bn2] {Dropout ($p=0.3$)};
+    % Block 2
+    \node (dense2) [layer, below=of drop1] {\textbf{Dense Layer} \\ 64 Nodes (ReLU)};
+    \node (bn2) [bn, below=0.15cm of dense2] {Batch Normalisation};
+    \node (drop2) [dropout, below=0.15cm of bn2] {Dropout ($p=0.3$)};
 
-        % Block 3
-        \node (dense3) [layer, below=of drop2] {\textbf{Dense Layer} \\ 32 Nodes (ReLU)};
-        \node (bn3) [bn, below=0.15cm of dense3] {Batch Normalisation};
-        \node (drop3) [dropout, below=0.15cm of bn3] {Dropout ($p=0.2$)};
+    % Block 3
+    \node (dense3) [layer, below=of drop2] {\textbf{Dense Layer} \\ 32 Nodes (ReLU)};
+    \node (bn3) [bn, below=0.15cm of dense3] {Batch Normalisation};
+    \node (drop3) [dropout, below=0.15cm of bn3] {Dropout ($p=0.2$)};
 
-        % Output
-        \node (output) [layer, fill=red!10, below=of drop3] {\textbf{Output Layer} \\ 3 Classes (Softmax)};
+    % Output
+    \node (output) [layer, fill=red!10, below=of drop3] {\textbf{Output Layer} \\ 3 Classes (Softmax)};
 
-        % --- Paths ---
-        \draw [arrow] (input) -- (dense1);
-        \draw [arrow] (dense1) -- (bn1);
-        \draw [arrow] (bn1) -- (drop1);
+    % --- Paths ---
+    \draw [arrow] (input) -- (dense1);
+    \draw [arrow] (dense1) -- (bn1);
+    \draw [arrow] (bn1) -- (drop1);
 
-        \draw [arrow] (drop1) -- (dense2);
-        \draw [arrow] (dense2) -- (bn2);
-        \draw [arrow] (bn2) -- (drop2);
+    \draw [arrow] (drop1) -- (dense2);
+    \draw [arrow] (dense2) -- (bn2);
+    \draw [arrow] (bn2) -- (drop2);
 
-        \draw [arrow] (drop2) -- (dense3);
-        \draw [arrow] (dense3) -- (bn3);
-        \draw [arrow] (bn3) -- (drop3);
+    \draw [arrow] (drop2) -- (dense3);
+    \draw [arrow] (dense3) -- (bn3);
+    \draw [arrow] (bn3) -- (drop3);
 
-        \draw [arrow] (drop3) -- (output);
+    \draw [arrow] (drop3) -- (output);
 
-        % --- Annotations ---
-        % \node [right=0.5cm of dense1, text width=3cm, font=\tiny\sffamily\itshape] {He-Uniform Initialization};
-        % \node [left=0.5cm of output, text width=3.5cm, font=\tiny\sffamily\itshape, align=right] {$\mathbb{P}(\Lambda_c^+), \mathbb{P}(c), \mathbb{P}(light)$};
+    % --- Annotations ---
+    % \node [right=0.5cm of dense1, text width=3cm, font=\tiny\sffamily\itshape] {He-Uniform Initialization};
+    % \node [left=0.5cm of output, text width=3.5cm, font=\tiny\sffamily\itshape, align=right] {$\mathbb{P}(\Lambda_c^+), \mathbb{P}(c), \mathbb{P}(light)$};
 
-    \end{tikzpicture}
-    \caption{Feed Forward Neural Network architecture used.}
-    \label{fig:nn_architecture}
+  \end{tikzpicture}
+  \caption{Feed Forward Neural Network architecture used.}
+  \label{fig:nn_architecture}
 \end{wrapfigure}
 
 \subsection{Neural Network Architecture}
@@ -259,15 +263,15 @@ For the hidden layers, the `ReLU' activation function was used to avoid the prob
 The model was trained using the `categorical cross-entropy' (CCE) loss function, which is a standard loss function for multi-class classification problems. For one sample $i$ with $C$ classes, the loss is defined as:
 
 \begin{equation}
-    L_i = -\sum^{C}_{c=1} p_{i,c} \log(\hat{p}_{i,c}),
+  L_i = -\sum^{C}_{c=1} p_{i,c} \log(\hat{p}_{i,c}),
 \end{equation}
 
 where $p_{i,c}$ and $\hat{p}_{i,c}$ are the true and predicted probabilities for sample $i$ and class $c$, respectively. The total loss is the average loss over all samples in the batch. CCE is used as it heavily penalises confident wrong predictions, which is desirable for this classification task.
 
 \subsection{Training}
-The model was trained on 10 million events, split between 5 million charm events (including $\Lambda_c^+$ and other charmed hadrons) and 5 million background events (light and bottom quark events). This 50/50 split was decided on due to the low cross-section of charm events compared to background events (around 1:400), which would lead to the NN being biased towards predicting background events. This is taken into consideration when evaluating the results. As the charm events are automatically weighted by cross-section in PYTHIA, this does not need to be done for these events.
+The neural network was trained on multiple $p_T$ bins, these being 5-10, 10-15, 15-20, 20-25, and 25-30 GeV. In each $p_T$ bin, 1 million events were generated, split evenly between 500,000 charm events (including $\Lambda_c^+$ and other charmed hadrons) and 500,000 background events (light and bottom quark events). This 50/50 split was decided on due to the low cross-section of charm events compared to background events (around 1:400), which would lead to the NN being biased towards predicting background events. This is taken into consideration when evaluating the results. As the charm events are automatically weighted by cross-section in PYTHIA, this does not need to be done for these events.
 
-The data was split into training and validation sets, with 80\% of the data used for training and 20\% of the data used for validation. For evaluation, a separate test set of 10 million events split in the same way as the training data was used. This is to ensure the model was evaluated on unseen, statistically independent data.
+The data was split into training and validation sets, with 80\% of the data used for training and 20\% of the data used for validation. For evaluating the neural network, a separate test set of 1 million events split in the same way as the training data was generated for each $p_T$ bin. This is to ensure the model was evaluated on unseen, statistically independent data.
 
 
 % ---------- RESULTS ---------- %
@@ -287,27 +291,27 @@ In addition to this, background events were added, as detailed above. This left 
 To statistically verify the results of the machine learning model, a maximum likelihood fit was performed. The signal strength, $\mu$, is defined as:
 
 \begin{equation}
-    \mu = \frac{N_{\Lambda_c^+}}{N_{\Lambda_c^+}^{\text{PYTHIA}}},
+  \mu = \frac{N_{\Lambda_c^+}}{N_{\Lambda_c^+}^{\text{PYTHIA}}},
 \end{equation}
 
 where $N_{\Lambda_c^+}$ is the number of $\Lambda_c^+$ events in the ``observed'' data, and $N_{\Lambda_c^+}^{\text{PYTHIA}}$ is the number of $\Lambda_c^+$ events in the PYTHIA simulation. For data that perfectly follows universality, a value of $\mu = 1$ would be expected, whereas if the fragmentation fraction of $\Lambda_c^+$ is significantly higher than that of other charm hadrons, a value of $\mu > 1$ would be expected.
 
-The maximum likelihood fit finds the most probable value of signal strength that the observed data would give. As each bin in the histogram follows a Poisson distribution. The probability mass function of the Poisson distribution is defined as:
+The maximum likelihood fit finds the most probable value of signal strength that the observed data would give. As each bin in the histogram follows a Poisson distribution. The probability mass function (PMF) of the Poisson distribution is defined as:
 
 \begin{equation}
-    P(n; \lambda) = \frac{\lambda^n e^{-\lambda}}{n!},
+  P(n; \lambda) = \frac{\lambda^n e^{-\lambda}}{n!},
 \end{equation}
 
 where $\lambda$ is the expected number of events, and $n$ is the observed number of events. The total likelihood is therefore calculated as the product of the PMFs for each bin:
 
 \begin{equation}
-    \mathcal{L}(\mu) = \prod_{i=1}^{N} \frac{\lambda_i^{n_i} e^{-\lambda_i}}{n_i!},
+  \mathcal{L}(\mu) = \prod_{i=1}^{N} \frac{\lambda_i^{n_i} e^{-\lambda_i}}{n_i!},
 \end{equation}
 
 where $\lambda_i$ is the expected number of events in bin $i$, and $n_i$ is the observed number of events in bin $i$. The maximum likelihood estimate of $\mu$ is the value of $\mu$ that maximises the likelihood function. To find this, the negative logarithm of the likelihood function is minimised:
 
 \begin{equation}
-    - \ln \mathcal{L}(\mu) = -\sum^{N}_{i=1} \left( n_i \ln \lambda_i - \lambda_i - \ln n_i! \right).
+  - \ln \mathcal{L}(\mu) = -\sum^{N}_{i=1} \left( n_i \ln \lambda_i - \lambda_i - \ln n_i! \right).
 \end{equation}
 
 This is done by iterating over a range of $\mu$ values and calculating the negative log likelihood for each one, and then finding the minimum along that curve. This gives the most likely value of $\mu$ for that dataset. To find the $1\sigma$ errors, the values of $\mu$ corresponding to an increase of 0.5 in the negative log likelihood from the minimum are found.

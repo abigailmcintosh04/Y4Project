@@ -48,6 +48,9 @@
 \pagenumbering{roman}
 
 \pagebreak
+\tableofcontents
+\pagebreak
+
 \pagenumbering{arabic}
 
 % ---------- INTRODUCTION ---------- %
@@ -110,8 +113,14 @@ The transverse impact parameter, $d_0$, is defined as the distance of closest ap
 
 where $(u_x, u_y)$ are the $x$ and $y$ coordinates of the primary vertex, and $(p_x, p_y)$ are the $x$ and $y$ components of the track momentum.
 
+\subsubsection{Transverse Impact Parameter Standard Deviation}
+The transverse impact parameter standard deviation, $\sigma(d_0)$, is defined as the standard deviation of the transverse impact parameter for all tracks in a jet. This quantifies the spread of the values of $d_0$ within a jet.
+
 \subsubsection{Mean Transverse Impact Parameter Significance}
 The transverse impact parameter significance, $S_{d_0}$, is defined as the ratio of a track's transverse impact parameter, $d_0$, to the uncertainty of its measurement, $\sigma_{d_0}$. It is a measure of how many standard deviations away from the primary vertex the track is, and so can be used to distinguish between prompt tracks and those originating from the charm hadron decay. The mean $S_{d_0}$ is then calculated for all tracks in a jet.
+
+\subsubsection{Transverse Impact Parameter Significance Standard Deviation}
+The transverse impact parameter significance standard deviation, $\sigma(S_{d_0})$, is defined as the standard deviation of the transverse impact parameter significance for all tracks in a jet. This quantifies the spread of the values of $S_{d_0}$ within a jet.
 
 \subsubsection{Transverse Decay Length}
 The transverse decay length, $L_{xy}$, is defined as the distance between the primary vertex and the secondary vertex in the transverse plane. It measures how far the charmed hadron travels in the transverse plane before decaying, and therefore can be used as a proxy for charmed hadron lifetime. As $L_{xy}$ is a property of the jet, rather than the individual tracks, it is calculated for each jet and then smeared. $L_{xy}$ is defined as follows:
@@ -132,6 +141,9 @@ The number of tracks is simply the number of tracks in the jet. As the ATLAS inn
 The jet mass is defined as the sum of the invariant masses of all tracks clustered in the jet.
 
 \subsubsection{Fractional Transverse Momentum}
+The fractional transverse momentum is defined as the ratio of the track with the highest $p_T$ in the jet to the total $p_T$ of the jet. This measures what proportion of the jet's $p_T$ is carried by the most energetic track. 
+
+\subsubsection{}
 
 \subsection{$d_0$ significance cuts}
 $d_0$ significance is defined as the ratio of the track's $d_0$ to the uncertainty in $d_0$, $\sigma_{d_0}$. It describes how many standard deviations away from the beam axis the track is. $d_0$ significance was chosen as opposed to $d_0$ as it takes into account the detector resolution by inclusion of the error, and so will work across a wider range of $p_T$. As tracks that originated from the primary vertex will have a near-zero $d_0$, they will therefore be normally distributed around the primary vertex. However, secondary vertices will be distributed around the secondary vertex, and so many tracks will have a large $d_0$ significance, many standard deviations away from the primary vertex. Therefore, only calculating summary variables from tracks with a $d_0$ signiificance greater than a certain value ensures as many prompt tracks as possible are excluded. However, this will also exclude tracks from the secondary vertex that happened to pass close to the primary vertex, and so a balance is necessary when finding a value of $d_0$ significance cut, otherwise too many tracks from the charmed hadron decay will be excluded and measurements will be less accurate.
@@ -169,11 +181,11 @@ In all three equations, $a_i$ are determined by the intrinsic resolution of the 
   \caption{Inner Detector Smearing Parameters}
   \begin{tabular}{|c|c|p{3.5in}|}
     \hline
-    Parameter & Value                                     & Source                                                                                                                           \\
+    Parameter & Value &Source \\
     \hline
-    $a_1$     & \qty{10}{\micro\metre}                    & \cite{atlas_spatial_res}                                                                                                         \\
+    $a_1$     & \qty{10}{\micro\metre} & \cite{atlas_spatial_res} \\
     $b_1$     & \qty{100}{\micro\metre\giga\electronvolt} & \cite{atlas_performance}, Figure 7a. The value of $\sigma(d_0)$ at $p_T = 1$~GeV can be used as a close approximation for $b_1$. \\
-    $a_2$     & \qty{5e-4}{\per\giga\electronvolt}        &                                                                                                                                  \\
+    $a_2$     & \qty{5e-4}{\per\giga\electronvolt} & \\
     \hline
   \end{tabular}
   \label{tab:smearing_parameters}

@@ -11,3 +11,4 @@ report.pdf
 *.fdb_latexmk
 *.synctex.gz
 *.fls
+*.toc

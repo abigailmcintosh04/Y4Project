@@ -134,16 +134,24 @@ def configure_pythia(process='charm', pTHatMin=20.0, tuning='monash', pTHatMax=N
 
     elif tuning == 'crblc':
         pythia.readString('PartonLevel:MPI = on')
-    
-        # CR-BLC stuff
-        pythia.readString('ColourReconnection:mode = 2')
-        pythia.readString('ColourReconnection:allowDoubleJunctor = on')
+        pythia.readString('StringZ:aLund = 0.36')
+        pythia.readString('StringZ:bLund = 0.56')
+        pythia.readString('StringFlav:probQQtoQ = 0.078')
+        pythia.readString('StringFlav:probStoUD = 0.2')
+        pythia.readString('StringFlav:probQQ1toQQ0join = 0.0275,0.0275,0.0275,0.0275')
+
+        pythia.readString('MultiPartonInteractions:pT0Ref = 2.15')
+
+        pythia.readString('BeamRemnants:saturation = 5')
+        pythia.readString('BeamRemnants:remnantMode = 1')
+
+        pythia.readString('ColourReconnection:mode = 1')
+        pythia.readString('ColourReconnection:allowDoubleJunRem = off')
+        pythia.readString('ColourReconnection:m0 = 0.3')
+        pythia.readString('ColourReconnection:allowJunctions = on')
         pythia.readString('ColourReconnection:junctionCorrection = 1.2')
         pythia.readString('ColourReconnection:timeDilationMode = 2')
         pythia.readString('ColourReconnection:timeDilationPar = 0.18')
-        pythia.readString('BeamRemnants:remnantMode = 1')
-        pythia.readString('BeamRemnants:reconnectRange = 1.8')
-        pythia.readString('ColourReconnection:reconnect = on') # The master switch
 
     # Use a random seed for the random number generator.
     if seed is None:

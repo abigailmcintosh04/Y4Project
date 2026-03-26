@@ -304,6 +304,9 @@ The final FFNN architecture was determined through a combination of research and
 
 For the hidden layers, the `ReLU' activation function was used to avoid the problem of vanishing gradients and to increase the speed of computation. For the output layer, the `softmax' activation was used to convert the raw output of the neurons into a probability distribution over the three classes. The `Adam' optimiser was used due to its adaptive learning rates for each parameter, and its strong ability to converge despite noise in the data.
 
+\subsubsection{Callbacks}
+The neural network also used two callbacks: early stopping, and the reduction of the learning rate on a plateau. Early stopping was implemented to prevent overfitting of the neural network when there was no improvement in validation loss for 15 epochs. The LR reduction on plateau allows for finer convergence, allowing the weights to adjust more slowly as the model approaches the minimum validation loss. Here, the reduction factor was 0.5, and the patience was 5 epochs.
+
 \subsubsection{Loss Function}
 The model was trained using the `categorical cross-entropy' (CCE) loss function, which is a standard loss function for multi-class classification problems. For one sample $i$ with $C$ classes, the loss is defined as:
 
@@ -329,6 +332,62 @@ After analysing the confusion matrix, it was found that the model was able to di
 
 \subsection{Collapsed Classes}
 The other charm hadrons events were collapsed into a single class, and background events were added as detailed SOMEWHERE. This led to three final classes: background, other charm hadron, and $\Lambda_c^+$. Due to the variation of fragmentation fraction based on jet $p_T$, the data was split into six bins of $p_T$: 5-10, 10-15, 15-20, 20-25, 25-30, and 30+ GeV. One million events were generated at each of these $p_T$ bins, split evenly between charm and background events. The neural network was then trained on the data in each bin, splitting the data into 80\% for training and 20\% for validation. The confusion matrices for each $p_T$ bin can be seen in Figure CONFUSIONMATRIX.
+
+\begin{figure}[htbp]
+     \centering
+     % --- Row 1 ---
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{images/confusion_matrix_5_10.png}
+         \caption{Confusion matrix for 5-10 GeV bin.}
+         \label{fig:confusion_matrix_5_10}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{images/confusion_matrix_10_15.png}
+         \caption{Confusion matrix for 10-15 GeV bin.}
+         \label{fig:confusion_matrix_10_15}
+     \end{subfigure}
+
+     \vspace{1em} % Add some vertical spacing between rows
+
+     % --- Row 2 ---
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{images/confusion_matrix_15_20.png}
+         \caption{Confusion matrix for 15-20 GeV bin.}
+         \label{fig:confusion_matrix_15_20}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{images/confusion_matrix_20_25.png}
+         \caption{Confusion matrix for 20-25 GeV bin.}
+         \label{fig:confusion_matrix_20_25}
+     \end{subfigure}
+
+     \vspace{1em}
+
+     % --- Row 3 ---
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{images/confusion_matrix_25_30.png}
+         \caption{Confusion matrix for 25-30 GeV bin.}
+         \label{fig:confusion_matrix_25_30}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{images/confusion_matrix_30_plus.png}
+         \caption{Confusion matrix for 30+ GeV bin.}
+         \label{fig:confusion_matrix_30_plus}
+     \end{subfigure}
+
+     \caption{Confusion matrices for each $p_T$ bin.}
+     \label{fig:confusion_matrices}
+\end{figure}
+
 
 % ADD IN FIGURES %
 

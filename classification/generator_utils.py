@@ -231,137 +231,111 @@ def jet_features(jet, event, class_label, lxy, d0_sig_cut=None):
 
 
 def single_event(event, jet_def, ptmin, process='charm', d0_sig_cut=None):
-    '''
-    Process a single Pythia event to find charm hadrons and their associated jets.
-    Returns a list of records for each charm hadron found in the event.
-    '''
     event_records = []
-    try:
-        hadrons = []
-        final_state_pseudojets = []
+    hadrons = []
+    final_state_pseudojets = []
 
-        # Create PseudoJets and find hadrons.
-        for p in event:
-            if p.isFinal() and p.isCharged():
-                # Apply 95% detection efficiency cut
-                if np.random.rand() > 0.95:
-                    continue
-                pj = fastjet.PseudoJet(p.px(), p.py(), p.pz(), p.e())
-                pj.set_user_index(p.index())
-                final_state_pseudojets.append(pj)
+    # 1. Collect Final State Particles
+    for p in event:
+        if p.isFinal() and p.isCharged():
+            if np.random.rand() > 0.95: continue # 95% efficiency
+            pj = fastjet.PseudoJet(p.px(), p.py(), p.pz(), p.e())
+            pj.set_user_index(p.index())
+            final_state_pseudojets.append(pj)
 
-        # Process hadrons.
-        for p in event:
-            p_id = p.id()
-            if (process == 'charm') and (p_id in lambda_c_ids or p_id in other_charm_ids):
-                daughters = p.daughterList()
-                if daughters and all(event[d].id() not in all_heavy_ids for d in daughters):
-                    hadrons.append(p)
-            elif (process == 'background') and (p_id in bottom_ids):
-                daughters = p.daughterList()
-                if daughters and all(event[d].id() not in all_heavy_ids for d in daughters):
-                    hadrons.append(p)
+    # 2. Collect Heavy Hadrons (For labeling or dR matching)
+    for p in event:
+        p_id = abs(p.id())
+        # Check if it's a "last" heavy hadron (no heavy daughters)
+        daughters = p.daughterList()
+        has_heavy_daughter = any(abs(event[d].id()) in all_heavy_ids for d in daughters) if daughters else False
+        
+        if not has_heavy_daughter:
+            if p_id in lambda_c_ids or p_id in other_charm_ids or p_id in bottom_ids:
+                hadrons.append(p)
 
-        cluster_sequence = fastjet.ClusterSequence(final_state_pseudojets, jet_def)
-        jets = cluster_sequence.inclusive_jets(ptmin=ptmin)
-        if not jets: return []
+    # 3. Cluster Jets
+    cluster_sequence = fastjet.ClusterSequence(final_state_pseudojets, jet_def)
+    jets = cluster_sequence.inclusive_jets(ptmin=ptmin)
+    if not jets: return []
 
-        if process == 'charm':
-            for h in hadrons:
-                min_dR = 0.3 
-                best_jet = None
-                for jet in jets:
-                    dR = deltaR(h.eta(), h.phi(), jet.eta(), jet.phi())
-                    if dR < min_dR:
-                        min_dR = dR
-                        best_jet = jet
-
-                if best_jet:
-                    lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
-                    class_label = 2 if abs(h.id()) == 4122 else 1
-                    record = jet_features(best_jet, event, class_label, lxy, d0_sig_cut)
-                    if record: event_records.append(record)
-
-        elif process == 'background':
+    # 4. Labeling Logic
+    if process == 'charm':
+        # Only save jets matched to a Charm Hadron
+        for h in hadrons:
+            if abs(h.id()) not in (lambda_c_ids | other_charm_ids): continue
+            
+            min_dR = 0.3 
+            best_jet = None
             for jet in jets:
-                lxy = 0.0
-                for h in hadrons:
-                    if deltaR(h.eta(), h.phi(), jet.eta(), jet.phi()) < 0.3:
-                        lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
-                        break 
+                dR = deltaR(h.eta(), h.phi(), jet.eta(), jet.phi())
+                if dR < min_dR:
+                    min_dR = dR
+                    best_jet = jet
 
-                record = jet_features(jet, event, class_label=0, lxy=lxy, d0_sig_cut=d0_sig_cut)
+            if best_jet:
+                lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
+                class_label = 2 if abs(h.id()) == 4122 else 1
+                record = jet_features(best_jet, event, class_label, lxy, d0_sig_cut)
                 if record: event_records.append(record)
-    
-    except Exception as e:
-        print(f'Error processing event: {e}')
-    return event_records    
+
+    elif process == 'background':
+        # Save EVERY jet as background (Class 0), regardless of whether a heavy hadron is present.
+        # (Since hardccbar is OFF, most will be light flavor/gluon jets).
+        for jet in jets:
+            lxy = 0.0
+            # Check if a Bottom hadron happens to be in this jet (for completeness)
+            for h in hadrons:
+                if deltaR(h.eta(), h.phi(), jet.eta(), jet.phi()) < 0.3:
+                    lxy = math.sqrt(h.xDec()**2 + h.yDec()**2)
+                    break 
+
+            record = jet_features(jet, event, class_label=0, lxy=lxy, d0_sig_cut=d0_sig_cut)
+            if record: event_records.append(record)
+            
+    return event_records
         
 
 def generate_events(pythia, jet_def, output_file, no_events, chunk_size, dtype, ptmin, process='charm', d0_sig_cut=None):
-    '''Main function to generate events and store them in an HDF5 file.'''
     start_time = time.time()
-    last_report_time = start_time
     saved_events = 0
+    attempts = 0 # NEW: Track total Pythia calls
 
     with h5py.File(output_file, 'w') as h5file:
-        # Pre-allocate the dataset; maxshape=None allows growing if needed.
-        dset = h5file.create_dataset(
-            'events',
-            shape=(no_events,),
-            maxshape=(None,),
-            dtype=dtype,
-            chunks=True
-        )
+        dset = h5file.create_dataset('events', shape=(no_events,), maxshape=(None,), dtype=dtype, chunks=True)
         write_ptr = 0
         buffer = []
 
-        # Main generation loop: continues until the desired number of charm events is found.
         while saved_events < no_events:
+            attempts += 1
             if not pythia.next():
                 continue
 
             new_records = single_event(pythia.event, jet_def, ptmin, process=process, d0_sig_cut=d0_sig_cut)
+            
             if new_records:
                 buffer.extend(new_records)
                 saved_events += len(new_records)
 
-            current_time = time.time()
-            if current_time - last_report_time >= 30:
-                elapsed_time = current_time - start_time
-                print(f'Shard {os.getpid()}: Generated {saved_events} events in {elapsed_time:.2f} seconds.')
-                last_report_time = current_time
+            # HEARTBEAT: Report every 1000 ATTEMPTS to prove the shard is alive
+            if attempts % 1000 == 0:
+                elapsed = time.time() - start_time
+                eff = (saved_events / attempts) * 100
+                print(f'Shard {os.getpid()}: Attempts: {attempts} | Saved: {saved_events} | Eff: {eff:.3f}% | Time: {elapsed:.1f}s')
 
-            # Flush buffer to HDF5 file when it's full or at the end of generation.
             if len(buffer) >= chunk_size or (saved_events >= no_events and buffer):
                 n_to_write = len(buffer)
-                # Grow the dataset if needed to fit all events.
                 if write_ptr + n_to_write > dset.shape[0]:
                     dset.resize((write_ptr + n_to_write,))
-
                 arr = np.array(buffer[:n_to_write], dtype=dtype)
                 dset[write_ptr : write_ptr + n_to_write] = arr
                 write_ptr += n_to_write
                 buffer = []
         
-        # Write any final remaining events from the buffer.
-        if buffer:
-            n_to_write = len(buffer)
-            if write_ptr + n_to_write > dset.shape[0]:
-                dset.resize((write_ptr + n_to_write,))
-            arr = np.array(buffer[:n_to_write], dtype=dtype)
-            dset[write_ptr : write_ptr + n_to_write] = arr
-            write_ptr += n_to_write
-
-        # Resize dataset to exact number of events written.
         if write_ptr != dset.shape[0]:
             dset.resize((write_ptr,))
 
-        # The final number of events is the number of rows written.
-        saved_events = write_ptr
-    
-    duration = time.time() - start_time
-    return saved_events, duration
+    return write_ptr, time.time() - start_time
                 
 
 def launch_shards(script_path, args):

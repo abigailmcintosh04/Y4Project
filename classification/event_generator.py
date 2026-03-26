@@ -20,6 +20,7 @@ parser.add_argument('--shard-index', type=int, default=0, help='The index of thi
 parser.add_argument('--cleanup', action='store_true', default=True, help='Delete temporary shard files after merging.')
 parser.add_argument('--d0-sig-cut', type=float, default=None, help='Minimum d0 significance (|d0/sigma|) to keep a track.')
 parser.add_argument('--temp-dir', type=str, default=None, help='Directory for temporary output files (used by bg_event_generator).')
+parser.add_argument('--tuning', type=str, default='monash', help='Pythia tuning to use.')
 args = parser.parse_args()
 
 total_start_time = time.time()
@@ -68,7 +69,7 @@ dtype = np.dtype([
 ])
 
 # Configure Pythia and run the event generation for this specific shard.
-pythia = configure_pythia(process=args.process, pTHatMin=args.pTHatMin, pTHatMax=args.pTHatMax)
+pythia = configure_pythia(process=args.process, pTHatMin=args.pTHatMin, tuning=args.tuning, pTHatMax=args.pTHatMax)
 events_found, duration = generate_events(pythia, jet_def, output_file, shard_events, args.chunk_size, dtype, args.pTHatMin, process=args.process, d0_sig_cut=args.d0_sig_cut)
 print(f'Shard {args.shard_index}/{args.shards}: Event generation took {duration:.2f} seconds for {events_found} events.')
 

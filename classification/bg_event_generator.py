@@ -18,6 +18,7 @@ def main():
     parser.add_argument('--pTHatMin', type=float, default=20.0, help='Minimum pT for the hard process.')
     parser.add_argument('--pTHatMax', type=float, default=None, help='Maximum pT for the hard process.')
     parser.add_argument('--d0-sig-cut', type=float, default=None, help='Minimum d0 significance (|d0/sigma|) to keep a track.')
+    parser.add_argument('--tuning', type=str, default='monash', help='Pythia tuning to use.')
     args = parser.parse_args()
 
     collisions_dir = 'collisions'
@@ -56,6 +57,7 @@ def main():
             "--process", process,
             "--temp-dir", temp_dir,
             "--pTHatMin", str(args.pTHatMin),
+            "--tuning", str(args.tuning),
         ]
         if args.pTHatMax is not None:
             cmd.extend(["--pTHatMax", str(args.pTHatMax)])

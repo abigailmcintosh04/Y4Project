@@ -93,7 +93,7 @@ def deltaR_vec(eta0, phi0, etas, phis):
     return np.sqrt((etas - eta0)**2 + dphi**2)
 
 
-def configure_pythia(process='charm', pTHatMin=20.0, pTHatMax=None, seed=None):
+def configure_pythia(process='charm', pTHatMin=20.0, tuning='monash', pTHatMax=None, seed=None):
     '''Configure and initialise the Pythia event generator.'''
     pythia = pythia8mc.Pythia()
 
@@ -128,8 +128,22 @@ def configure_pythia(process='charm', pTHatMin=20.0, pTHatMax=None, seed=None):
     pythia.readString('PartonLevel:FSR = on')
     pythia.readString('HadronLevel:Hadronize = on')
 
-    # MPI off.
-    pythia.readString('PartonLevel:MPI = off')
+    if tuning == 'monash':
+        # MPI off.
+        pythia.readString('PartonLevel:MPI = off')
+
+    elif tuning == 'crblc':
+        pythia.readString('PartonLevel:MPI = on')
+    
+        # CR-BLC stuff
+        pythia.readString('ColourReconnection:mode = 2')
+        pythia.readString('ColourReconnection:allowDoubleJunctor = on')
+        pythia.readString('ColourReconnection:junctionCorrection = 1.2')
+        pythia.readString('ColourReconnection:timeDilationMode = 2')
+        pythia.readString('ColourReconnection:timeDilationPar = 0.18')
+        pythia.readString('BeamRemnants:remnantMode = 1')
+        pythia.readString('BeamRemnants:reconnectRange = 1.8')
+        pythia.readString('ColourReconnection:reconnect = on') # The master switch
 
     # Use a random seed for the random number generator.
     if seed is None:
@@ -141,6 +155,8 @@ def configure_pythia(process='charm', pTHatMin=20.0, pTHatMax=None, seed=None):
     
     pythia.readString('Random:setSeed = on')
     pythia.readString(f'Random:seed = {seed}')
+
+    pythia.readString('Next:numberCount = 0')
 
     pythia.init()
     return pythia
@@ -364,6 +380,8 @@ def launch_shards(script_path, args):
             command.extend(['--pTHatMin', str(args.pTHatMin)])
         if hasattr(args, 'pTHatMax') and args.pTHatMax is not None:
             command.extend(['--pTHatMax', str(args.pTHatMax)])
+        if hasattr(args, 'tuning') and args.tuning is not None:
+            command.extend(['--tuning', args.tuning])
         p = subprocess.Popen(command) # Launch the worker process in the background.
         processes.append(p)
     

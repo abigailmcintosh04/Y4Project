@@ -82,10 +82,19 @@ The electromagnetic calorimeter measures the energy of particles that interact e
 \subsection{Monte Carlo Simulation}
 Monte Carlo events are generated using the PYTHIA 8.3 Monte Carlo event generator in Python 3.12.12, via the `pythia8mc' Python package. Two proton beams (PDG ID 2212) are collided at a centre-of-mass energy of 13 TeV. Both background and signal events are generated using this method, but with different processes enabled. The processes enabled for background and signal events are as follows:
 
-\begin{itemize}
-  \item Background: $gg \rightarrow gg$, $qg \rightarrow qg$, $qq \rightarrow qq$, $q\bar{q} \rightarrow gg$, $gg \rightarrow b\bar{b}$, and $q\bar{q} \rightarrow b\bar{b}$.
-  \item Charm events: $qq \rightarrow c\bar{c}$ and $gg \rightarrow c\bar{c}$
-\end{itemize}
+\begin{verbatim}
+  # Background Events
+  `HardQCD:gg2gg = on'
+  `HardQCD:qg2qg = on'
+  `HardQCD:qq2qq = on'
+  `HardQCD:qqbar2gg = on'
+  `HardQCD:qqbar2qqbar = on'
+  `HardQCD:gg2bbbar = on'
+  `HardQCD:qqbar2bbbar = on'
+
+  # Charm Events
+  `HardQCD:hardccbar = on'
+\end{verbatim}
 
 As all charm events are generated together, they do not need to be normalised by their cross-section, as this is done automatically by PYTHIA when generating $c\bar{c}$ events together. Due to the fragmentation fraction varying over different values of $p_T$, events were generated in six bins of $p_T$: 5-10, 10-15, 15-20, 20-25, 25-30, and 30+ GeV. Initial state radiation, final state radiation, and hadronisation are enabled, and multiple parton interactions is disabled as this describes soft scattering events, rather than the hard scattering events of interest.
 
@@ -194,12 +203,36 @@ In all three equations, $a_i$ are determined by the intrinsic resolution of the 
 \subsection{PYTHIA Tuning}
 
 \subsubsection{Monash Tune}
-The Monash tune is the standard tuning system used in PYTHIA 8. It utilises the Lund string model. The Lund string model models the colour force between two quarks as a string, with a certain tension. When quarks are separated after a hard scattering, the string is stretched, increasing the energy stored in the string. When the stored energy is large enough, the string breaks, creating a new quark-antiquark pair. This describes the process of hadronisation. This limits the process of hadronisation into baryons to only occur from diquark-antidiquark pair production.
-
-The Monash tune describes the parameters of this Lund string model hadronisation process, defining the flavour ratios, fragmentation functions, and the probability of diquark-antidiquark pair production.
+The Monash tune is the standard tuning system used in PYTHIA 8.3. It utilises the Lund string model \cite{lundmodel}. The Lund string model models the colour force between two quarks as a string, with a certain tension. When quarks are separated after a hard scattering, the string is stretched, increasing the energy stored in the string. When the stored energy is large enough, the string breaks, creating a new quark-antiquark pair. This describes the process of hadronisation. This limits the process of hadronisation into baryons to only occur from diquark-antidiquark pair production. The Monash tune describes the parameters of this Lund string model hadronisation process, defining the flavour ratios, fragmentation functions, and the probability of diquark-antidiquark pair production. This tuning accurately replicates heavy quark fragmentation observed at lepton colliders.
 
 \subsubsection{CR-BLC Mode 2}
-The CR-BLC (Colour Reconnection Beyond Leading Colour) model extends the Lund string model. Rather than only allowing strings to form between a quark-antiquark pair, it allows for strings between three quarks as well. This leads to an increased baryon production, increasing the $\Lambda_c^+$ fragmentation fraction. In addition to this, the model can be further modified by only allowing causally connected strings in space-time to reconnect. This is known as CR-BLC Mode 2, and is the standard tuning used when analysing heavy quark fragmentation.
+The CR-BLC (Colour Reconnection Beyond Leading Colour) model extends the Lund string model. Rather than only allowing strings to form between a quark-antiquark pair, it allows for strings between three quarks as well. This leads to an increased baryon production, increasing the $\Lambda_c^+$ fragmentation fraction compared to other charm hadrons. In addition to this, the model can be further modified by only allowing causally connected strings in space-time to reconnect. This is known as CR-BLC Mode 2. There are many different possible implementations of this model in PYTHIA, requiring tuning of many parameters. It was decided to use the parameters as shown here:
+
+\begin{verbatim}
+  `PartonLevel:MPI = on'
+
+  `StringZ:aLund = 0.36'
+  `StringZ:bLund = 0.56'
+  `StringFlav:probQQtoQ = 0.078'
+  `StringFlav:probStoUD = 0.2'
+  `StringFlav:probQQ1toQQ0join = 0.0275,0.0275,0.0275,0.0275'
+
+  `MultiPartonInteractions:pT0Ref = 2.15'
+
+  `BeamRemnants:saturation = 5'
+  `BeamRemnants:remnantMode = 1'
+
+  `ColourReconnection:mode = 1'
+  `ColourReconnection:allowDoubleJunRem = off'
+  `ColourReconnection:m0 = 0.3'
+  `ColourReconnection:allowJunctions = on'
+  `ColourReconnection:junctionCorrection = 1.2'
+  `ColourReconnection:timeDilationMode = 2'
+  `ColourReconnection:timeDilationPar = 0.18'
+
+\end{verbatim}
+
+These parameters were chosen as suggested in the appendix of \cite{crblc} to approximate the behaviour of heavy quark fragmentation at hadron colliders.
 
 
 % ---------- MACHINE LEARNING ---------- %
@@ -306,7 +339,7 @@ Statistically independent test data was used to evaluate the performance of the 
 
 In addition, a luminosity of $\mathcal{L} = \qty{1}{\per\femto\barn}$ was used as a baseline figure for the calculation of this cross-section scaling.
 
-The results of the fit can be seen in Figure FRAGMENTS.
+The results of the fits can be seen in Figure FRAGMENTS.
 
 The fragmentation fraction $f(c \rightarrow \Lambda_c^+)$ was then calculated for each $p_T$ bin via the scaled number of events, using the following formula:
 
@@ -314,21 +347,22 @@ The fragmentation fraction $f(c \rightarrow \Lambda_c^+)$ was then calculated fo
   f(c \rightarrow \Lambda_c^+) = \frac{\mu N_{\Lambda_c^+}}{\mu N_{\Lambda_c^+} + N_{\text{other}}},
 \end{equation}
 
-where $N_{\Lambda_c^+}$ and $N_{\text{other}}$ are the scaled number of $\Lambda_c^+$ and other charm hadron events, respectively. 
+where $N_{\Lambda_c^+}$ and $N_{\text{other}}$ are the scaled number of $\Lambda_c^+$ and other charm hadron events, respectively. These can be seen in Figure FRAGFRAC.
 
 
-\section{Statistical Analysis}
+% ---------- STATISTICAL FRAMEWORK ---------- %
+\section{Statistical Framework}
 
-\subsection{Maximum Likelihood Fit}
-To statistically verify the results of the machine learning model, a maximum likelihood fit was performed. The signal strength, $\mu$, is defined as:
+\subsection{Maximum Likelihood Estimation}
+The signal strength, $\mu$, is defined as:
 
 \begin{equation}
   \mu = \frac{N_{\Lambda_c^+}}{N_{\Lambda_c^+}^{\text{PYTHIA}}},
 \end{equation}
 
-where $N_{\Lambda_c^+}$ is the number of $\Lambda_c^+$ events in the ``observed'' data, and $N_{\Lambda_c^+}^{\text{PYTHIA}}$ is the number of $\Lambda_c^+$ events in the PYTHIA simulation. For data that perfectly follows universality, a value of $\mu = 1$ would be expected, whereas if the fragmentation fraction of $\Lambda_c^+$ is significantly higher than that of other charm hadrons, a value of $\mu > 1$ would be expected.
+where $N_{\Lambda_c^+}$ is the number of $\Lambda_c^+$ events in the ``observed'' data (data generated either with Monash or CR-BLC tuning), and $N_{\Lambda_c^+}^{\text{PYTHIA}}$ is the number of $\Lambda_c^+$ events in the PYTHIA simulation. For data generated with the Monash tuning that therefore follows universality, a value of $\mu = 1$ would be expected, whereas data generated with the CR-BLC tuning would be expected to give a value of $\mu > 1$.
 
-The maximum likelihood fit finds the most probable value of signal strength that the observed data would give. As each bin in the histogram follows a Poisson distribution. The probability mass function (PMF) of the Poisson distribution is defined as:
+To verify if the variation of the signal strength from unity is due to statistical fluctuations in the data, or from new physics, a maximum likelihood estimation (MLE) can be performed. This allows the calculation of an error on the signal strength, determining if the deviation is statistically significant. The MLE finds the most probable value of signal strength that the observed data would give. Each bin in the histogram follows a Poisson distribution, and so the probability mass function (PMF) of the Poisson distribution is defined as:
 
 \begin{equation}
   P(n; \lambda) = \frac{\lambda^n e^{-\lambda}}{n!},
@@ -346,9 +380,12 @@ where $\lambda_i$ is the expected number of events in bin $i$, and $n_i$ is the 
   - \ln \mathcal{L}(\mu) = -\sum^{N}_{i=1} \left( n_i \ln \lambda_i - \lambda_i - \ln n_i! \right).
 \end{equation}
 
-This is done by iterating over a range of $\mu$ values and calculating the negative log likelihood for each one, and then finding the minimum along that curve. This gives the most likely value of $\mu$ for that dataset. To find the $1\sigma$ errors, the values of $\mu$ corresponding to an increase of 0.5 in the negative log likelihood from the minimum are found.
+This is done by iterating over a range of $\mu$ values and calculating the negative log likelihood for each one, and then finding the minimum along that curve. This gives the most likely value of $\mu$ for that dataset. To find the $1\sigma$ errors, the values of $\mu$ corresponding to an increase of 0.5 in the negative log likelihood from the minimum are found. This can then be used to determine statistical significance.
 
 \subsubsection{Pull Distributions}
+A Pull Distribution is a distribution of many MLEs. Specifically, two different pull distributions can be generated: the distribution of the signal strengths themselves, and the distribution of the number of standard deviations away from the true signal strength. Via the Central Limit Theorem, both of these should be Gaussian, and should be centred at 1 and 0 respectively, with the latter having a standard deviation of 1. If the MLE is biased in any way, this will become evident due to the pull distributions deviating from those values. 
+
+
 To ensure that the maximum likelihood fit is statistically reliable, pull distributions were generated. These show the difference between the fitted signal strength and the true signal strength divided by the uncertainty for many likelihood fits, in this case 10000. If the likelihood is statistically reliable, the pull distribution should be a Gaussian distribution, with a mean of 0 and a standard deviation of 1, via the central limit theorem. If this is not the case, then the maximum likelihood fit will either consistently underestimate or overestimate the signal strength, making the results unreliable.
 
 To show that the model would be able to find a signal strength corresponding to an increase in $\Lambda_c^+$ fragmentation fraction similar to that observed at ALICE, the model was evaluated on two different PYTHIA tunings, one with the Monash tuning simulating fragmentation functions similar to those found at $e^+e^-$ colliders, and one with the CR-BLC Mode 2 tuning simulating fragmentation functions similar to those found by ALICE.

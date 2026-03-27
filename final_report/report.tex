@@ -325,6 +325,36 @@ The neural network was trained on multiple $p_T$ bins, these being 5-10, 10-15, 
 
 The data was split into training and validation sets, with 80\% of the data used for training and 20\% of the data used for validation. For evaluating the neural network, a separate test set of 1 million events split in the same way as the training data was generated for each $p_T$ bin. This is to ensure the model was evaluated on unseen, statistically independent data.
 
+\subsection{Performance}
+To evaluate the performance of the neural network across all $p_T$ bins, a signal efficiency versus background rejection study was performed. The signal efficiency $\epsilon_s$ is defined as the fraction of signal events correctly classified as such, while the background rejection $\epsilon_b$ is defined as the fraction of background events correctly classified as such. For each $p_T$ bin, a plot of $1 / \epsilon_b$ versus $\epsilon_s$ was generated. The area under the curve, AUC, is a measure of the overall performance of the neural network, with a higher value of AUC indicating better performance. This was also calculated for each $p_T$ bin. As can be seen in Figure \ref{fig:roc}, the neural network had consistently high performance across all $p_T$ bins, with AUC values varying from 0.93 to 0.94. This shows that the neural network has the potential to observe physical differences in the fragmentation fraction due to breaking of universality, due to its robustness across $p_T$ bins. It can then be confidently stated that any variations observed are due to physical effects, rather than artifacts from the neural network.
+
+To further quantify the neural network's performance, a working point of 80\% efficiency was selected. Across all $p_T$ bins, the background rejection was found at this working point. As can be seen in Table \ref{tab:rej_power}, the background rejection is relatively stable across all $p_T$ bins, varying from 10.1 to 13.3, with the lowest rejection in the highest $p_T$ bin. This could possibly be due to the increased collimation of jets at higher $p_T$, which makes it harder to distinguish between signal and background events.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\textwidth]{images/roc_all.png}
+  \caption{Plot of signal efficiency versus reciprocal of background rejection for the neural network. The AUC is also shown for each $p_T$ bin. Both show consistent performance of the neural network across all $p_T$ bins.}
+  \label{fig:roc}
+\end{figure}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Neural Network performance metrics at a fixed signal efficiency ($\epsilon_S = 0.80$). The background rejection factor ($1/\text{FPR}$) and the false positive rate (FPR) characterize the model's ability to suppress non-charmed QCD background within each $p_T$ interval.}
+    \label{tab:rej_power}
+    \begin{tabular}{l S[table-format=1.4] S[table-format=2.1] S[table-format=1.4]}
+        \toprule
+        $p_T$ Range [GeV] & {AUC Score} & {Rejection ($1/\epsilon_B$)} & {FPR ($\epsilon_B$)} \\
+        \midrule
+        5--10  & 0.9344 & 12.7 & 0.0789 \\
+        10--15 & 0.9367 & 13.3 & 0.0751 \\
+        15--20 & 0.9364 & 11.9 & 0.0842 \\
+        20--25 & 0.9400 & 12.8 & 0.0780 \\
+        25--30 & 0.9375 & 11.1 & 0.0899 \\
+        30+    & 0.9307 & 10.1 & 0.0993 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
 % ================================================== END OF EVENT GENERATION ================================================== %
 
 
@@ -444,9 +474,7 @@ Statistically independent test data was used to evaluate the performance of the 
 
 % CROSS SECTIONS %
 
-In addition, a luminosity of $\mathcal{L} = \qty{1}{\per\femto\barn}$ was used as a baseline figure for the calculation of this cross-section scaling.
-
-The results of the fits can be seen in Figure FRAGMENTS.
+In addition, a luminosity of $\mathcal{L} = \qty{0.1}{\per\femto\barn}$ was used as a baseline figure for the calculation of this cross-section scaling.
 
 The fragmentation fraction $f(c \rightarrow \Lambda_c^+)$ was then calculated for each $p_T$ bin via the scaled number of events, using the following formula:
 
@@ -454,7 +482,14 @@ The fragmentation fraction $f(c \rightarrow \Lambda_c^+)$ was then calculated fo
   f(c \rightarrow \Lambda_c^+) = \frac{\mu N_{\Lambda_c^+}}{\mu N_{\Lambda_c^+} + N_{\text{other}}},
 \end{equation}
 
-where $N_{\Lambda_c^+}$ and $N_{\text{other}}$ are the scaled number of $\Lambda_c^+$ and other charm hadron events, respectively. These can be seen in Figure FRAGFRAC.
+where $N_{\Lambda_c^+}$ and $N_{\text{other}}$ are the scaled number of $\Lambda_c^+$ and other charm hadron events, respectively. This therefore measures the proportion of the charmed hadrons that fragmented into $\Lambda_c^+$. The results of this can be seen in Figure \ref{fig:fragfrac}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/fragfrac_plot.png}
+    \caption{Fragmentation fraction $f(c \rightarrow \Lambda_c^+)$ as a function of $p_T$.}
+    \label{fig:fragfrac}
+\end{figure}
 
 % ================================================== END OF RESULTS ================================================== %
 

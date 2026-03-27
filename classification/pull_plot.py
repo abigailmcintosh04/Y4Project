@@ -9,21 +9,17 @@ import os
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Perform pull study.')
     parser.add_argument('run_dir', type=str)
+    parser.add_argument('lumi_fb', type=float)
+    parser.add_argument('sigma_s_mb', type=float)
+    parser.add_argument('sigma_bg_mb', type=float)
     parser.add_argument('n_toys', type=int)
     parser.add_argument('--inject_mu', type=float, default=1.0)
-    parser.add_argument('--bg_weight', type=float, default=404.855)
     args = parser.parse_args()
 
     run_path = os.path.join('runs', args.run_dir)
     
     try:
-        scaling_dict = {
-            'lumi_fb': 140,
-            'charm': {'sigma_mb': 1.281e-2},
-            'background': {'sigma_mb': 5.175}
-        }
-
-        fit_data = load_fit_data(args.run_dir, scaling_dict=scaling_dict, inject_mu=args.inject_mu)
+        fit_data = load_fit_data(args.run_dir, args.lumi_fb, args.sigma_s_mb, args.sigma_bg_mb, inject_mu=args.inject_mu)
         mu_hats, pulls = run_pull_study(fit_data.S, fit_data.B, args.inject_mu, args.n_toys)
         plot_pulls(mu_hats, pulls, run_path, args.inject_mu)
     except Exception as e:

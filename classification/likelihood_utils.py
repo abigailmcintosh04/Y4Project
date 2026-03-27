@@ -30,15 +30,7 @@ class FitData:
     bin_edges: np.ndarray
 
 
-def load_fit_data(run_dir, scaling_dict=None, results_filename='test_results.npz', bins=50, inject_mu=1.0):
-    """
-    scaling_dict should look like:
-    {
-        'lumi_fb': 140,
-        'charm': {'sigma_mb': 1.281e-2},
-        'background': {'sigma_mb': 5.175}
-    }
-    """
+def load_fit_data(run_dir, lumi_fb, sigma_s_mb, sigma_bg_mb, results_filename='test_results.npz', bins=50, inject_mu=1.0):
     run_path = os.path.join('runs', run_dir)
     results_path = os.path.join(run_path, results_filename)
     if not os.path.exists(results_path):
@@ -52,20 +44,17 @@ def load_fit_data(run_dir, scaling_dict=None, results_filename='test_results.npz
     mask_charm = (y_true == 1)
     mask_other = (y_true == 0)
 
-    if scaling_dict is not None:
-        lumi_mb = scaling_dict['lumi_fb'] * 1e9 # convert to mb
-        
-        n_charm_events = np.sum(mask_sig) + np.sum(mask_charm)
-        n_bg_events = np.sum(mask_other)
-        
-        w_charm = (scaling_dict['charm']['sigma_mb'] * lumi_mb) / n_charm_events
-        w_other = (scaling_dict['background']['sigma_mb'] * lumi_mb) / n_bg_events
+    lumi_mb = lumi_fb * 1e9 # convert to mb
+    
+    n_charm_events = np.sum(mask_sig) + np.sum(mask_charm)
+    n_bg_events = np.sum(mask_other)
+    
+    w_charm = (sigma_s_mb * lumi_mb) / n_charm_events
+    w_other = (sigma_bg_mb * lumi_mb) / n_bg_events
 
-        print(f"--- Scaling Check ---")
-        print(f"Total events found -> Charm: {n_charm_events}, Background: {n_bg_events}")
-        print(f"Weights -> Charm: {w_charm:.4f}, Other: {w_other:.4f}")
-    else:
-        w_charm = w_other = 1.0
+    print(f"--- Scaling Check ---")
+    print(f"Total events found -> Charm: {n_charm_events}, Background: {n_bg_events}")
+    print(f"Weights -> Charm: {w_charm:.4f}, Other: {w_other:.4f}")
 
     bin_edges = np.linspace(0, 1, bins + 1)
 

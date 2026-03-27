@@ -62,7 +62,11 @@
 \section{Introduction}
 \label{sec:introduction}
 
-This project aims to develop a machine learning model that can be used to investigate heavy quark fragmentation, specifically the fragmentation fraction of $\Lambda_c^+$ to other charm hadrons, using simulated $pp$ collisions at the ATLAS Detector at $\sqrt{s} = 13 \text{ TeV}$. Due to the low cross-section of $H \rightarrow c\bar{c}$ events, the signal-to-background ratio is very low, approximately 1:5000 (assuming approximations of 1:500 for charm events to background, and 1:10 for $\Lambda_c^+$ to other charm hadrons). Current reconstruction algorithms have very low efficiency due to the requirement of detecting all decay products of the charmed hadron.
+Studying the fragmentation of heavy quarks is a fundamental test of QCD in the non-perturbative, low-energy regime. Fragmentation is the non-perturbative process of confining coloured partons into colour-neutral hadrons. Historically, fragmentation was assumed to be independent of the hard scattering process, and therefore production environment (e.g. $pp$, $ep$ or $e^+e^-$ collisions). This assumption is known as universality. 
+
+This project aims to develop a machine learning model that can be used to investigate heavy quark fragmentation, specifically the fragmentation fraction of $\Lambda_c^+$ to other charm hadrons, using simulated $pp$ collisions at the ATLAS Detector at $\sqrt{s} = 13 \text{ TeV}$. Due to the low cross-section of $H \rightarrow c\bar{c}$ events, the signal-to-background ratio is very low, approximately 1:5000 (assuming approximations of 1:500 for charm events to background, and 1:10 for $\Lambda_c^+$ to other charm hadrons). 
+
+Current reconstruction algorithms have very low efficiency due to the requirement of detecting all decay products of the charmed hadron. In addition, the high-multiplicity environment of the LHC makes traditional cut-based methods for particle detection very inefficient. 
 
 This machine learning model could be used to study universality in heavy quark fragmentation by extracting this $\Lambda_c^+$ fragmentation fraction.
 
@@ -474,11 +478,6 @@ After analysing the confusion matrix, it was found that the model was able to di
 The other charm hadrons events were collapsed into a single class, and background events were added as detailed SOMEWHERE. This led to three final classes: background, other charm hadron, and $\Lambda_c^+$. Due to the variation of fragmentation fraction based on jet $p_T$, the data was split into the previously defined $p_T$ bins. One million events were generated at each of these $p_T$ bins, split evenly between charm and background events. The neural network was then trained on the data in each bin, splitting the data into 80\% for training and 20\% for validation. 
 
 \subsection{Fragmentation Fraction Calculation}
-Statistically independent test data was used to evaluate the performance of the trained neural network. For each $p_T$ bin, 200,000 events were generated, split evenly between charm and background events. A maximum likelihood fit was then performed to extract the signal strength, $\mu$, for each $p_T$ bin. The MLEs were verified using the best-fit signal strength distribution and the pull distributions, the results of which are shown in Table \ref{tab:pull}. These values of best-fit signal strength for each $p_T$ bin were then used to calculate the fragmentation fraction for each bin, using the following formula:
-\begin{equation}
-    f(c \rightarrow \Lambda_c^+) = \frac{\mu N_{\Lambda_c^+}}{\mu N_{\Lambda_c^+} + N_{\text{other}}},
-\end{equation}
-where $N_{\Lambda_c^+}$ and $N_{\text{other}}$ are the scaled number of $\Lambda_c^+$ and other charm hadron events, respectively. This therefore measures the proportion of the charmed hadrons that fragmented into $\Lambda_c^+$. The results of this can be seen in Figure \ref{fig:fragfrac}.
 
 \begin{table}[ht]
     \centering
@@ -504,6 +503,12 @@ where $N_{\Lambda_c^+}$ and $N_{\text{other}}$ are the scaled number of $\Lambda
     \caption{Fragmentation fraction $f(c \rightarrow \Lambda_c^+)$ as a function of $p_T$.}
     \label{fig:fragfrac}
 \end{figure}
+
+Statistically independent test data was used to evaluate the performance of the trained neural network. For each $p_T$ bin, 200,000 events were generated, split evenly between charm and background events. A maximum likelihood fit was then performed to extract the signal strength, $\mu$, for each $p_T$ bin. The MLEs were verified using the best-fit signal strength distribution and the pull distributions, the results of which are shown in Table \ref{tab:pull}. These values of best-fit signal strength for each $p_T$ bin were then used to calculate the fragmentation fraction for each bin, using the following formula:
+\begin{equation}
+    f(c \rightarrow \Lambda_c^+) = \frac{\mu N_{\Lambda_c^+}}{\mu N_{\Lambda_c^+} + N_{\text{other}}},
+\end{equation}
+where $N_{\Lambda_c^+}$ and $N_{\text{other}}$ are the scaled number of $\Lambda_c^+$ and other charm hadron events, respectively. This therefore measures the proportion of the charmed hadrons that fragmented into $\Lambda_c^+$. The results of this can be seen in Figure \ref{fig:fragfrac}.
 
 Figure \ref{fig:fragfrac} clearly shows a decreasing fragmentation fraction of $\Lambda_c^+$ baryons compared to other charm hadrons with increasing $p_T$ for the Monash tune.
 

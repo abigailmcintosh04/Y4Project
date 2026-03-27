@@ -8,7 +8,6 @@
 \usepackage{siunitx}
 \usepackage{booktabs}
 \usepackage{tabularx}
-\usepackage{hyperref}
 \usepackage{tikz}
 \usetikzlibrary{positioning, shapes.geometric, arrows.meta, calc}
 
@@ -36,7 +35,7 @@
         \vspace{0.2cm}
         \begin{minipage}{0.9\textwidth}
             \small
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            The assumption of universality in heavy quark fragmentation has recently been challenged by observations of an increased fragmentation fraction of baryon production in $pp$ collisions compared to $e^+e^-$ and $ep$ collisions. This project details the development of a machine learning model to distinguish between different types of charm hadron, specifically distinguishing between $\Lambda_c^+$ baryons and other charm hadrons, using simulated $pp$ collisions at $\sqrt{s} = 13 \text{ TeV}$ at the ATLAS detector. The fragmentation fractions were extracted for different transverse momentum intervals, and compared to Monte Carlo predictions from PYTHIA 8.3 using the Monash tuning, simulating responses at lepton colliders. A Feed-Forward Neural Network was developed to identify $\Lambda_c^+$ baryons based on ten summary variables, sensitive to the kinematic properties of the fragmentation process. The neural network displayed strong performance over a transverse momentum range of $p_T > 5 \text{ GeV}$, with an AUC of between 0.93 and 0.94. To extract signal strengths, maximum likelihood estimation was used, which was verified using 10,000 pseudoexperiments, ensuring the method was unbiased and accurate. For the $p_T > 5 \text{ GeV}$ interval, the fragmentation fraction was determined to be $f_{\Lambda_c^+}^{>5 \text{ GeV}} = 7.50 \pm 0.01 \text{(stat)} \%$, which is inconsistent with the baseline derived from LEP measurements of $5.7 \pm 0.6 \pm 0.3 \%$. However, this baseline includes the $p_T < 5 \text{ GeV}$ region, unlike this analysis. This project has established a robust analysis chain proven to work on universal fragmentation models, and provides a framework for future studies of heavy quark fragmentation.
         \end{minipage}
         \vfill
 
@@ -69,7 +68,7 @@ Studying the fragmentation of heavy quarks is a fundamental test of Quantum Chro
 \subsection{Motivations}
 An accurate description of heavy quark fragmentation fractions is essential for Monte Carlo event generators to accurately simulate particle production. Accuracy of Monte Carlo generators is crucial due to their widespread use within particle physics, specifically within jet tagging. Detecting $H \rightarrow c\bar{c}$ events has not been achieved yet due to its low cross-section (3\% at $m_H = 125 \text{ GeV}$ \cite{higgs}) and the similarity of it to other processes. Developing accurate jet-tagging algorithms, such as GN2 \cite{gn2}, requires training on Monte Carlo simulated events, meaning any large discrepancy between Monte Carlo simulations and real processes could cause poorer performance of these algorithms.
 
-The LHCb experiment demonstrated that measurements of charm hadron fragmentation functions could be used to sigificantly reduce the uncertainty in the gluon Parton Distribution Function (PDF) at small $x$ \cite{charm_production}, as it is currently quite large \cite{xFitter}. Constraining the gluon PDF at snall $x$ is a key objective of the LHC, as it is a big limitation on Higgs measurements as well as Beyond the Standard Model (BSM) physics searches.
+The LHCb experiment demonstrated that measurements of charm hadron fragmentation functions could be used to significantly reduce the uncertainty in the gluon Parton Distribution Function (PDF) at small $x$ \cite{charm_production}, as it is currently quite large \cite{xFitter}. Constraining the gluon PDF at small $x$ is a key objective of the LHC, as it is a big limitation on Higgs measurements as well as Beyond the Standard Model (BSM) physics searches.
 
 These fragmentation fractions can be used as a control group for heavy ion collisions, as demonstrated by ALICE \cite{alice_pb}. To determine how charm quarks lose energy in a quark-gluon plasma in heavy ion collisions, a high-precision $pp$ baseline is required, requiring accurate determination of charm hadron fragmentation functions.
 
@@ -153,10 +152,10 @@ Monte Carlo events are generated using the PYTHIA 8.3 Monte Carlo event generato
   # Charm Events
   `HardQCD:hardccbar = on'
 \end{verbatim}
-As all charm events are generated together, they do not need to be normalised by their cross-section, as this is done automatically by PYTHIA when generating $c\bar{c}$ events together. ALICE had previously shown the dependence of the cross-section for $\Lambda_c^+$ production on $p_T$ \cite{fragfrac}, meaning that the $\Lambda_c^+$ fragmentation fraction will also be dependent on $p_T$. To account for this, events were generated in six bins of $p_T$: 5-10, 10-15, 15-20, 20-25, 25-30, and 30+ GeV. Initial state radiation, final state radiation, and hadronisation are enabled, and multiple parton interactions is disabled as this describes soft scattering events, rather than the hard scattering events of interest.
+As all charm events are generated together, they do not need to be normalised by their cross-section, as this is done automatically by PYTHIA when generating $c\bar{c}$ events together. ALICE had previously shown the dependence of the cross-section for $\Lambda_c^+$ production on $p_T$ \cite{fragfrac}, meaning that the $\Lambda_c^+$ fragmentation fraction will also be dependent on $p_T$. To account for this, events were generated in six bins of $p_T$: 5-10, 10-15, 15-20, 20-25, 25-30, and 30+ GeV. Initial state radiation, final state radiation, and hadronisation are enabled, and multiple parton interactions are disabled as this describes soft scattering events, rather than the hard scattering events of interest.
 
 \subsection{Cross-Sections}
-The cross-sections for weighting the data were taken from the PYTHIA console output, and are shown in Table \ref{tab:cross_sections}. A decrease in both background and charm cross-sections is observed as $p_T$ increases, as expected.
+The cross-sections for weighting the data were taken from the PYTHIA console output, and are shown in Table \ref{tab:cross_sections}. A decrease in both background and charm cross-sections is observed as $p_T$ increases, as expected. For all $p_T$ bins, the integrated luminosity used is $L = 0.1 \text{ fb}^{-1}$.
 \begin{table}[htbp]
     \centering
     \caption{Generator-level cross-sections ($\sigma$) for signal ($c\bar{c} \to \Lambda_c^+$) and background across the six $p_T$ intervals as calculated by Pythia 8.3. These values are used to determine weights for each $p_T$ bin.}
@@ -176,7 +175,7 @@ The cross-sections for weighting the data were taken from the PYTHIA console out
 \end{table}
 
 \subsection{Jet Clustering}
-For the charm events, a jet clustering algorithm is used to simulate the process of clustering jets at ATLAS. The tracks are clustered using the `fastjet' Python package \cite{fastjet}, with the anti-$k_T$ algorithm \cite{antikt} and a jet radius of $\Delta R = 0.3$. The anti-$k_T$ algorithm is a widely used jet clustering algorithm, and is the standard jet clustering algorithm used at ATLAS. $\Delta R$ is defined by adding in quadrature the differences in pseudorapidity and azimuthal angle between the jet axis and the charm hadron axis, and is hence defined as $\Delta R = \sqrt{\Delta \eta^2 + \Delta \phi^2}$. The choice of $\Delta R = 0.3$ is motivated by the decreased sensitivity to pileup and higher purity achieved compared to $\Delta R = 0.4$. In addition, before the jet clustering, a conservative efficiency cut of $\epsilon = 0.95$ is applied to the tracks to simulate the efficiency of the ATLAS detector \cite{atlas_eff}. As the inner detector cannot detect neutral particles, these are removed from the tracks before jet clustering.
+For the charm events, a jet clustering algorithm is used to simulate the process of clustering jets at ATLAS. The tracks are clustered using the `fastjet' Python package \cite{fastjet}, with the anti-$k_T$ algorithm \cite{antikt} and a jet radius of $\Delta R = 0.3$. The anti-$k_T$ algorithm is a widely used jet clustering algorithm, and is the standard jet clustering algorithm used at ATLAS. $\Delta R$ is defined by adding in quadrature the differences in pseudorapidity and azimuthal angle between the jet axis and the charm hadron axis, and is hence defined as $\Delta R = \sqrt{\Delta \eta^2 + \Delta \phi^2}$. The choice of $\Delta R = 0.3$ is motivated by the decreased sensitivity to pileup and higher purity achieved compared to $\Delta R = 0.4$. In addition, before the jet clustering, a conservative efficiency cut of $\epsilon = 0.95$ is applied to the tracks to simulate the efficiency of the ATLAS detector \cite{atlas_eff}. Additionally, as the inner detector cannot detect neutral particles, these are removed from the tracks before jet clustering.
 
 Once the clustered jets are created, the $p_T$ and $d_0$ smearing is applied to the tracks, as described in the detector simulation section. The $L_{xy}$ smearing is applied to the jet overall, as it is a characteristic of the jet and not of the individual tracks. Then, the summary variables are created for each jet.
 
@@ -228,15 +227,13 @@ The jet mass is defined as the sum of the invariant masses of all tracks cluster
 \subsubsection*{Fractional Transverse Momentum}
 The fractional transverse momentum is defined as the ratio of the track with the highest $p_T$ in the jet to the total $p_T$ of the jet. This measures what proportion of the jet's $p_T$ is carried by the most energetic track.
 
-\subsubsection*{Something else}
+\subsection{Transverse Impact Parameter Significance Cuts}
+As stated earlier, $S_{d_0}$ is defined as the ratio of the track's $d_0$ to the uncertainty in $d_0$, $\sigma_{d_0}$. It describes how many standard deviations away from the beam axis the track is. $S_{d_0}$ was chosen as opposed to $d_0$ as it takes into account the detector resolution by inclusion of the error, and so will work across a wider range of $p_T$. As tracks that originated from the primary vertex will have a near-zero $d_0$, they will therefore be normally distributed around the primary vertex. However, secondary vertices will be distributed around the secondary vertex, and so many tracks will have a large $d_0$ significance, many standard deviations away from the primary vertex. Therefore, only calculating summary variables from tracks with a $S_{d_0}$ greater than a certain value ensures as many prompt tracks as possible are excluded. However, this will also exclude tracks from the secondary vertex that happened to pass close to the primary vertex, and so a balance is necessary when finding a value of $S_{d_0}$ cut, otherwise too many tracks from the charmed hadron decay will be excluded and measurements will be less accurate.
 
-\subsection{$d_0$ significance cuts}
-$d_0$ significance is defined as the ratio of the track's $d_0$ to the uncertainty in $d_0$, $\sigma_{d_0}$. It describes how many standard deviations away from the beam axis the track is. $d_0$ significance was chosen as opposed to $d_0$ as it takes into account the detector resolution by inclusion of the error, and so will work across a wider range of $p_T$. As tracks that originated from the primary vertex will have a near-zero $d_0$, they will therefore be normally distributed around the primary vertex. However, secondary vertices will be distributed around the secondary vertex, and so many tracks will have a large $d_0$ significance, many standard deviations away from the primary vertex. Therefore, only calculating summary variables from tracks with a $d_0$ signiificance greater than a certain value ensures as many prompt tracks as possible are excluded. However, this will also exclude tracks from the secondary vertex that happened to pass close to the primary vertex, and so a balance is necessary when finding a value of $d_0$ significance cut, otherwise too many tracks from the charmed hadron decay will be excluded and measurements will be less accurate.
-
-The machine learning model was analysed across a range of $d_0$ significance cuts, training the model on samples of 1,000,000 charm-only events for each cut, with values ranging from 1 to 5 in increments of 0.5. It was found that a cut of 3.5 provided the highest validation accuracy, and therefore was chosen as the $d_0$ significance cut for the rest of the project. All summary variables were calculated using tracks that passed this $S_{d_0}$ threshold.
+The machine learning model was analysed across a range of $S_{d_0}$ cuts, training the model on samples of 1,000,000 charm-only events for each cut, with values ranging from 1 to 5 in increments of 0.5. It was found that a cut of 3.5 provided the highest validation accuracy, and therefore was chosen as the $S_{d_0}$ cut for the rest of the project. All summary variables were calculated using tracks that passed this $S_{d_0}$ threshold.
 
 \subsection{Transverse Momentum}
-One of the key findings at the LHC has been that the fragmentation fraction of $\Lambda_c^+$ in charm hadron decays is dependent on its transverse momentum, with higher fragmentation fractions for lower $p_T$. Both PYTHIA and FastJet have the option for setting a minimum value of $p_T$ (denoted $p_t^{min}$) at the generation and clustering stages respectively. Careful consideration of the choice of $p_t^{min}$ is necessary, as the implementation of a minimum is necessary so the events have a ``jet-like'' nature, reducing the effects of soft QCD processes, essential for accurate simulation of ATLAS events. However, going to a too high $p_t^{min}$ will suppress the fragmentation fraction of $\Lambda_c^+$. Hence, the fragmentation fractions were calculated across a range of $p_t^{min}$, specifically $\qtylist{5;10;15;20;25;30}{\giga\electronvolt}$, which covers the medium and high $p_T$ regions.
+One of the key findings at the LHC has been that the fragmentation fraction of charm quarks into $\Lambda_c^+$ baryons is dependent on its transverse momentum, with higher fragmentation fractions for lower $p_T$. Both PYTHIA and FastJet have the option for setting a minimum value of $p_T$ (denoted $p_t^{min}$) at the generation and clustering stages respectively. Careful consideration of the choice of $p_t^{min}$ is necessary, as the implementation of a minimum is necessary so the events have a ``jet-like'' nature, reducing the effects of soft QCD processes, essential for accurate simulation of ATLAS events. However, going to a too high $p_t^{min}$ will suppress the fragmentation fraction of $\Lambda_c^+$. Hence, the fragmentation fractions were calculated across a range of $p_t^{min}$, specifically $\qtylist{5;10;15;20;25;30}{\giga\electronvolt}$, which covers the medium and high $p_T$ regions.
 
 \subsection{Detector Simulation}
 
@@ -345,7 +342,7 @@ Two different neural networks were trained to classify charm hadron events. The 
 \end{wrapfigure}
 
 \subsection{Neural Network Architecture}
-The neural network was coded using the `tensorflow' package in Python 3.12.12, using the `keras' API.
+The neural network was coded using the `tensorflow' package in Python 3.12.12 \cite{tensorflow}, using the `keras' API \cite{keras}.
 
 \subsubsection{Layer Architecture}
 The final FFNN architecture was determined through a combination of research and trial and error. The final configuration settled on is outlined in Figure \ref{fig:nn_architecture}. The input layer is comprised of the ten summary variables outlined in Section \ref{sec:summary_variables}. A decreasing layer-width architecture $(128 \rightarrow 64 \rightarrow 32)$ is used for the hidden layers. This ensures that the model is less prone to overfitting, and forces the model to learn the most important high-level features of the data. After each hidden layer, batch normalisation and dropout layers are added. Batch normalisation helps mitigate the problem of internal covariate shift, by normalising the data within each batch. This keeps the inputs in a stable range, increasing training stability and speed. Dropout layers randomly set a subset of the neurons to zero during training, improving generalisation by forcing the model to learn more robust features without relying on specific node connections. Finally, the output layer is comprised of three neurons, corresponding to the three classes: $\Lambda_c^+$, other charm hadron, and background.
@@ -356,21 +353,18 @@ For the hidden layers, the `ReLU' activation function was used to avoid the prob
 The neural network also used two callbacks: early stopping, and the reduction of the learning rate on a plateau. Early stopping was implemented to prevent overfitting of the neural network when there was no improvement in validation loss for 15 epochs. The LR reduction on plateau allows for finer convergence, allowing the weights to adjust more slowly as the model approaches the minimum validation loss. Here, the reduction factor was 0.5, and the patience was 5 epochs.
 
 \subsubsection{Loss Function}
-The model was trained using the `categorical cross-entropy' (CCE) loss function, which is a standard loss function for multi-class classification problems. For one sample $i$ with $C$ classes, the loss is defined as:
+The model was trained using the `categorical cross-entropy' (CCE) loss function \cite{CCE}, which is a standard loss function for multi-class classification problems. For one sample $i$ with $C$ classes, the loss is defined as:
 \begin{equation}
     L_i = -\sum^{C}_{c=1} p_{i,c} \log(\hat{p}_{i,c}),
 \end{equation}
 where $p_{i,c}$ and $\hat{p}_{i,c}$ are the true and predicted probabilities for sample $i$ and class $c$, respectively. The total loss is the average loss over all samples in the batch. CCE is used as it heavily penalises confident wrong predictions, which is desirable for this classification task.
 
 \subsection{Training}
-The neural network was trained on multiple $p_T$ bins, these being 5-10, 10-15, 15-20, 20-25, and 25-30 GeV. In each $p_T$ bin, 1 million events were generated, split evenly between 500,000 charm events (including $\Lambda_c^+$ and other charmed hadrons) and 500,000 background events (light and bottom quark events). This 50/50 split was decided on due to the low cross-section of charm events compared to background events (around 1:400), which would lead to the NN being biased towards predicting background events. This is taken into consideration when evaluating the results. As the charm events are automatically weighted by cross-section in PYTHIA, this does not need to be done for these events.
+The neural network was trained on multiple $p_T$ bins, as specified in Section \ref{sec:event_generation}. In each $p_T$ bin, 1 million events were generated, split evenly between 500,000 charm events (including $\Lambda_c^+$ and other charmed hadrons) and 500,000 background events (light and bottom quark events). This 50/50 split was decided on due to the low cross-section of charm events compared to background events (around 1:400), which would lead to the NN being biased towards predicting background events. The weighting this requires is discussed later. As the charm events are automatically weighted by cross-section in PYTHIA, this weighting is not needed for these events.
 
 The data was split into training and validation sets, with 80\% of the data used for training and 20\% of the data used for validation. For evaluating the neural network, a separate test set of 1 million events split in the same way as the training data was generated for each $p_T$ bin. This is to ensure the model was evaluated on unseen, statistically independent data.
 
 \subsection{Performance}
-To evaluate the performance of the neural network across all $p_T$ bins, a signal efficiency versus background rejection study was performed. The signal efficiency $\epsilon_s$ is defined as the fraction of signal events correctly classified as such, while the background rejection $\epsilon_b$ is defined as the fraction of background events correctly classified as such. For each $p_T$ bin, a plot of $1 / \epsilon_b$ versus $\epsilon_s$ was generated. The area under the curve, AUC, is a measure of the overall performance of the neural network, with a higher value of AUC indicating better performance. This was also calculated for each $p_T$ bin. As can be seen in Figure \ref{fig:roc}, the neural network had consistently high performance across all $p_T$ bins, with AUC values varying from 0.93 to 0.94. This shows that the neural network has the potential to observe physical differences in the fragmentation fraction due to breaking of universality, due to its robustness across $p_T$ bins. It can then be confidently stated that any variations observed are due to physical effects, rather than artifacts from the neural network.
-
-To further quantify the neural network's performance, a working point of 80\% efficiency was selected. Across all $p_T$ bins, the background rejection was found at this working point. As can be seen in Table \ref{tab:rej_power}, the background rejection is relatively stable across all $p_T$ bins, varying from 10.1 to 13.3, with the lowest rejection in the highest $p_T$ bin. This could possibly be due to the increased collimation of jets at higher $p_T$, which makes it harder to distinguish between signal and background events.
 
 \begin{figure}[h]
     \centering
@@ -381,7 +375,7 @@ To further quantify the neural network's performance, a working point of 80\% ef
 
 \begin{table}[htbp]
     \centering
-    \caption{Neural Network performance metrics at a fixed signal efficiency ($\epsilon_S = 0.80$). The background rejection factor ($1/\text{FPR}$) and the false positive rate (FPR) characterize the model's ability to suppress non-charmed QCD background within each $p_T$ interval.}
+    \caption{Neural Network performance metrics at a fixed signal efficiency ($\epsilon_S = 0.80$).}
     \label{tab:rej_power}
     \begin{tabular}{l S[table-format=1.4] S[table-format=2.1] S[table-format=1.4]}
         \toprule
@@ -396,6 +390,10 @@ To further quantify the neural network's performance, a working point of 80\% ef
         \bottomrule
     \end{tabular}
 \end{table}
+
+To evaluate the performance of the neural network across all $p_T$ bins, a signal efficiency versus background rejection study was performed. The signal efficiency $\epsilon_s$ is defined as the fraction of signal events correctly classified as such, while the background rejection $1/\epsilon_b$ is defined as the reciprocal of the fraction of background events correctly classified as such. For each $p_T$ bin, a plot of signal efficiency against background rejection was generated. The area under the curve, AUC, is a measure of the overall performance of the neural network, with a higher value of AUC indicating better performance. This was also calculated for each $p_T$ bin. As can be seen in Figure \ref{fig:roc}, the neural network had consistently high performance across all $p_T$ bins, with AUC values varying from 0.93 to 0.94. This shows that the neural network has the potential to observe physical differences in the fragmentation fraction due to breaking of universality, due to its robustness across $p_T$ bins. It can then be confidently stated that any variations observed are due to physical effects, rather than artifacts from the neural network.
+
+To further quantify the neural network's performance, a working point of 80\% efficiency was selected. Across all $p_T$ bins, the background rejection was found at this working point. As can be seen in Table \ref{tab:rej_power}, the background rejection is relatively stable across all $p_T$ bins, varying from 10.1 to 13.3, with the lowest rejection in the highest $p_T$ bin. This could possibly be due to the increased collimation of jets at higher $p_T$, which makes it harder to distinguish between signal and background events.
 
 % ================================================== END OF EVENT GENERATION ================================================== %
 
@@ -485,7 +483,7 @@ Statistical uncertainties are derived from the MLEs described above. However, so
 \subsection{Four Classes}
 Initially, the machine learning model was only trained on charm hadron events, aiming at distinguishing the four charm hadron species being focused on: $\Lambda_c^+$, $D^0$, $D^+$, and $D_s^+$. This was in order to extract the fragmentation fractions for each species. In addition, the event generation was done with a $p_T^{min} > 20$ GeV, before further research led to the approach of binning the data in $p_T$. However, the model struggled at distinguishing between $D^0$, $D^+$, and $D_s^+$ events, only achieving a maximum validation accuracy of 52\% with 10 million charm events used for training and validation. This is possibly due to the very similar masses and lifetimes of the other charm hadrons, with $\Lambda_c^+$ being significantly heavier and longer-lived.
 
-After analysing the confusion matrix, it was found that the model was able to distinguish $\Lambda_c^+$ events with greater than 70\% accuracy. As the $\Lambda_c^+$ fragmentation fraction is of particular interest and the neural network performed best at disitnguishing $\Lambda_c^+$ events from others, the decision was made to collapse the other charm hadrons into a single class. This was further justified by the lack of background events in the training data, which would likely have further degraded the performance of the neural network.
+After analysing the confusion matrix, it was found that the model was able to distinguish $\Lambda_c^+$ events with greater than 70\% accuracy. As the $\Lambda_c^+$ fragmentation fraction is of particular interest and the neural network performed best at distinguishing $\Lambda_c^+$ events from others, the decision was made to collapse the other charm hadrons into a single class. This was further justified by the lack of background events in the training data, which would likely have further degraded the performance of the neural network.
 
 \subsection{Collapsed Classes}
 The other charm hadrons events were collapsed into a single class, and background events were added as detailed in Section \ref{sec:data_generation}. This led to three final classes: background, other charm hadron, and $\Lambda_c^+$. Due to the variation of fragmentation fraction based on jet $p_T$, the data was split into the previously defined $p_T$ bins. One million events were generated at each of these $p_T$ bins, split evenly between charm and background events. The neural network was then trained on the data in each bin, splitting the data into 80\% for training and 20\% for validation.
@@ -494,7 +492,7 @@ The other charm hadrons events were collapsed into a single class, and backgroun
 
 \begin{table}[ht]
     \centering
-    \caption{Summary of signal strength $\hat{\mu}$ and branching fraction $f$ as a function of $p_T$.}
+    \caption{Summary of signal strength $\hat{\mu}$ and fragmentation fraction $f$ as a function of $p_T$.}
     \label{tab:final}
     \begin{tabular}{l S[table-format=1.4(4), separate-uncertainty] S[table-format=1.4(4), separate-uncertainty]}
         \toprule
@@ -517,7 +515,7 @@ The other charm hadrons events were collapsed into a single class, and backgroun
     \label{fig:fragfrac}
 \end{figure}
 
-Statistically independent test data was used to evaluate the performance of the trained neural network. For each $p_T$ bin, 200,000 events were generated, split evenly between charm and background events. A maximum likelihood fit was then performed to extract the signal strength, $\mu$, for each $p_T$ bin. The MLEs were verified using the best-fit signal strength distribution and the pull distributions, the results of which are shown in Table \ref{tab:pull}. These values of best-fit signal strength for each $p_T$ bin were then used to calculate the fragmentation fraction for each bin, using the following formula:
+Statistically independent test data was used to evaluate the performance of the trained neural network. For each $p_T$ bin, 200,000 events were generated, split evenly between charm and background events. A maximum likelihood fit was then performed to extract the signal strength, $\mu$, for each $p_T$ bin. The MLEs were verified using the best-fit signal strength distribution and the pull distributions, and these values of best-fit signal strength for each $p_T$ bin were then used to calculate the fragmentation fraction for each bin, using the following formula:
 \begin{equation}
     f(c \rightarrow \Lambda_c^+) = \frac{\mu N_{\Lambda_c^+}}{\mu N_{\Lambda_c^+} + N_{\text{other}}},
 \end{equation}
@@ -532,7 +530,7 @@ The fragmentation fractions calculated in these bins can be combined to produce 
 \begin{equation}
     f_{\text{avg}} = \frac{\sum_{i} \sigma_i f_i}{\sum_{i} \sigma_i},
 \end{equation}
-where $\sigma_i$ is the cross-section for the $i$-th $p_T$ bin, and $f_i$ is the fragmentation fraction for the $i$-th $p_T$ bin. Due to the restriction to $p_T > 5$ GeV, the fragmentation fraction can only be calculated for this regime, defined as $f_{>5\text{GeV}}$. The errors given in the results of fragmentation fractions were propogated through to give a final result of:
+where $\sigma_i$ is the cross-section for the $i$-th $p_T$ bin, and $f_i$ is the fragmentation fraction for the $i$-th $p_T$ bin. Due to the restriction to $p_T > 5$ GeV, the fragmentation fraction can only be calculated for this regime, defined as $f_{>5\text{GeV}}$. The errors given in the results of fragmentation fractions were propagated through to give a final result of:
 \begin{equation}
     f_{>5\text{GeV}} = 7.50 \pm 0.01 \%\text{ (stat.)}.
 \end{equation}
@@ -550,7 +548,7 @@ The combined value of the fragmentation fraction of $\Lambda_c^+$ baryons to oth
 \newpage
 \section{Conclusion}
 
-This project has successfully developed a classifying machine learning model to extract the fragmentation fraction of $\Lambda_c^+$ baryons to other charm hadrons in $pp$ collisions, utilising a Feed-Forward Neural Network architecture that takes distinguishing variables as inputs. The neural network demonstrated high performance across all studied $p_T$ bins, with the AUC scores between 0.93--0.94 for all bins. The neural network was validated via 10,000 pseudoexperiments, and confirmed that the MLEs were unbiased ($\langle \hat{\mu} \rangle \approx 1$) and had reliable error calculations ($\sigma_p \approx 1$) for all bins.
+This project has successfully developed a classifying machine learning model to extract the fragmentation fraction of $\Lambda_c^+$ baryons to other charm hadrons in $pp$ collisions, utilising a Feed-Forward Neural Network architecture that takes distinguishing variables as inputs. The neural network demonstrated high performance across all studied $p_T$ bins, with the AUC scores between 0.93 and 0.94 for all bins. The neural network was validated via 10,000 pseudoexperiments, and confirmed that the MLEs were unbiased ($\langle \hat{\mu} \rangle \approx 1$) and had reliable error calculations ($\sigma_p \approx 1$) for all bins.
 
 
 \subsection{Future Outlook}

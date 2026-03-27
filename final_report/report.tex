@@ -14,37 +14,37 @@
 \begin{document}
 
 \begin{titlepage}
-    \begin{center}
-        \vspace*{1cm}
-        \Huge
-        \textbf{Exploring Heavy Quark Fragmentation with Machine Learning at ATLAS}
+  \begin{center}
+    \vspace*{1cm}
+    \Huge
+    \textbf{Exploring Heavy Quark Fragmentation with Machine Learning at ATLAS}
 
-        \vspace{0.5cm}
-        \LARGE
-        Final Report
+    \vspace{0.5cm}
+    \LARGE
+    Final Report
 
-        \vspace{1.5cm}
-        \large
-        \textbf{Author: } Abigail McIntosh \\
-        \textbf{Project Partner:} Sinéad Leckey \\
-        \textbf{Supervisors:} Dr Andrew Chisholm, Dr Eleni Skorda \\
+    \vspace{1.5cm}
+    \large
+    \textbf{Author: } Abigail McIntosh \\
+    \textbf{Project Partner:} Sinéad Leckey \\
+    \textbf{Supervisors:} Dr Andrew Chisholm, Dr Eleni Skorda \\
 
-        \vspace{1.0cm}
-        \textbf{Abstract}
+    \vspace{1.0cm}
+    \textbf{Abstract}
 
-        \vspace{0.2cm}
-        \begin{minipage}{0.9\textwidth}
-            \small
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        \end{minipage}
-        \vfill
+    \vspace{0.2cm}
+    \begin{minipage}{0.9\textwidth}
+      \small
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    \end{minipage}
+    \vfill
 
 
-        \Large
-        School of Physics and Astronomy\\
-        University of Birmingham\\
-        March 2026\\
-    \end{center}
+    \Large
+    School of Physics and Astronomy\\
+    University of Birmingham\\
+    March 2026\\
+  \end{center}
 \end{titlepage}
 
 \pagenumbering{roman}
@@ -62,12 +62,19 @@
 \section{Introduction}
 \label{sec:introduction}
 
-Studying the fragmentation of heavy quarks is a fundamental test of QCD in the non-perturbative, low-energy regime. Fragmentation is the non-perturbative process of confining coloured partons into colour-neutral hadrons. Historically, fragmentation was assumed to be independent of the hard scattering process, and therefore production environment (e.g. $pp$, $ep$ or $e^+e^-$ collisions). This assumption is known as universality. 
+\subsection{QCD and Fragmentation}
+Studying the fragmentation of heavy quarks is a fundamental test of QCD in the low-energy, non-perturbative regime. Fragmentation is the non-perturbative process of confining coloured partons into colour-neutral hadrons. Historically, fragmentation was assumed to be independent of the hard scattering process, and therefore production environment. This assumption is known as universality.
 
-This project aims to develop a machine learning model that can be used to investigate heavy quark fragmentation, specifically the fragmentation fraction of $\Lambda_c^+$ to other charm hadrons, using simulated $pp$ collisions at the ATLAS Detector at $\sqrt{s} = 13 \text{ TeV}$. Due to the low cross-section of $H \rightarrow c\bar{c}$ events, the signal-to-background ratio is very low, approximately 1:5000 (assuming approximations of 1:500 for charm events to background, and 1:10 for $\Lambda_c^+$ to other charm hadrons). 
+\subsection{Motivations}
+An accurate description of heavy quark fragmentation fractions is essential for Monte Carlo event generators to accurately simulate particle production. Accuracy of MC generators is crucial due to their widespread use within particle physics, specifically within jet tagging. Detecting $H \rightarrow c\bar{c}$ events has not been achieved yet due to its low cross-section (3\% at $m_H = 125 \text{ GeV}$) and the similarity of it to other processes. Developing accurate jet-tagging algorithms, such as GN2, requires training on MC simulated events, meaning any large discrepancy between MC simulations and real processes could cause poorer performance of these algorithms.
 
-Current reconstruction algorithms have very low efficiency due to the requirement of detecting all decay products of the charmed hadron. In addition, the high-multiplicity environment of the LHC makes traditional cut-based methods for particle detection very inefficient. 
+LHCb demonstrated that measurements of charm hadron fragmentation functions could be used to sigificantly reduce the uncertainty in the gluon Parton Distribution Function (PDF) at small $x$ \cite{charm_production}, as it is currently quite large \cite{xFitter}. Constraining the gluon PDF at low $x$ is a key objective of the LHC, as it is a big limitation on Higgs measurements as well as Beyond the Standard Model (BSM) physics searches.
 
+These fragmentation fractions can be used as a control group for heavy ion collisions, as demonstrated by ALICE \cite{alice_pb}.
+
+Current reconstruction algorithms have very low efficiency due to the requirement of detecting all decay products of the charmed hadron. In addition, the high-multiplicity environment of the LHC makes traditional cut-based methods for particle detection very inefficient.
+
+This project aims to develop a machine learning model that can be used to investigate heavy quark fragmentation, specifically the fragmentation fraction of $\Lambda_c^+$ to other charm hadrons, using simulated $pp$ collisions at the ATLAS Detector at $\sqrt{s} = 13 \text{ TeV}$. Due to the low cross-section of $H \rightarrow c\bar{c}$ events, the signal-to-background ratio is very low, approximately 1:5000 (assuming approximations of 1:500 for charm events to background, and 1:10 for $\Lambda_c^+$ to other charm hadrons).
 This machine learning model could be used to study universality in heavy quark fragmentation by extracting this $\Lambda_c^+$ fragmentation fraction.
 
 % ================================================== END OF INTRODUCTION ================================================== %
@@ -83,9 +90,6 @@ This machine learning model could be used to study universality in heavy quark f
 
 \subsection{Fragmentation}
 Fragmentation is the process in which coloured partons produced in high-energy collisions are confined into colour-neutral hadrons. Specifically for this project, the focus will be on the fragmentation of charm quarks into their corresponding hadrons. The fragmentation fraction for a certain hadron is defined as the ratio of the number of times that hadron is produced to the total number of times that the quark is produced. It has been historically assumed that fragmentation fractions for heavy quark fragmentation are independent of the hard scattering process, and so would be the same regardless of the production environment, e.g. $pp$, $ep$ or $e^+e^-$ colliders. However, recent data from the ALICE experiment appears to contradict this assumption, finding a ``significantly larger fraction of charm quarks hadronising to baryons [...] compared to $e^+e^-$ and $ep$ collisions'' \cite{alice2023charm}. As current reconstruction algorithms are very inefficient due to requiring detection of all decay products, training a neural network to accurately and efficiently distinguish between types of charm hadron is of great interest, as it would allow more efficient calculations of the fragmentation fraction of the $\Lambda_c^+$ baryon and therefore either verify or contradict the findings of the ALICE experiment.
-
-\subsection{Motivations}
-An accurate description of heavy quark fragmentation fractions is essential for Monte Carlo event generators to accurately simulate particle production. Accuracy of MC generators is crucial due to their widespread use within particle physics, specifically within jet tagging. Detecting $H \rightarrow c\bar{c}$ events has not been achieved yet due to its low cross-section (3\% at $m_H = 125 \text{ GeV}$) and the similarity of it to other processes. Developing accurate jet-tagging algorithms, such as GN2, requires training on MC simulated events, meaning any large discrepancy between MC simulations and real processes could cause poorer performance of these algorithms.
 
 \subsection{ATLAS Detector}
 The ATLAS Detector at the LHC consists of four layers: the inner detector, the electromagnetic calorimeter, the hadronic calorimeter, and the muon spectrometer. The inner detector allows for the tracking of charged particles, and consists of three sub-detectors: the Pixel Detector, the Semiconductor Tracker (SCT), and the Transition Radiation Tracker (TRT). The Pixel Detector consists of over 92 million silicon pixels, and determines the origin and momentum of charged particles. The SCT consists of silicon microstrips, and performs tracking of charged particles. The TRT consists of 300,000 drift tubes, and provides information on the type of particle detected.
@@ -151,26 +155,26 @@ Monte Carlo events are generated using the PYTHIA 8.3 Monte Carlo event generato
 As all charm events are generated together, they do not need to be normalised by their cross-section, as this is done automatically by PYTHIA when generating $c\bar{c}$ events together. Due to the fragmentation fraction varying over different values of $p_T$, events were generated in six bins of $p_T$: 5-10, 10-15, 15-20, 20-25, 25-30, and 30+ GeV. Initial state radiation, final state radiation, and hadronisation are enabled, and multiple parton interactions is disabled as this describes soft scattering events, rather than the hard scattering events of interest.
 
 \subsection{Binning in $p_T$}
-ALICE had previously shown the dependence of the cross-section for $\Lambda_c^+$ production on $p_T$ \cite{fragfrac}, meaning that the $\Lambda_c^+$ fragmentation fraction will also be dependent on $p_T$. To account for this, events were generated in six bins of $p_T$: 5-10, 10-15, 15-20, 20-25, 25-30, and 30+ GeV. 
+ALICE had previously shown the dependence of the cross-section for $\Lambda_c^+$ production on $p_T$ \cite{fragfrac}, meaning that the $\Lambda_c^+$ fragmentation fraction will also be dependent on $p_T$. To account for this, events were generated in six bins of $p_T$: 5-10, 10-15, 15-20, 20-25, 25-30, and 30+ GeV.
 
 \subsection{Cross-Sections}
-The cross-sections for weighting the data were taken from the PYTHIA console output, and are shown in table \ref{tab:cross_sections}. A decrease in both background and charm cross-sections is observed as $p_T$ increases, as expected. 
+The cross-sections for weighting the data were taken from the PYTHIA console output, and are shown in table \ref{tab:cross_sections}. A decrease in both background and charm cross-sections is observed as $p_T$ increases, as expected.
 \begin{table}[htbp]
-    \centering
-    \caption{Generator-level cross-sections ($\sigma$) for signal ($c\bar{c} \to \Lambda_c^+$) and background (QCD hard processes) across the six $p_T$ intervals as calculated by Pythia 8.3. These values are utilized to determine the event weights for the luminosity-normalized likelihood fits.}
-    \label{tab:cross_sections}
-    \begin{tabular}{l c c}
-        \toprule
-        $p_T$ Range [GeV] & $\sigma_{sig}$ [mb]   & $\sigma_{bg}$ [mb] \\
-        \midrule
-        5--10             & 1.00637               & 398.1997           \\
-        10--15            & 0.10423               & 30.5708            \\
-        15--20            & 0.02456               & 5.7656             \\
-        20--25            & $8.16 \times 10^{-3}$ & 1.7330             \\
-        25--30            & $2.77 \times 10^{-3}$ & 0.5835             \\
-        30+               & $2.82 \times 10^{-3}$ & 1.2130             \\
-        \bottomrule
-    \end{tabular}
+  \centering
+  \caption{Generator-level cross-sections ($\sigma$) for signal ($c\bar{c} \to \Lambda_c^+$) and background (QCD hard processes) across the six $p_T$ intervals as calculated by Pythia 8.3. These values are utilized to determine the event weights for the luminosity-normalized likelihood fits.}
+  \label{tab:cross_sections}
+  \begin{tabular}{l c c}
+    \toprule
+    $p_T$ Range [GeV] & $\sigma_{sig}$ [mb]   & $\sigma_{bg}$ [mb] \\
+    \midrule
+    5--10             & 1.00637               & 398.1997           \\
+    10--15            & 0.10423               & 30.5708            \\
+    15--20            & 0.02456               & 5.7656             \\
+    20--25            & $8.16 \times 10^{-3}$ & 1.7330             \\
+    25--30            & $2.77 \times 10^{-3}$ & 0.5835             \\
+    30+               & $2.82 \times 10^{-3}$ & 1.2130             \\
+    \bottomrule
+  \end{tabular}
 \end{table}
 
 \subsection{Jet Clustering}
@@ -182,16 +186,16 @@ Once the clustered jets are created, the $p_T$ and $d_0$ smearing is applied to 
 \label{sec:summary_variables}
 
 \begin{figure}
-    \centering
-    \includegraphics[width=0.45\textwidth]{images/vertices.png}
-    \caption{Diagram of a typical charm event at ATLAS, showing the primary vertex of the hard scattering, and the secondary decay vertex of the charm hadron.}
-    \label{fig:vertices}
+  \centering
+  \includegraphics[width=0.45\textwidth]{images/vertices.png}
+  \caption{Diagram of a typical charm event at ATLAS, showing the primary vertex of the hard scattering, and the secondary decay vertex of the charm hadron.}
+  \label{fig:vertices}
 \end{figure}
 
 \subsubsection{Mean Transverse Impact Parameter}
 The transverse impact parameter, $d_0$, is defined as the distance of closest approach of the track to the secondary vertex. It is a measure of how close the track approaches to the secondary vertex, and so can be used to distinguish between prompt tracks and those from the charm hadron decay. Each $d_0$ value for a track is calculated and smeared, and then the mean of the $d_0$ values for all tracks in a jet is calculated. $d_0$ is defined as follows:
 \begin{equation}
-    d_0 = \frac{u_x p_y - u_y p_x}{p_T},
+  d_0 = \frac{u_x p_y - u_y p_x}{p_T},
 \end{equation}
 where $(u_x, u_y)$ are the $x$ and $y$ coordinates of the primary vertex, and $(p_x, p_y)$ are the $x$ and $y$ components of the track momentum.
 
@@ -207,7 +211,7 @@ The transverse impact parameter significance standard deviation, $\sigma(S_{d_0}
 \subsubsection{Transverse Decay Length}
 The transverse decay length, $L_{xy}$, is defined as the distance between the primary vertex and the secondary vertex in the transverse plane. It measures how far the charmed hadron travels in the transverse plane before decaying, and therefore can be used as a proxy for charmed hadron lifetime. As $L_{xy}$ is a property of the jet, rather than the individual tracks, it is calculated for each jet and then smeared. $L_{xy}$ is defined as follows:
 \begin{equation}
-    L_{xy} = \sqrt{(v_x - u_x)^2 + (v_y - u_y)^2},
+  L_{xy} = \sqrt{(v_x - u_x)^2 + (v_y - u_y)^2},
 \end{equation}
 where $(v_x, v_y)$ are the $x$ and $y$ coordinates of the secondary vertex, and $(u_x, u_y)$ are the $x$ and $y$ coordinates of the primary vertex.
 
@@ -240,29 +244,29 @@ In an effort to simulate how the ATLAS detector responds to tracks, as opposed t
 \subsubsection{Detector Resolution}
 To simulate smearing in the detector, the following equations were used:
 \begin{equation}
-    \sigma_{d_0} = \sqrt{a_1^2 + \left(\frac{b_1}{p_T}\right)^2} ;
+  \sigma_{d_0} = \sqrt{a_1^2 + \left(\frac{b_1}{p_T}\right)^2} ;
 \end{equation}
 \begin{equation}
-    \sigma_{p_T} = p_T \sqrt{\left(\frac{a_2}{p_T}\right)^2 + b_2^2} ;
+  \sigma_{p_T} = p_T \sqrt{\left(\frac{a_2}{p_T}\right)^2 + b_2^2} ;
 \end{equation}
 \begin{equation}
-    \sigma_{L_{xy}} = \sqrt{a^2 + \left(\frac{b}{p_T}\right)^2}.
+  \sigma_{L_{xy}} = \sqrt{a^2 + \left(\frac{b}{p_T}\right)^2}.
 \end{equation}
 In all three equations, $a_i$ are determined by the intrinsic resolution of the detector, and $b_i$ are determined by the effect of multiple scattering. The values of $a_i$ and $b_i$ were determined as shown in Table \ref{tab:smearing_parameters}.
 
 \begin{table}[ht]
-    \centering
-    \caption{Inner Detector Smearing Parameters}
-    \begin{tabular}{|c|c|p{3.5in}|}
-        \hline
-        Parameter & Value                                     & Source                                                                                                                           \\
-        \hline
-        $a_1$     & \qty{10}{\micro\metre}                    & \cite{atlas_spatial_res}                                                                                                         \\
-        $b_1$     & \qty{100}{\micro\metre\giga\electronvolt} & \cite{atlas_performance}, Figure 7a. The value of $\sigma(d_0)$ at $p_T = 1$~GeV can be used as a close approximation for $b_1$. \\
-        $a_2$     & \qty{5e-4}{\per\giga\electronvolt}        &                                                                                                                                  \\
-        \hline
-    \end{tabular}
-    \label{tab:smearing_parameters}
+  \centering
+  \caption{Inner Detector Smearing Parameters}
+  \begin{tabular}{|c|c|p{3.5in}|}
+    \hline
+    Parameter & Value                                     & Source                                                                                                                           \\
+    \hline
+    $a_1$     & \qty{10}{\micro\metre}                    & \cite{atlas_spatial_res}                                                                                                         \\
+    $b_1$     & \qty{100}{\micro\metre\giga\electronvolt} & \cite{atlas_performance}, Figure 7a. The value of $\sigma(d_0)$ at $p_T = 1$~GeV can be used as a close approximation for $b_1$. \\
+    $a_2$     & \qty{5e-4}{\per\giga\electronvolt}        &                                                                                                                                  \\
+    \hline
+  \end{tabular}
+  \label{tab:smearing_parameters}
 \end{table}
 
 % ================================================== END OF EVENT GENERATION ================================================== %
@@ -279,59 +283,59 @@ In all three equations, $a_i$ are determined by the intrinsic resolution of the 
 Two different neural networks were trained to classify charm hadron events. The author used a Feed Forward Neural Network (FFNN), using the summary variables outlined before, and the project partner used a Recurrent Neural Network (RNN), using track level information and minimal event processing. Therefore, this report will focus on the implementation of the FFNN.
 
 \begin{wrapfigure}{l}{0.3\textwidth} % {l} for left, 0.4 of the page
-    \centering
-    \begin{tikzpicture}[
-        node distance=1.2cm,
-        % The 'font' parameter handles both size (\small) and shape (\itshape)
-        layer/.style={rectangle, draw, fill=blue!10, text width=4cm, align=center, minimum height=0.8cm, font=\small\sffamily, line width=0.8pt},
-        bn/.style={rectangle, draw, fill=green!10, text width=4cm, align=center, minimum height=0.6cm, font=\footnotesize\sffamily\itshape},
-        dropout/.style={rectangle, draw, dashed, fill=orange!5, text width=4cm, align=center, minimum height=0.6cm, font=\footnotesize\sffamily},
-        arrow/.style={-{Stealth[scale=1.2]}, line width=0.8pt}
-        ]
+  \centering
+  \begin{tikzpicture}[
+    node distance=1.2cm,
+    % The 'font' parameter handles both size (\small) and shape (\itshape)
+    layer/.style={rectangle, draw, fill=blue!10, text width=4cm, align=center, minimum height=0.8cm, font=\small\sffamily, line width=0.8pt},
+    bn/.style={rectangle, draw, fill=green!10, text width=4cm, align=center, minimum height=0.6cm, font=\footnotesize\sffamily\itshape},
+    dropout/.style={rectangle, draw, dashed, fill=orange!5, text width=4cm, align=center, minimum height=0.6cm, font=\footnotesize\sffamily},
+    arrow/.style={-{Stealth[scale=1.2]}, line width=0.8pt}
+    ]
 
-        % --- Nodes ---
-        \node (input) [layer, fill=gray!20] {\textbf{Input Layer} \\ (10 Features)};
+    % --- Nodes ---
+    \node (input) [layer, fill=gray!20] {\textbf{Input Layer} \\ (10 Features)};
 
-        % Block 1
-        \node (dense1) [layer, below=of input] {\textbf{Dense Layer} \\ 128 Nodes (ReLU)};
-        \node (bn1) [bn, below=0.15cm of dense1] {Batch Normalisation};
-        \node (drop1) [dropout, below=0.15cm of bn1] {Dropout ($p=0.3$)};
+    % Block 1
+    \node (dense1) [layer, below=of input] {\textbf{Dense Layer} \\ 128 Nodes (ReLU)};
+    \node (bn1) [bn, below=0.15cm of dense1] {Batch Normalisation};
+    \node (drop1) [dropout, below=0.15cm of bn1] {Dropout ($p=0.3$)};
 
-        % Block 2
-        \node (dense2) [layer, below=of drop1] {\textbf{Dense Layer} \\ 64 Nodes (ReLU)};
-        \node (bn2) [bn, below=0.15cm of dense2] {Batch Normalisation};
-        \node (drop2) [dropout, below=0.15cm of bn2] {Dropout ($p=0.3$)};
+    % Block 2
+    \node (dense2) [layer, below=of drop1] {\textbf{Dense Layer} \\ 64 Nodes (ReLU)};
+    \node (bn2) [bn, below=0.15cm of dense2] {Batch Normalisation};
+    \node (drop2) [dropout, below=0.15cm of bn2] {Dropout ($p=0.3$)};
 
-        % Block 3
-        \node (dense3) [layer, below=of drop2] {\textbf{Dense Layer} \\ 32 Nodes (ReLU)};
-        \node (bn3) [bn, below=0.15cm of dense3] {Batch Normalisation};
-        \node (drop3) [dropout, below=0.15cm of bn3] {Dropout ($p=0.2$)};
+    % Block 3
+    \node (dense3) [layer, below=of drop2] {\textbf{Dense Layer} \\ 32 Nodes (ReLU)};
+    \node (bn3) [bn, below=0.15cm of dense3] {Batch Normalisation};
+    \node (drop3) [dropout, below=0.15cm of bn3] {Dropout ($p=0.2$)};
 
-        % Output
-        \node (output) [layer, fill=red!10, below=of drop3] {\textbf{Output Layer} \\ 3 Classes (Softmax)};
+    % Output
+    \node (output) [layer, fill=red!10, below=of drop3] {\textbf{Output Layer} \\ 3 Classes (Softmax)};
 
-        % --- Paths ---
-        \draw [arrow] (input) -- (dense1);
-        \draw [arrow] (dense1) -- (bn1);
-        \draw [arrow] (bn1) -- (drop1);
+    % --- Paths ---
+    \draw [arrow] (input) -- (dense1);
+    \draw [arrow] (dense1) -- (bn1);
+    \draw [arrow] (bn1) -- (drop1);
 
-        \draw [arrow] (drop1) -- (dense2);
-        \draw [arrow] (dense2) -- (bn2);
-        \draw [arrow] (bn2) -- (drop2);
+    \draw [arrow] (drop1) -- (dense2);
+    \draw [arrow] (dense2) -- (bn2);
+    \draw [arrow] (bn2) -- (drop2);
 
-        \draw [arrow] (drop2) -- (dense3);
-        \draw [arrow] (dense3) -- (bn3);
-        \draw [arrow] (bn3) -- (drop3);
+    \draw [arrow] (drop2) -- (dense3);
+    \draw [arrow] (dense3) -- (bn3);
+    \draw [arrow] (bn3) -- (drop3);
 
-        \draw [arrow] (drop3) -- (output);
+    \draw [arrow] (drop3) -- (output);
 
-        % --- Annotations ---
-        % \node [right=0.5cm of dense1, text width=3cm, font=\tiny\sffamily\itshape] {He-Uniform Initialization};
-        % \node [left=0.5cm of output, text width=3.5cm, font=\tiny\sffamily\itshape, align=right] {$\mathbb{P}(\Lambda_c^+), \mathbb{P}(c), \mathbb{P}(light)$};
+    % --- Annotations ---
+    % \node [right=0.5cm of dense1, text width=3cm, font=\tiny\sffamily\itshape] {He-Uniform Initialization};
+    % \node [left=0.5cm of output, text width=3.5cm, font=\tiny\sffamily\itshape, align=right] {$\mathbb{P}(\Lambda_c^+), \mathbb{P}(c), \mathbb{P}(light)$};
 
-    \end{tikzpicture}
-    \caption{Feed Forward Neural Network architecture used.}
-    \label{fig:nn_architecture}
+  \end{tikzpicture}
+  \caption{Feed Forward Neural Network architecture used.}
+  \label{fig:nn_architecture}
 \end{wrapfigure}
 
 \subsection{Neural Network Architecture}
@@ -348,7 +352,7 @@ The neural network also used two callbacks: early stopping, and the reduction of
 \subsubsection{Loss Function}
 The model was trained using the `categorical cross-entropy' (CCE) loss function, which is a standard loss function for multi-class classification problems. For one sample $i$ with $C$ classes, the loss is defined as:
 \begin{equation}
-    L_i = -\sum^{C}_{c=1} p_{i,c} \log(\hat{p}_{i,c}),
+  L_i = -\sum^{C}_{c=1} p_{i,c} \log(\hat{p}_{i,c}),
 \end{equation}
 where $p_{i,c}$ and $\hat{p}_{i,c}$ are the true and predicted probabilities for sample $i$ and class $c$, respectively. The total loss is the average loss over all samples in the batch. CCE is used as it heavily penalises confident wrong predictions, which is desirable for this classification task.
 
@@ -363,28 +367,28 @@ To evaluate the performance of the neural network across all $p_T$ bins, a signa
 To further quantify the neural network's performance, a working point of 80\% efficiency was selected. Across all $p_T$ bins, the background rejection was found at this working point. As can be seen in Table \ref{tab:rej_power}, the background rejection is relatively stable across all $p_T$ bins, varying from 10.1 to 13.3, with the lowest rejection in the highest $p_T$ bin. This could possibly be due to the increased collimation of jets at higher $p_T$, which makes it harder to distinguish between signal and background events.
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/roc_all.png}
-    \caption{Plot of signal efficiency versus reciprocal of background rejection for the neural network. The AUC is also shown for each $p_T$ bin. Both show consistent performance of the neural network across all $p_T$ bins.}
-    \label{fig:roc}
+  \centering
+  \includegraphics[width=0.7\textwidth]{images/roc_all.png}
+  \caption{Plot of signal efficiency versus reciprocal of background rejection for the neural network. The AUC is also shown for each $p_T$ bin. Both show consistent performance of the neural network across all $p_T$ bins.}
+  \label{fig:roc}
 \end{figure}
 
 \begin{table}[htbp]
-    \centering
-    \caption{Neural Network performance metrics at a fixed signal efficiency ($\epsilon_S = 0.80$). The background rejection factor ($1/\text{FPR}$) and the false positive rate (FPR) characterize the model's ability to suppress non-charmed QCD background within each $p_T$ interval.}
-    \label{tab:rej_power}
-    \begin{tabular}{l S[table-format=1.4] S[table-format=2.1] S[table-format=1.4]}
-        \toprule
-        $p_T$ Range [GeV] & {AUC Score} & {Rejection ($1/\epsilon_B$)} & {FPR ($\epsilon_B$)} \\
-        \midrule
-        5--10             & 0.9344      & 12.7                         & 0.0789               \\
-        10--15            & 0.9367      & 13.3                         & 0.0751               \\
-        15--20            & 0.9364      & 11.9                         & 0.0842               \\
-        20--25            & 0.9400      & 12.8                         & 0.0780               \\
-        25--30            & 0.9375      & 11.1                         & 0.0899               \\
-        30+               & 0.9307      & 10.1                         & 0.0993               \\
-        \bottomrule
-    \end{tabular}
+  \centering
+  \caption{Neural Network performance metrics at a fixed signal efficiency ($\epsilon_S = 0.80$). The background rejection factor ($1/\text{FPR}$) and the false positive rate (FPR) characterize the model's ability to suppress non-charmed QCD background within each $p_T$ interval.}
+  \label{tab:rej_power}
+  \begin{tabular}{l S[table-format=1.4] S[table-format=2.1] S[table-format=1.4]}
+    \toprule
+    $p_T$ Range [GeV] & {AUC Score} & {Rejection ($1/\epsilon_B$)} & {FPR ($\epsilon_B$)} \\
+    \midrule
+    5--10             & 0.9344      & 12.7                         & 0.0789               \\
+    10--15            & 0.9367      & 13.3                         & 0.0751               \\
+    15--20            & 0.9364      & 11.9                         & 0.0842               \\
+    20--25            & 0.9400      & 12.8                         & 0.0780               \\
+    25--30            & 0.9375      & 11.1                         & 0.0899               \\
+    30+               & 0.9307      & 10.1                         & 0.0993               \\
+    \bottomrule
+  \end{tabular}
 \end{table}
 
 % ================================================== END OF EVENT GENERATION ================================================== %
@@ -401,21 +405,21 @@ To further quantify the neural network's performance, a working point of 80\% ef
 \subsection{Maximum Likelihood Estimation}
 The signal strength, $\mu$, is defined as:
 \begin{equation}
-    \mu = \frac{N_{\Lambda_c^+}}{N_{\Lambda_c^+}^{\text{PYTHIA}}},
+  \mu = \frac{N_{\Lambda_c^+}}{N_{\Lambda_c^+}^{\text{PYTHIA}}},
 \end{equation}
 where $N_{\Lambda_c^+}$ is the number of $\Lambda_c^+$ events in the ``observed'' data (data generated either with Monash or CR-BLC tuning), and $N_{\Lambda_c^+}^{\text{PYTHIA}}$ is the number of $\Lambda_c^+$ events in the PYTHIA simulation. For data generated with the Monash tuning that therefore follows universality, a value of $\mu = 1$ would be expected, whereas data generated with the CR-BLC tuning would be expected to give a value of $\mu > 1$.
 
 To verify if the variation of the signal strength from unity is due to statistical fluctuations in the data, or from new physics, a maximum likelihood estimation (MLE) can be performed. This allows the calculation of an error on the signal strength, determining if the deviation is statistically significant. The MLE finds the most probable value of signal strength that the observed data would give. Each bin in the histogram follows a Poisson distribution, and so the probability mass function (PMF) of the Poisson distribution is defined as:
 \begin{equation}
-    P(n; \lambda) = \frac{\lambda^n e^{-\lambda}}{n!},
+  P(n; \lambda) = \frac{\lambda^n e^{-\lambda}}{n!},
 \end{equation}
 where $\lambda$ is the expected number of events, and $n$ is the observed number of events. The total likelihood is therefore calculated as the product of the PMFs for each bin:
 \begin{equation}
-    \mathcal{L}(\mu) = \prod_{i=1}^{N} \frac{\lambda_i^{n_i} e^{-\lambda_i}}{n_i!},
+  \mathcal{L}(\mu) = \prod_{i=1}^{N} \frac{\lambda_i^{n_i} e^{-\lambda_i}}{n_i!},
 \end{equation}
 where $\lambda_i$ is the expected number of events in bin $i$, and $n_i$ is the observed number of events in bin $i$. The maximum likelihood estimate of $\mu$ is the value of $\mu$ that maximises the likelihood function. To find this, the negative logarithm of the likelihood function is minimised:
 \begin{equation}
-    - \ln \mathcal{L}(\mu) = -\sum^{N}_{i=1} \left( n_i \ln \lambda_i - \lambda_i - \ln n_i! \right).
+  - \ln \mathcal{L}(\mu) = -\sum^{N}_{i=1} \left( n_i \ln \lambda_i - \lambda_i - \ln n_i! \right).
 \end{equation}
 This is done by iterating over a range of $\mu$ values and calculating the negative log likelihood for each one, and then finding the minimum along that curve. This gives the most likely value of $\mu$ for that dataset. To find the $1\sigma$ errors, the values of $\mu$ corresponding to an increase of 0.5 in the negative log likelihood from the minimum are found. This can then be used to determine statistical significance.
 
@@ -423,28 +427,28 @@ This is done by iterating over a range of $\mu$ values and calculating the negat
 To ensure the MLE is unbiased and statistically reliable, a series of 10,000 pseudoexperiments were generated for each $p_T$ bin. These pseudoexperiments consisted of performing a maximum likelihood estimation on 10,000 datasets, which simulated real data by performing Poisson fluctuations on each $p_T$ bin. This allowed 10,000 mock datasets to be generated for each $p_T$ bin without the computational cost of generating 10,000 datasets each. Two different distributions were plotted for each $p_T$ bin: the best-fit signal strength, and the corresponding pulls.
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=\textwidth]{images/pull_study10_15.png}
-    \caption{Best-fit signal strength distribution and pull distribution for the 10--15 GeV $p_T$ bin.} 
-    \label{fig:pull}
+  \centering
+  \includegraphics[width=\textwidth]{images/pull_study10_15.png}
+  \caption{Best-fit signal strength distribution and pull distribution for the 10--15 GeV $p_T$ bin.}
+  \label{fig:pull}
 \end{figure}
 
 \begin{table}[ht]
-    \centering
-    \caption{Summary of best-fit signal strength distribution and pull distribution properties as a function of $p_T$.}
-    \label{tab:pull}
-    \begin{tabular}{l S[table-format=1.4] S[table-format=1.4] S[table-format=-1.4] S[table-format=1.4]}
-        \toprule
-        $p_T$ / GeV & {$\langle \hat{\mu} \rangle$} & {$\sigma(\hat{\mu})$} & {$\mu_P$} & {$\sigma_P$} \\
-        \midrule
-        5--10       & 1.0000                        & 0.0015                & -0.0194   & 1.0051       \\
-        10--15      & 1.0001                        & 0.0055                & 0.0112    & 1.0110       \\
-        15--20      & 1.0001                        & 0.0107                & 0.0084    & 0.9960       \\
-        20--25      & 1.0001                        & 0.0119                & 0.0103    & 0.9870       \\
-        25--30      & 1.0001                        & 0.0269                & 0.0028    & 1.0052       \\
-        30+         & 1.0007                        & 0.0395                & 0.0177    & 1.0179       \\
-        \bottomrule
-    \end{tabular}
+  \centering
+  \caption{Summary of best-fit signal strength distribution and pull distribution properties as a function of $p_T$.}
+  \label{tab:pull}
+  \begin{tabular}{l S[table-format=1.4] S[table-format=1.4] S[table-format=-1.4] S[table-format=1.4]}
+    \toprule
+    $p_T$ / GeV & {$\langle \hat{\mu} \rangle$} & {$\sigma(\hat{\mu})$} & {$\mu_P$} & {$\sigma_P$} \\
+    \midrule
+    5--10       & 1.0000                        & 0.0015                & -0.0194   & 1.0051       \\
+    10--15      & 1.0001                        & 0.0055                & 0.0112    & 1.0110       \\
+    15--20      & 1.0001                        & 0.0107                & 0.0084    & 0.9960       \\
+    20--25      & 1.0001                        & 0.0119                & 0.0103    & 0.9870       \\
+    25--30      & 1.0001                        & 0.0269                & 0.0028    & 1.0052       \\
+    30+         & 1.0007                        & 0.0395                & 0.0177    & 1.0179       \\
+    \bottomrule
+  \end{tabular}
 \end{table}
 
 The best-fit signal strength shows the distribution of the predicted signal strength for the 10,000 pseudoexperiments. The distribution should be Gaussian via the Central Limit Theorem, and the mean of this distribution should be equal to the true signal strength, which is 1 using the Monash tuning. The standard deviation describes the precision of a single measurement.
@@ -475,38 +479,38 @@ Initially, the machine learning model was only trained on charm hadron events, a
 After analysing the confusion matrix, it was found that the model was able to distinguish $\Lambda_c^+$ events with greater than 70\% accuracy. As the $\Lambda_c^+$ fragmentation fraction is of particular interest and the neural network performed best at disitnguishing $\Lambda_c^+$ events from others, the decision was made to collapse the other charm hadrons into a single class. This was further justified by the lack of background events in the training data, which would likely have further degraded the performance of the neural network.
 
 \subsection{Collapsed Classes}
-The other charm hadrons events were collapsed into a single class, and background events were added as detailed SOMEWHERE. This led to three final classes: background, other charm hadron, and $\Lambda_c^+$. Due to the variation of fragmentation fraction based on jet $p_T$, the data was split into the previously defined $p_T$ bins. One million events were generated at each of these $p_T$ bins, split evenly between charm and background events. The neural network was then trained on the data in each bin, splitting the data into 80\% for training and 20\% for validation. 
+The other charm hadrons events were collapsed into a single class, and background events were added as detailed SOMEWHERE. This led to three final classes: background, other charm hadron, and $\Lambda_c^+$. Due to the variation of fragmentation fraction based on jet $p_T$, the data was split into the previously defined $p_T$ bins. One million events were generated at each of these $p_T$ bins, split evenly between charm and background events. The neural network was then trained on the data in each bin, splitting the data into 80\% for training and 20\% for validation.
 
 \subsection{Fragmentation Fraction Calculation}
 
 \begin{table}[ht]
-    \centering
-    \caption{Summary of signal strength $\hat{\mu}$ and branching fraction $f$ as a function of $p_T$.}
-    \label{tab:final}
-    \begin{tabular}{l S[table-format=1.4(4), separate-uncertainty] S[table-format=1.4(4), separate-uncertainty]}
-        \toprule
-        $p_T$ [GeV] & {$\hat{\mu} \pm \sigma$} & {$f(c \rightarrow \Lambda_c^+) (\%)$} \\
-        \midrule
-        5--10       & 0.9989 \pm 0.0015        & 7.79 \pm 0.01                         \\
-        10--15      & 1.0012 \pm 0.0054        & 5.67 \pm 0.03                         \\
-        15--20      & 0.9899 \pm 0.0107        & 4.96 \pm 0.05                         \\
-        20--25      & 1.0011 \pm 0.0121        & 4.77 \pm 0.05                         \\
-        25--30      & 0.9936 \pm 0.0268        & 4.28 \pm 0.11                         \\
-        30+         & 0.9799 \pm 0.0388        & 3.94 \pm 0.15                         \\
-        \bottomrule
-    \end{tabular}
+  \centering
+  \caption{Summary of signal strength $\hat{\mu}$ and branching fraction $f$ as a function of $p_T$.}
+  \label{tab:final}
+  \begin{tabular}{l S[table-format=1.4(4), separate-uncertainty] S[table-format=1.4(4), separate-uncertainty]}
+    \toprule
+    $p_T$ [GeV] & {$\hat{\mu} \pm \sigma$} & {$f(c \rightarrow \Lambda_c^+) (\%)$} \\
+    \midrule
+    5--10       & 0.9989 \pm 0.0015        & 7.79 \pm 0.01                         \\
+    10--15      & 1.0012 \pm 0.0054        & 5.67 \pm 0.03                         \\
+    15--20      & 0.9899 \pm 0.0107        & 4.96 \pm 0.05                         \\
+    20--25      & 1.0011 \pm 0.0121        & 4.77 \pm 0.05                         \\
+    25--30      & 0.9936 \pm 0.0268        & 4.28 \pm 0.11                         \\
+    30+         & 0.9799 \pm 0.0388        & 3.94 \pm 0.15                         \\
+    \bottomrule
+  \end{tabular}
 \end{table}
 
 \begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/fragfrac_plot.png}
-    \caption{Fragmentation fraction $f(c \rightarrow \Lambda_c^+)$ as a function of $p_T$.}
-    \label{fig:fragfrac}
+  \centering
+  \includegraphics[width=0.7\textwidth]{images/fragfrac_plot.png}
+  \caption{Fragmentation fraction $f(c \rightarrow \Lambda_c^+)$ as a function of $p_T$.}
+  \label{fig:fragfrac}
 \end{figure}
 
 Statistically independent test data was used to evaluate the performance of the trained neural network. For each $p_T$ bin, 200,000 events were generated, split evenly between charm and background events. A maximum likelihood fit was then performed to extract the signal strength, $\mu$, for each $p_T$ bin. The MLEs were verified using the best-fit signal strength distribution and the pull distributions, the results of which are shown in Table \ref{tab:pull}. These values of best-fit signal strength for each $p_T$ bin were then used to calculate the fragmentation fraction for each bin, using the following formula:
 \begin{equation}
-    f(c \rightarrow \Lambda_c^+) = \frac{\mu N_{\Lambda_c^+}}{\mu N_{\Lambda_c^+} + N_{\text{other}}},
+  f(c \rightarrow \Lambda_c^+) = \frac{\mu N_{\Lambda_c^+}}{\mu N_{\Lambda_c^+} + N_{\text{other}}},
 \end{equation}
 where $N_{\Lambda_c^+}$ and $N_{\text{other}}$ are the scaled number of $\Lambda_c^+$ and other charm hadron events, respectively. This therefore measures the proportion of the charmed hadrons that fragmented into $\Lambda_c^+$. The results of this can be seen in Figure \ref{fig:fragfrac}.
 

@@ -392,30 +392,19 @@ where $\lambda_i$ is the expected number of events in bin $i$, and $n_i$ is the 
 \end{equation}
 This is done by iterating over a range of $\mu$ values and calculating the negative log likelihood for each one, and then finding the minimum along that curve. This gives the most likely value of $\mu$ for that dataset. To find the $1\sigma$ errors, the values of $\mu$ corresponding to an increase of 0.5 in the negative log likelihood from the minimum are found. This can then be used to determine statistical significance.
 
-\subsubsection{Pull Distributions}
-A Pull Distribution is a distribution of many MLEs. Specifically, two different pull distributions can be generated: the distribution of the signal strengths themselves, and the distribution of the number of standard deviations away from the true signal strength. Via the Central Limit Theorem, both of these should be Gaussian, and should be centred at 1 and 0 respectively, with the latter having a standard deviation of 1. If the MLE is biased in any way, this will become evident due to the pull distributions deviating from those values.
+\subsubsection{Validation}
+To ensure the MLE is unbiased and statistically reliable, a series of 10,000 pseudoexperiments were generated for each $p_T$ bin. These pseudoexperiments consisted of performing a maximum likelihood estimation on 10,000 datasets, which simulated real data by performing Poisson fluctuations on each $p_T$ bin. This allowed 10,000 mock datasets to be generated for each $p_T$ bin without the computational cost of generating 10,000 datasets each. Two different distributions were plotted for each $p_T$ bin: the best-fit signal strength, and the corresponding pulls.
 
-To ensure that the maximum likelihood fit is statistically reliable, pull distributions were generated. These show the difference between the fitted signal strength and the true signal strength divided by the uncertainty for many likelihood fits, in this case 10000. If the likelihood is statistically reliable, the pull distribution should be a Gaussian distribution, with a mean of 0 and a standard deviation of 1, via the central limit theorem. If this is not the case, then the maximum likelihood fit will either consistently underestimate or overestimate the signal strength, making the results unreliable.
+The best-fit signal strength shows the distribution of the predicted signal strength for the 10,000 pseudoexperiments. The distribution should be Gaussian via the Central Limit Theorem, and the mean of this distribution should be equal to the true signal strength, which is 1 using the Monash tuning. The standard deviation describes the precision of a single measurement.
 
-To show that the model would be able to find a signal strength corresponding to an increase in $\Lambda_c^+$ fragmentation fraction similar to that observed at ALICE, the model was evaluated on two different PYTHIA tunings, one with the Monash tuning simulating fragmentation functions similar to those found at $e^+e^-$ colliders, and one with the CR-BLC Mode 2 tuning simulating fragmentation functions similar to those found by ALICE.
+The pull distribution shows the pull calculated for each pseudoexperiment. The pull $P$ is defined as:
+\begin{equation}
+  P = \frac{\hat{\mu_m} - \mu}{\sigma_m},
+\end{equation}
+where $\hat{\mu_m}$ is the best-fit signal strength for the $m$-th pseudoexperiment, $\mu$ is the true signal strength, and $\sigma_m$ is the uncertainty on the best-fit signal strength for the $m$-th pseudoexperiment. This should be distributed as a Gaussian. The mean should be zero, indicating deviations from the truth value are statistical and not systematic. The standard deviation should be unity to show correct estimation of the errors.
 
-\begin{table}[ht]
-    \centering
-    \caption{Summary of pull distribution properties for the signal strength $\hat{\mu}$ and the pull $\mu_P$ as a function of $p_T$.}
-    \label{tab:pull}
-    \begin{tabular}{l S[table-format=1.4] S[table-format=1.4] S[table-format=-1.4] S[table-format=1.4]}
-        \toprule
-        $p_T$ / GeV & {$\langle \hat{\mu} \rangle$} & {$\sigma(\hat{\mu})$} & {$\mu_P$} & {$\sigma_P$} \\
-        \midrule
-        5--10       & 1.0000                        & 0.0015                & -0.0194   & 1.0051       \\
-        10--15      & 1.0001                        & 0.0055                & 0.0112    & 1.0110       \\
-        15--20      & 1.0001                        & 0.0107                & 0.0084    & 0.9960       \\
-        20--25      & 1.0001                        & 0.0119                & 0.0103    & 0.9870       \\
-        25--30      & 1.0001                        & 0.0269                & 0.0028    & 1.0052       \\
-        30+         & 1.0007                        & 0.0395                & 0.0177    & 1.0179       \\
-        \bottomrule
-    \end{tabular}
-\end{table}
+The best-fit signal strength distribution and the pull distributions for the 10--15 GeV $p_T$ bin are shown in Figure \ref{fig:pull}, as an example. The calculated values for all $p_T$ bins are shown in Table \ref{tab:pull}. There are no notable deviations from the expected distributions, with the means and standard deviations close to their expected values. The error on the signal strength increases with $p_T$, as expected, due to the decreasing number of events in each bin.
+
 
 % ================================================== END OF STAT FRAMEWORK ================================================== %
 
@@ -454,6 +443,32 @@ The other charm hadrons events were collapsed into a single class, and backgroun
 \end{table}
 
 % ADD IN FIGURES %
+
+\subsection{Statistical Analysis}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/pull_study10_15.png}
+    \caption{Best-fit signal strength distribution and pull distribution for the 10--15 GeV $p_T$ bin.} 
+    \label{fig:pull}
+\end{figure}
+
+\begin{table}[ht]
+    \centering
+    \caption{Summary of best-fit signal strength distribution and pull distribution properties as a function of $p_T$.}
+    \label{tab:pull}
+    \begin{tabular}{l S[table-format=1.4] S[table-format=1.4] S[table-format=-1.4] S[table-format=1.4]}
+        \toprule
+        $p_T$ / GeV & {$\langle \hat{\mu} \rangle$} & {$\sigma(\hat{\mu})$} & {$\mu_P$} & {$\sigma_P$} \\
+        \midrule
+        5--10       & 1.0000                        & 0.0015                & -0.0194   & 1.0051       \\
+        10--15      & 1.0001                        & 0.0055                & 0.0112    & 1.0110       \\
+        15--20      & 1.0001                        & 0.0107                & 0.0084    & 0.9960       \\
+        20--25      & 1.0001                        & 0.0119                & 0.0103    & 0.9870       \\
+        25--30      & 1.0001                        & 0.0269                & 0.0028    & 1.0052       \\
+        30+         & 1.0007                        & 0.0395                & 0.0177    & 1.0179       \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \subsection{Fragmentation Fraction Calculation}
 Statistically independent test data was used to evaluate the performance of the trained neural network. For each $p_T$ bin, 200,000 events were generated, split evenly between charm and background events. A maximum likelihood fit was then performed to extrack the signal strength, $\mu$, for each $p_T$ bin. This was expected to be 1, as both sets of events were generated using the Monash tuning, matching fragmentation fractions to those measured at lepton colliders. As equal amounts of charm and background events were generated, the events had to be scaled by cross-section before the maximum likelihood fit was performed. Due to the varying cross-sections for each $p_T$ bin, different scalings were found for each bin. The cross-sections were obtained from the information screen when PYTHIA was run, and were found to be:

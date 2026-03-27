@@ -70,12 +70,12 @@ An accurate description of heavy quark fragmentation fractions is essential for 
 
 LHCb demonstrated that measurements of charm hadron fragmentation functions could be used to sigificantly reduce the uncertainty in the gluon Parton Distribution Function (PDF) at small $x$ \cite{charm_production}, as it is currently quite large \cite{xFitter}. Constraining the gluon PDF at low $x$ is a key objective of the LHC, as it is a big limitation on Higgs measurements as well as Beyond the Standard Model (BSM) physics searches.
 
-These fragmentation fractions can be used as a control group for heavy ion collisions, as demonstrated by ALICE \cite{alice_pb}.
+These fragmentation fractions can be used as a control group for heavy ion collisions, as demonstrated by ALICE \cite{alice_pb}. To determine how charm quarks lose energy in a quark-gluon plasma in heavy ion collisions, a high-precision $pp$ baseline is required, requiring accurate determination of charm hadron fragmentation functions.
 
-Current reconstruction algorithms have very low efficiency due to the requirement of detecting all decay products of the charmed hadron. In addition, the high-multiplicity environment of the LHC makes traditional cut-based methods for particle detection very inefficient.
+\subsection{Introduction of Machine Learning}
+Current reconstruction algorithms for determining these fragmentation fractions have very low efficiency due to the requirement of detecting all decay products of the charmed hadron. In addition, the high-multiplicity environment of the LHC makes traditional cut-based methods for particle detection very inefficient. The low cross-section of $H \rightarrow c\bar{c}$ events gives a very low signal-to-background ratio, approximately 1:5000 (assuming approximations of 1:500 for charm events to background, and 1:10 for $\Lambda_c^+$ to other charm hadrons).
 
-This project aims to develop a machine learning model that can be used to investigate heavy quark fragmentation, specifically the fragmentation fraction of $\Lambda_c^+$ to other charm hadrons, using simulated $pp$ collisions at the ATLAS Detector at $\sqrt{s} = 13 \text{ TeV}$. Due to the low cross-section of $H \rightarrow c\bar{c}$ events, the signal-to-background ratio is very low, approximately 1:5000 (assuming approximations of 1:500 for charm events to background, and 1:10 for $\Lambda_c^+$ to other charm hadrons).
-This machine learning model could be used to study universality in heavy quark fragmentation by extracting this $\Lambda_c^+$ fragmentation fraction.
+Hence, this project aims to develop a machine learning model that can be used to investigate heavy quark fragmentation, specifically that can determine the fragmentation fraction of $\Lambda_c^+$ to other charm hadrons at varying intervals of transverse momentum, using simulated $pp$ collisions at the ATLAS Detector at $\sqrt{s} = 13 \text{ TeV}$. This machine learning model could be used to study universality in heavy quark fragmentation by extracting this $\Lambda_c^+$ fragmentation fraction.
 
 % ================================================== END OF INTRODUCTION ================================================== %
 
@@ -192,42 +192,42 @@ Once the clustered jets are created, the $p_T$ and $d_0$ smearing is applied to 
   \label{fig:vertices}
 \end{figure}
 
-\subsubsection{Mean Transverse Impact Parameter}
+\subsubsection*{Mean Transverse Impact Parameter}
 The transverse impact parameter, $d_0$, is defined as the distance of closest approach of the track to the secondary vertex. It is a measure of how close the track approaches to the secondary vertex, and so can be used to distinguish between prompt tracks and those from the charm hadron decay. Each $d_0$ value for a track is calculated and smeared, and then the mean of the $d_0$ values for all tracks in a jet is calculated. $d_0$ is defined as follows:
 \begin{equation}
   d_0 = \frac{u_x p_y - u_y p_x}{p_T},
 \end{equation}
 where $(u_x, u_y)$ are the $x$ and $y$ coordinates of the primary vertex, and $(p_x, p_y)$ are the $x$ and $y$ components of the track momentum.
 
-\subsubsection{Transverse Impact Parameter Standard Deviation}
+\subsubsection*{Transverse Impact Parameter Standard Deviation}
 The transverse impact parameter standard deviation, $\sigma(d_0)$, is defined as the standard deviation of the transverse impact parameter for all tracks in a jet. This quantifies the spread of the values of $d_0$ within a jet.
 
-\subsubsection{Mean Transverse Impact Parameter Significance}
+\subsubsection*{Mean Transverse Impact Parameter Significance}
 The transverse impact parameter significance, $S_{d_0}$, is defined as the ratio of a track's transverse impact parameter, $d_0$, to the uncertainty of its measurement, $\sigma_{d_0}$. It is a measure of how many standard deviations away from the primary vertex the track is, and so can be used to distinguish between prompt tracks and those originating from the charm hadron decay. The mean $S_{d_0}$ is then calculated for all tracks in a jet.
 
-\subsubsection{Transverse Impact Parameter Significance Standard Deviation}
+\subsubsection*{Transverse Impact Parameter Significance Standard Deviation}
 The transverse impact parameter significance standard deviation, $\sigma(S_{d_0})$, is defined as the standard deviation of the transverse impact parameter significance for all tracks in a jet. This quantifies the spread of the values of $S_{d_0}$ within a jet.
 
-\subsubsection{Transverse Decay Length}
+\subsubsection*{Transverse Decay Length}
 The transverse decay length, $L_{xy}$, is defined as the distance between the primary vertex and the secondary vertex in the transverse plane. It measures how far the charmed hadron travels in the transverse plane before decaying, and therefore can be used as a proxy for charmed hadron lifetime. As $L_{xy}$ is a property of the jet, rather than the individual tracks, it is calculated for each jet and then smeared. $L_{xy}$ is defined as follows:
 \begin{equation}
   L_{xy} = \sqrt{(v_x - u_x)^2 + (v_y - u_y)^2},
 \end{equation}
 where $(v_x, v_y)$ are the $x$ and $y$ coordinates of the secondary vertex, and $(u_x, u_y)$ are the $x$ and $y$ coordinates of the primary vertex.
 
-\subsubsection{Jet Transverse Momentum}
+\subsubsection*{Jet Transverse Momentum}
 The jet transverse momentum, $p_T$, is defined as the sum of the transverse momenta of all detected tracks in the jet.
 
-\subsubsection{Number of Tracks}
+\subsubsection*{Number of Tracks}
 The number of tracks is simply the number of tracks in the jet. As the ATLAS inner detector cannot detect neutral particles, this can be used as a proxy for charge, as neutral charmed hadrons decay to an even number of charged particles (assuming each particle has a relative charge of $\pm 1$), and conversely charged charmed hadrons decay to an odd number of charged particles. This is helpful to distinguish between $D^0$ and $D^+$ decays, due to their similar masses and lifetimes.
 
-\subsubsection{Jet Mass}
+\subsubsection*{Jet Mass}
 The jet mass is defined as the sum of the invariant masses of all tracks clustered in the jet.
 
-\subsubsection{Fractional Transverse Momentum}
+\subsubsection*{Fractional Transverse Momentum}
 The fractional transverse momentum is defined as the ratio of the track with the highest $p_T$ in the jet to the total $p_T$ of the jet. This measures what proportion of the jet's $p_T$ is carried by the most energetic track.
 
-\subsubsection{}
+\subsubsection*{Something else}
 
 \subsection{$d_0$ significance cuts}
 $d_0$ significance is defined as the ratio of the track's $d_0$ to the uncertainty in $d_0$, $\sigma_{d_0}$. It describes how many standard deviations away from the beam axis the track is. $d_0$ significance was chosen as opposed to $d_0$ as it takes into account the detector resolution by inclusion of the error, and so will work across a wider range of $p_T$. As tracks that originated from the primary vertex will have a near-zero $d_0$, they will therefore be normally distributed around the primary vertex. However, secondary vertices will be distributed around the secondary vertex, and so many tracks will have a large $d_0$ significance, many standard deviations away from the primary vertex. Therefore, only calculating summary variables from tracks with a $d_0$ signiificance greater than a certain value ensures as many prompt tracks as possible are excluded. However, this will also exclude tracks from the secondary vertex that happened to pass close to the primary vertex, and so a balance is necessary when finding a value of $d_0$ significance cut, otherwise too many tracks from the charmed hadron decay will be excluded and measurements will be less accurate.
@@ -423,7 +423,7 @@ where $\lambda_i$ is the expected number of events in bin $i$, and $n_i$ is the 
 \end{equation}
 This is done by iterating over a range of $\mu$ values and calculating the negative log likelihood for each one, and then finding the minimum along that curve. This gives the most likely value of $\mu$ for that dataset. To find the $1\sigma$ errors, the values of $\mu$ corresponding to an increase of 0.5 in the negative log likelihood from the minimum are found. This can then be used to determine statistical significance.
 
-\subsubsection{Validation}
+\subsection{Validation}
 To ensure the MLE is unbiased and statistically reliable, a series of 10,000 pseudoexperiments were generated for each $p_T$ bin. These pseudoexperiments consisted of performing a maximum likelihood estimation on 10,000 datasets, which simulated real data by performing Poisson fluctuations on each $p_T$ bin. This allowed 10,000 mock datasets to be generated for each $p_T$ bin without the computational cost of generating 10,000 datasets each. Two different distributions were plotted for each $p_T$ bin: the best-fit signal strength, and the corresponding pulls.
 
 \begin{figure}[h]
@@ -461,6 +461,9 @@ where $\hat{\mu_m}$ is the best-fit signal strength for the $m$-th pseudoexperim
 
 The best-fit signal strength distribution and the pull distributions for the 10--15 GeV $p_T$ bin are shown in Figure \ref{fig:pull}, as an example. The calculated values for all $p_T$ bins are shown in Table \ref{tab:pull}. There are no notable deviations from the expected distributions, with the means and standard deviations close to their expected values. The error on the signal strength increases with $p_T$, as expected, due to the decreasing number of events in each bin.
 
+\subsection{Sources of Systematic Uncertainty}
+Statistical uncertainties are derived from the MLEs described above. However, sources of systematic uncertainty would also be present for a more thorough detector simulation. One of these is the tracking efficiency, which has been assumed to be a flat value of 95\% in this analysis, however would not behave like this in reality, and so have a systematic uncertainty associated with it. In addition, variations in equipment alignment in the Inner Detector would vary the errors used to smear the variables during event generation, creating another source of systematic uncertainty. Due to time and computational constraints, these were not taken into account in this analysis.
+
 
 % ================================================== END OF STAT FRAMEWORK ================================================== %
 
@@ -479,7 +482,7 @@ Initially, the machine learning model was only trained on charm hadron events, a
 After analysing the confusion matrix, it was found that the model was able to distinguish $\Lambda_c^+$ events with greater than 70\% accuracy. As the $\Lambda_c^+$ fragmentation fraction is of particular interest and the neural network performed best at disitnguishing $\Lambda_c^+$ events from others, the decision was made to collapse the other charm hadrons into a single class. This was further justified by the lack of background events in the training data, which would likely have further degraded the performance of the neural network.
 
 \subsection{Collapsed Classes}
-The other charm hadrons events were collapsed into a single class, and background events were added as detailed SOMEWHERE. This led to three final classes: background, other charm hadron, and $\Lambda_c^+$. Due to the variation of fragmentation fraction based on jet $p_T$, the data was split into the previously defined $p_T$ bins. One million events were generated at each of these $p_T$ bins, split evenly between charm and background events. The neural network was then trained on the data in each bin, splitting the data into 80\% for training and 20\% for validation.
+The other charm hadrons events were collapsed into a single class, and background events were added as detailed in Section \ref{sec:data_generation}. This led to three final classes: background, other charm hadron, and $\Lambda_c^+$. Due to the variation of fragmentation fraction based on jet $p_T$, the data was split into the previously defined $p_T$ bins. One million events were generated at each of these $p_T$ bins, split evenly between charm and background events. The neural network was then trained on the data in each bin, splitting the data into 80\% for training and 20\% for validation.
 
 \subsection{Fragmentation Fraction Calculation}
 
@@ -518,6 +521,19 @@ Figure \ref{fig:fragfrac} clearly shows a decreasing fragmentation fraction of $
 
 Table \ref{tab:final} shows the successful extraction of $\mu \approx 1$ across all bins, which is expected by construction. This demonstrates that the neural network and analysis chain are unbiased, and could be used for analysing alternate fragmentation models, such as CR-BLC Mode 2.
 
+\subsection{Luminosity-Weighted Average Fragmentation Fraction}
+The fragmentation fractions calculated in these bins can be combined to produce a luminosity-weighted average fragmentation fraction. This takes into account the different cross-sections for each $p_T$ bin, and is defined as such:
+\begin{equation}
+  f_{\text{avg}} = \frac{\sum_{i} \sigma_i f_i}{\sum_{i} \sigma_i},
+\end{equation}
+where $\sigma_i$ is the cross-section for the $i$-th $p_T$ bin, and $f_i$ is the fragmentation fraction for the $i$-th $p_T$ bin. Due to the restriction to $p_T > 5$ GeV, the fragmentation fraction can only be calculated for this regime, defined as $f_{>5\text{GeV}}$. The errors given in the results of fragmentation fractions were propogated through to give a final result of:
+\begin{equation}
+  f_{>5\text{GeV}} = 7.50 \pm 0.01 \%\text{ (stat.)}.
+\end{equation}
+This result is efficiency-corrected, accounting for the intrinsic resolution defined in Section \ref{sec:event_generation} of $\epsilon = 0.95$. The very low uncertainty on this result is due to not taking systematic uncertainties into account, and is so purely statistical.
+
+The combined value of the fragmentation fraction of $\Lambda_c^+$ baryons to other charm hadrons from LEP measurements is $f_{\Lambda_c^+} = 5.7 \pm 0.6 \pm 0.3\%$, with the first uncertainty a combined statistical and systematic uncertainty, and the second uncertainty a theoretical uncertainty from limited knowledge of branching fractions \cite{fragfrac_gladilin}. However, it should be noted that this is over the entire $p_T$ range, whereas the results from this analysis are restricted to $p_T > 5$ GeV, explaining the deviation between the results. 
+
 % ================================================== END OF RESULTS ================================================== %
 
 
@@ -528,11 +544,14 @@ Table \ref{tab:final} shows the successful extraction of $\mu \approx 1$ across 
 \newpage
 \section{Conclusion}
 
-\subsection{Results Summary}
+This project has successfully developed a classifying machine learning model to extract the fragmentation fraction of $\Lambda_c^+$ baryons to other charm hadrons in $pp$ collisions, utilising a Feed-Forward Neural Network architecture that takes distinguishing variables as inputs. The neural network demonstrated high performance across all studied $p_T$ bins, with the AUC scores between 0.93--0.94 for all bins. The neural network was validated via 10,000 pseudoexperiments, and confirmed that the MLEs were unbiased ($\langle \hat{\mu} \rangle \approx 1$) and had reliable error calculations ($\sigma_p \approx 1$) for all bins. 
 
 
 \subsection{Future Outlook}
 Due to computational constraints, the comparison between the Monash tune and CR-BLC Mode 2 was not able to be performed. This comparison is critical for determining if the model would be able to distinguish between different fragmentation models, and therefore could be used to further explore universality of heavy quark fragmentation. Therefore, generation of data using the CR-BLC Mode 2 tune would be the next logical step,  comparing the extracted signal strengths and fragmentation fractions to those from the Monash tune. This would further prove or disprove the neural network's ability to distinguish between fragmentation models, and therefore its validity for use in investigating heavy quark fragmentation.
+
+The hard-coded effects designed to simulate the ATLAS detector is rudimentary, and only accounts for detection efficiency and resolution effects. A more comprehensive simulation could be achieved using DELPHES, which would account for ATLAS's inner detector only being able to detect pseudorapidities within $|\eta| < 2.5$, as well as more comprehensive calculation of the smearing due to detector resolution.
+
 
 % ================================================== END OF CONCLUSION ================================================== %
 

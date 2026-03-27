@@ -6,6 +6,7 @@
 \usepackage{amsmath}
 \usepackage{wrapfig}
 \usepackage{siunitx}
+\usepackage{booktabs}
 \usepackage{tikz}
 \usetikzlibrary{positioning, shapes.geometric, arrows.meta, calc}
 
@@ -323,6 +324,7 @@ The data was split into training and validation sets, with 80\% of the data used
 
 
 % ---------- RESULTS ---------- %
+\newpage
 \section{Results}
 
 \subsection{Four Classes}
@@ -333,60 +335,24 @@ After analysing the confusion matrix, it was found that the model was able to di
 \subsection{Collapsed Classes}
 The other charm hadrons events were collapsed into a single class, and background events were added as detailed SOMEWHERE. This led to three final classes: background, other charm hadron, and $\Lambda_c^+$. Due to the variation of fragmentation fraction based on jet $p_T$, the data was split into six bins of $p_T$: 5-10, 10-15, 15-20, 20-25, 25-30, and 30+ GeV. One million events were generated at each of these $p_T$ bins, split evenly between charm and background events. The neural network was then trained on the data in each bin, splitting the data into 80\% for training and 20\% for validation. The confusion matrices for each $p_T$ bin can be seen in Figure CONFUSIONMATRIX.
 
-\begin{figure}[htbp]
-     \centering
-     % --- Row 1 ---
-     \begin{subfigure}[b]{0.48\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{images/confusion_matrix_5_10.png}
-         \caption{Confusion matrix for 5-10 GeV bin.}
-         \label{fig:confusion_matrix_5_10}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.48\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{images/confusion_matrix_10_15.png}
-         \caption{Confusion matrix for 10-15 GeV bin.}
-         \label{fig:confusion_matrix_10_15}
-     \end{subfigure}
-
-     \vspace{1em} % Add some vertical spacing between rows
-
-     % --- Row 2 ---
-     \begin{subfigure}[b]{0.48\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{images/confusion_matrix_15_20.png}
-         \caption{Confusion matrix for 15-20 GeV bin.}
-         \label{fig:confusion_matrix_15_20}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.48\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{images/confusion_matrix_20_25.png}
-         \caption{Confusion matrix for 20-25 GeV bin.}
-         \label{fig:confusion_matrix_20_25}
-     \end{subfigure}
-
-     \vspace{1em}
-
-     % --- Row 3 ---
-     \begin{subfigure}[b]{0.48\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{images/confusion_matrix_25_30.png}
-         \caption{Confusion matrix for 25-30 GeV bin.}
-         \label{fig:confusion_matrix_25_30}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.48\textwidth}
-         \centering
-         \includegraphics[width=\textwidth]{images/confusion_matrix_30_plus.png}
-         \caption{Confusion matrix for 30+ GeV bin.}
-         \label{fig:confusion_matrix_30_plus}
-     \end{subfigure}
-
-     \caption{Confusion matrices for each $p_T$ bin.}
-     \label{fig:confusion_matrices}
-\end{figure}
+\begin{table}[ht]
+    \centering
+    \caption{Insert caption here.}
+    \label{tab:pull}
+    \begin{tabular}{l S[table-format=1.4] S[table-format=1.4] S[table-format=-1.4] S[table-format=1.4]}
+        \toprule
+        $p_T$ / GeV & {$\langle \hat{\mu} \rangle$} & {$\sigma(\hat{\mu})$} & {$\mu_P$} & {$\sigma_P$} \\
+        \midrule
+        5--10  & 1.0000 & 0.0004 & -0.0132 & 1.0049 \\
+        10--15 & 1.0000 & 0.0005 &  0.0090 & 1.0008 \\
+        15--20 & 1.0000 & 0.0005 & -0.0146 & 0.9927 \\
+        20--25 & 1.0000 & 0.0003 &  0.0130 & 1.0120 \\
+        25--30 & 1.0000 & 0.0004 &  0.0108 & 1.0140 \\
+        30+    & 1.0000 & 0.0005 & -0.0027 & 1.0106 \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:results_summary}
+\end{table}
 
 
 % ADD IN FIGURES %

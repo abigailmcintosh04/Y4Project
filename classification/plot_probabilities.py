@@ -2,8 +2,22 @@ import argparse
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import tensorflow as tf
 
+plt.rcParams.update({
+    'font.size': 14,
+    'axes.titlesize': 16,
+    'axes.labelsize': 16,
+    'xtick.labelsize': 14,
+    'ytick.labelsize': 14,
+    'legend.fontsize': 14,
+    'xtick.direction': 'in',
+    'ytick.direction': 'in',
+    'xtick.top': True,
+    'ytick.right': True,
+    'axes.linewidth': 1.2,
+})
+
+import tensorflow as tf
 # Mapping for nicer plot labels
 pdg_map = {
     0: 'Other Charm',

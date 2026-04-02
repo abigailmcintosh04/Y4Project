@@ -233,7 +233,7 @@ As stated earlier, $S_{d_0}$ is defined as the ratio of the track's $d_0$ to the
 The machine learning model was analysed across a range of $S_{d_0}$ cuts, training the model on samples of 1,000,000 charm-only events for each cut, with values ranging from 1 to 5 in increments of 0.5. It was found that a cut of 3.5 provided the highest validation accuracy, and therefore was chosen as the $S_{d_0}$ cut for the rest of the project. All summary variables were calculated using tracks that passed this $S_{d_0}$ threshold.
 
 \subsection{Transverse Momentum}
-One of the key findings at the LHC has been that the fragmentation fraction of charm quarks into $\Lambda_c^+$ baryons is dependent on its transverse momentum, with higher fragmentation fractions for lower $p_T$. Both PYTHIA and FastJet have the option for setting a minimum value of $p_T$ (denoted $p_t^{min}$) at the generation and clustering stages respectively. Careful consideration of the choice of $p_t^{min}$ is necessary, as the implementation of a minimum is necessary so the events have a ``jet-like'' nature, reducing the effects of soft QCD processes, essential for accurate simulation of ATLAS events. However, going to a too high $p_t^{min}$ will suppress the fragmentation fraction of $\Lambda_c^+$. Hence, the fragmentation fractions were calculated across a range of $p_t^{min}$, specifically $\qtylist{5;10;15;20;25;30}{\giga\electronvolt}$, which covers the medium and high $p_T$ regions.
+One of the key findings at the LHC has been that the fragmentation fraction of charm quarks into $\Lambda_c^+$ baryons is dependent on its transverse momentum, with higher fragmentation fractions for lower $p_T$. Both PYTHIA and FastJet have the option for setting a minimum and maximum value of $p_T$ at the generation and clustering stages respectively. The implementation of a minimum is necessary so the events have a ``jet-like'' nature, reducing the effects of soft QCD processes, essential for accurate simulation of ATLAS events. This justifies the earlier decision to use $p_T$ bins starting at $5 \text{ GeV}$.
 
 \subsection{Detector Simulation}
 
@@ -548,6 +548,7 @@ The combined value of the fragmentation fraction of $\Lambda_c^+$ baryons to oth
 \newpage
 \section{Conclusion}
 
+\subsection{Summary}
 This project has successfully developed a classifying machine learning model to extract the fragmentation fraction of $\Lambda_c^+$ baryons to other charm hadrons in $pp$ collisions, utilising a Feed-Forward Neural Network architecture that takes distinguishing variables as inputs. The neural network demonstrated high performance across all studied $p_T$ bins, with the AUC scores between 0.93 and 0.94 for all bins. The neural network was validated via 10,000 pseudoexperiments, and confirmed that the MLEs were unbiased ($\langle \hat{\mu} \rangle \approx 1$) and had reliable error calculations ($\sigma_p \approx 1$) for all bins.
 
 
@@ -561,6 +562,11 @@ The hard-coded effects designed to simulate the ATLAS detector is rudimentary, a
 
 
 
+% ================================================== ACKNOWLEDGEMENTS ================================================== %
+\section*{Acknowledgements}
+I would like to express my gratitude to my supervisors, Dr. Andrew Chisholm and Dr. Eleni Skorda, for their invaluable guidance and support throughout this project. I would also like to thank my project partner and best friend Sinéad Leckey for her contributions to this project, as well as her unwavering support and friendship throughout the course of my time at Birmingham. I would like to thank my A-Level Physics teachers, Dr. John Bunyan and Mr. Richard Watkins, for encouraging me to pursue a degree in Physics. Finally, I would like to thank my family for always supporting me both inside and outside of my academic endeavours.
+
+% ================================================== END OF ACKNOWLEDGEMENTS ================================================== %
 
 
 % ================================================== REFERENCES ================================================== %

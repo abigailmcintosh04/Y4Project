@@ -70,6 +70,8 @@ def main():
                         help='NPZ filename inside each run directory')
     parser.add_argument('--output', '-o', default='roc_curve.png',
                         help='Output plot filename')
+    parser.add_argument('--working_point', type=float, default=0.8,
+                        help='Signal efficiency working point to report rejection power (default: 0.8)')
     args = parser.parse_args()
 
     if args.labels and len(args.labels) != len(args.run_dirs):
@@ -97,14 +99,28 @@ def main():
         fpr, tpr, auc_score = compute_roc(y_true, y_proba)
 
         # Avoid division by zero for FPR=0 points
-        valid = fpr > 0
-        bg_rejection = np.where(valid, 1.0 / fpr, np.nan)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            bg_rejection = np.where(fpr > 0, 1.0 / fpr, np.nan)
 
         ax_main.plot(tpr, bg_rejection, color=color, linewidth=2.0,
                      label=rf'{label}  (AUC = {auc_score:.4f})')
 
+        # Mark and print working point
+        wp = args.working_point
+        if tpr[0] <= wp <= tpr[-1]:
+            # Interpolate 1/FPR at the working point
+            rejection_at_wp = np.interp(wp, tpr, bg_rejection)
+            fpr_at_wp       = np.interp(wp, tpr, fpr)
+            print(f"[{label}]  At {wp*100:.0f}% signal efficiency:  "
+                  f"1/FPR = {rejection_at_wp:.1f}  (FPR = {fpr_at_wp:.4f})")
+            ax_main.axvline(wp, color='gray', linewidth=1.0, linestyle=':', zorder=1)
+            ax_main.plot(wp, rejection_at_wp, 'o', color=color, markersize=7, zorder=5)
+        else:
+            print(f"[{label}]  Working point {wp} is outside TPR range.")
+
         # Lower panel: background efficiency vs signal efficiency
         ax_eff.plot(tpr, fpr, color=color, linewidth=1.5, linestyle='-')
+        ax_eff.axvline(args.working_point, color='gray', linewidth=1.0, linestyle=':', zorder=1)
 
     # --- Top panel formatting ---
     ax_main.set_xlabel(r'Signal Efficiency  $\epsilon_S$', fontsize=15)
